@@ -705,14 +705,21 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                         )}
                       </button>
 
-                      <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 pt-1">
+                      <div className="flex flex-wrap items-center justify-center gap-3 text-[10px] text-slate-500 pt-1">
                         <span className="flex items-center gap-1">
                           <Lock className="w-3 h-3 text-slate-400" /> 256-bit Stripe / Bank Encryption
                         </span>
                         <span>•</span>
                         <span>Cancel anytime with 1 click</span>
                         <span>•</span>
-                        <span>Includes all 100-hour video &amp; 4K 120fps privileges</span>
+                        <a
+                          href="/subscription.json"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-cyan-400 hover:text-cyan-300 underline font-semibold flex items-center gap-1"
+                        >
+                          <FileText className="w-3 h-3" /> View subscription.json (PPP Spec)
+                        </a>
                       </div>
                     </div>
                   </div>

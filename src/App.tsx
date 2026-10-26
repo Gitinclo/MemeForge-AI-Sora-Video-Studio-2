@@ -971,26 +971,34 @@ export default function App() {
                 ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 text-emerald-300 border border-emerald-500/40'
                 : 'bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-indigo-500/20 hover:from-amber-500/30 text-amber-300 hover:text-white border border-amber-500/40 animate-pulse'
             }`}
-            title="Manage Subscriptions: Individual Pro (₹999/mo) or Team Enterprise (₹99,999/mo)"
+            title="Manage Subscriptions: India (₹999 / ₹99,999) or Global PPP Fair Pricing ($3.80–$19/mo)"
           >
             {subscription.isActive && subscription.plan === 'company_team' ? (
               <Building2 className="w-4 h-4 text-cyan-400" />
             ) : (
               <Crown className="w-4 h-4 text-amber-400" />
             )}
-            <span className="w-3.5 h-2.5 rounded-xs overflow-hidden flex flex-col border border-white/20 shrink-0">
-              <span className="h-1/3 bg-[#FF9933] w-full" />
-              <span className="h-1/3 bg-white w-full flex items-center justify-center">
-                <span className="w-0.5 h-0.5 rounded-full bg-[#000080]" />
+            {subscription.isActive && subscription.country && subscription.country !== 'IN' ? (
+              <span className="px-1 py-0.2 rounded bg-cyan-500/20 border border-cyan-400/40 text-[9px] font-black text-cyan-200 uppercase shrink-0">
+                {subscription.country}
               </span>
-              <span className="h-1/3 bg-[#138808] w-full" />
-            </span>
+            ) : (
+              <span className="w-3.5 h-2.5 rounded-xs overflow-hidden flex flex-col border border-white/20 shrink-0">
+                <span className="h-1/3 bg-[#FF9933] w-full" />
+                <span className="h-1/3 bg-white w-full flex items-center justify-center">
+                  <span className="w-0.5 h-0.5 rounded-full bg-[#000080]" />
+                </span>
+                <span className="h-1/3 bg-[#138808] w-full" />
+              </span>
+            )}
             <span className="hidden sm:inline">
-              {subscription.isActive && subscription.plan === 'company_team'
+              {subscription.isActive && subscription.country && subscription.country !== 'IN'
+                ? `${subscription.plan === 'company_team' ? 'Team' : 'Pro'} (${subscription.localPriceFormatted || `$${subscription.priceUsd}/mo`})`
+                : subscription.isActive && subscription.plan === 'company_team'
                 ? 'Team Active (Rs. 99,999)'
                 : subscription.isActive && subscription.plan === 'india_pro'
                 ? 'Pro Active (Rs. 999)'
-                : 'Plans: Rs. 999 / Rs. 99,999'}
+                : 'Plans: Rs. 999 / Global PPP'}
             </span>
             <span className="sm:hidden">
               {subscription.isActive && subscription.plan === 'company_team'
