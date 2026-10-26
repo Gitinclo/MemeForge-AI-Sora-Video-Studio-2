@@ -152,16 +152,22 @@ export interface EnterpriseVaultAsset {
 export interface UserSubscription {
   plan: PlanTier;
   isActive: boolean;
-  country: 'IN' | 'OTHER';
+  country: string; // ISO code (e.g. 'US', 'IN', 'BR', 'DE') or 'IN' | 'OTHER'
   priceInr: number;
+  priceUsd?: number;
+  localPriceFormatted?: string;
+  pppTier?: 'tier_1' | 'tier_2' | 'tier_3' | 'tier_4';
+  discountPercent?: number;
   startDate?: string;
   renewsOn?: string;
-  paymentMethod?: 'UPI_AUTOPAY' | 'UPI_INSTANT' | 'CARD' | 'CORPORATE_NETBANKING' | 'NEFT_RTGS';
+  paymentMethod?: 'UPI_AUTOPAY' | 'UPI_INSTANT' | 'CARD' | 'CORPORATE_NETBANKING' | 'NEFT_RTGS' | 'GLOBAL_CARD' | 'STRIPE' | 'PAYPAL';
   upiApp?: string;
   utr?: string;
   companyName?: string;
   gstin?: string;
   teamSeats?: number;
+  cardLast4?: string;
+  cardBin?: string;
 }
 
 export type ProductionJobStatus = 'rendering' | 'compositing' | 'in_review' | 'queued' | 'completed' | 'paused';

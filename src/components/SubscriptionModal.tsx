@@ -27,6 +27,9 @@ import {
   CreditCard,
   Briefcase,
   Shield,
+  Search,
+  Percent,
+  BadgeAlert,
 } from 'lucide-react';
 import {
   UserSubscription,
@@ -41,6 +44,16 @@ import {
   INDIA_PRO_MONTHLY_PRICE_INR,
   COMPANY_TEAM_MONTHLY_PRICE_INR,
 } from '../utils/subscriptionUtils';
+import {
+  GLOBAL_PPP_COUNTRIES,
+  MACRO_TIER_DEFINITIONS,
+  getPppCountryByCode,
+  calculatePppPrice,
+  verifyCardBinCountryMatch,
+  BASE_PRO_PRICE_USD,
+  BASE_COMPANY_PRICE_USD,
+} from '../utils/pppPricingUtils';
+import { MacroEconomicTier, PppCountryData } from '../types/pppPricing';
 
 export const IndiaFlag: React.FC<{ className?: string }> = ({ className = 'w-4 h-3' }) => (
   <span className={`inline-flex flex-col rounded-xs overflow-hidden border border-white/20 shrink-0 ${className}`}>
@@ -88,6 +101,45 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   const [planCategory, setPlanCategory] = useState<'individual' | 'company'>(
     initialPlanCategory || (subscription?.plan === 'company_team' ? 'company' : 'individual')
   );
+
+  // Global PPP Studio State
+  const [selectedPppCode, setSelectedPppCode] = useState<string>('US');
+  const [selectedMacroTierFilter, setSelectedMacroTierFilter] = useState<MacroEconomicTier | 'all'>('all');
+  const [searchPppQuery, setSearchPppQuery] = useState('');
+  const [cardBinInput, setCardBinInput] = useState('424242');
+  const [globalCardNumber, setGlobalCardNumber] = useState('4242 •••• •••• 4242');
+  const [globalCardExpiry, setGlobalCardExpiry] = useState('12/28');
+  const [globalCardCvc, setGlobalCardCvc] = useState('888');
+
+  const handleActivateGlobalPpp = (planToActivate: 'individual' | 'company') => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      const countryData = getPppCountryByCode(selectedPppCode);
+      const pricing = calculatePppPrice(countryData, planToActivate);
+      const nextDate = calculateNextBillingDate();
+      const planTier = planToActivate === 'company' ? 'company_team' : 'india_pro';
+
+      onUpdateSubscription({
+        plan: planTier,
+        isActive: true,
+        country: countryData.code,
+        priceInr: countryData.code === 'IN' ? pricing.localAmount : Math.round(pricing.discountedUsd * 86.5),
+        priceUsd: pricing.discountedUsd,
+        localPriceFormatted: `${pricing.localCurrencySymbol}${pricing.localAmount.toLocaleString()} ${pricing.localCurrencyCode}`,
+        pppTier: countryData.macroTier,
+        discountPercent: countryData.discountPercent,
+        startDate: new Date().toLocaleDateString('en-US'),
+        renewsOn: nextDate,
+        paymentMethod: 'GLOBAL_CARD',
+        teamSeats: planToActivate === 'company' ? 50 : 1,
+        companyName: planToActivate === 'company' ? (companyNameInput || 'Global Studio Workspace') : undefined,
+        cardLast4: '4242',
+        cardBin: cardBinInput.slice(0, 6),
+      });
+      setIsProcessing(false);
+      onClose();
+    }, 1200);
+  };
 
   useEffect(() => {
     if (initialPlanCategory) {
@@ -241,45 +293,431 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             </div>
           </div>
 
-          {/* Conditional Display: Other Countries Notice */}
+          {/* Conditional Display: Global PPP Pricing Studio vs India Subscriptions */}
           {selectedCountry === 'OTHER' ? (
-            <div className="p-6 rounded-3xl bg-slate-950/80 border border-cyan-500/30 text-center space-y-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
-                <Globe className="w-7 h-7" />
-              </div>
-              <div className="max-w-md mx-auto space-y-2">
-                <h4 className="text-lg font-bold text-white">Global Pricing Launching Soon</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  The discounted Rs. 999/month Individual and Rs. 99,999/month Team rates are currently localized to Indian creators paying via Indian UPI / NetBanking. We are actively finalizing international payment gateways (Stripe, PayPal, Multi-currency cards) for other countries.
-                </p>
-              </div>
-
-              {waitlistJoined ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold animate-in fade-in">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>You're on the global waitlist! We'll notify you as soon as international checkout opens.</span>
-                </div>
-              ) : (
-                <div className="max-w-sm mx-auto flex items-center gap-2">
-                  <input
-                    type="email"
-                    value={waitlistEmail}
-                    onChange={(e) => setWaitlistEmail(e.target.value)}
-                    placeholder="Enter your email for global access"
-                    className="flex-1 px-3.5 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-cyan-400"
-                  />
+            <div className="space-y-6">
+              {/* Active Plan Banner (if already subscribed to Global or Pro) */}
+              {(isPro || isCompany) && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        {isCompany ? (
+                          <>
+                            <Building2 className="w-4 h-4 text-purple-400" />
+                            <span>Global Enterprise Plan Active ({subscription.country})</span>
+                            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-black uppercase">
+                              50 Seats • {subscription.localPriceFormatted || `$${subscription.priceUsd || 999}/mo`}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Crown className="w-4 h-4 text-amber-400" />
+                            <span>Global Creator Pro Active ({subscription.country})</span>
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase">
+                              {subscription.localPriceFormatted || `$${subscription.priceUsd || 19}/mo`}
+                            </span>
+                          </>
+                        )}
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Renews on <span className="text-amber-300 font-bold">{subscription.renewsOn || 'Next month'}</span> via {subscription.paymentMethod || 'Card'} • All 100-hour video production unlocked
+                      </p>
+                    </div>
+                  </div>
                   <button
-                    onClick={() => {
-                      if (waitlistEmail.trim()) setWaitlistJoined(true);
-                    }}
-                    disabled={!waitlistEmail.trim()}
-                    className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-extrabold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5"
+                    onClick={handleCancelSubscription}
+                    className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-bold transition-colors"
                   >
-                    <Bell className="w-3.5 h-3.5" />
-                    Join Waitlist
+                    Cancel Plan
                   </button>
                 </div>
               )}
+
+              {/* PPP Studio Header Banner */}
+              <div className="p-5 rounded-3xl bg-gradient-to-r from-cyan-950/60 via-slate-900 to-purple-950/60 border border-cyan-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black tracking-wider uppercase flex items-center gap-1">
+                      <Globe className="w-3 h-3" /> Purchasing Power Parity (PPP)
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
+                      World Bank GNI &amp; Salary Indexed
+                    </span>
+                  </div>
+                  <h4 className="text-lg font-extrabold text-white">Global Fair Pricing Studio</h4>
+                  <p className="text-xs text-slate-300">
+                    Automatically adjusts subscription rates for 90+ countries across 4 macro-economic tiers so creators everywhere can afford pro tools.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">US Anchor Price</div>
+                    <div className="text-sm font-extrabold text-white">$19 / mo (Pro)</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Macro-Tier Selection Tabs */}
+              <div className="space-y-2">
+                <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                  <span>1. Select Economic Macro-Tier</span>
+                  <span className="text-[11px] text-cyan-400 font-normal">
+                    {GLOBAL_PPP_COUNTRIES.length} sovereign markets indexed
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMacroTierFilter('all')}
+                    className={`p-2.5 rounded-2xl text-xs font-bold text-left transition-all border ${
+                      selectedMacroTierFilter === 'all'
+                        ? 'bg-slate-800 border-cyan-400 text-white shadow-md'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-extrabold text-white">All Markets</div>
+                    <div className="text-[10px] text-slate-400">All 90+ Countries</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMacroTierFilter('tier_1')}
+                    className={`p-2.5 rounded-2xl text-xs font-bold text-left transition-all border ${
+                      selectedMacroTierFilter === 'tier_1'
+                        ? 'bg-emerald-500/20 border-emerald-400 text-white shadow-md'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-extrabold text-emerald-300">Tier 1: High Income</div>
+                    <div className="text-[10px] text-emerald-400/80">$19 Pro (0% off)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMacroTierFilter('tier_2')}
+                    className={`p-2.5 rounded-2xl text-xs font-bold text-left transition-all border ${
+                      selectedMacroTierFilter === 'tier_2'
+                        ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-md'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-extrabold text-cyan-300">Tier 2: Upper-Mid</div>
+                    <div className="text-[10px] text-cyan-400/80">$14.25 (25% off)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMacroTierFilter('tier_3')}
+                    className={`p-2.5 rounded-2xl text-xs font-bold text-left transition-all border ${
+                      selectedMacroTierFilter === 'tier_3'
+                        ? 'bg-amber-500/20 border-amber-400 text-white shadow-md'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-extrabold text-amber-300">Tier 3: Mid-Growth</div>
+                    <div className="text-[10px] text-amber-400/80">$9.50 (50% off)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMacroTierFilter('tier_4')}
+                    className={`p-2.5 rounded-2xl text-xs font-bold text-left transition-all border ${
+                      selectedMacroTierFilter === 'tier_4'
+                        ? 'bg-purple-500/20 border-purple-400 text-white shadow-md'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-extrabold text-purple-300">Tier 4: Micro-Price</div>
+                    <div className="text-[10px] text-purple-400/80">$4.75 (75%–85% off)</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Country Search & Quick Selection Carousel */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-bold text-slate-300">2. Choose Your Country</span>
+                  <div className="relative w-64 max-w-full">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={searchPppQuery}
+                      onChange={(e) => setSearchPppQuery(e.target.value)}
+                      placeholder="Search country, currency, ISO..."
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="max-h-48 overflow-y-auto p-2 bg-slate-950/90 border border-slate-800 rounded-2xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
+                  {GLOBAL_PPP_COUNTRIES.filter((country) => {
+                    if (selectedMacroTierFilter !== 'all' && country.macroTier !== selectedMacroTierFilter) {
+                      return false;
+                    }
+                    if (searchPppQuery.trim()) {
+                      const q = searchPppQuery.toLowerCase();
+                      return (
+                        country.name.toLowerCase().includes(q) ||
+                        country.code.toLowerCase().includes(q) ||
+                        country.currencyCode.toLowerCase().includes(q)
+                      );
+                    }
+                    return true;
+                  }).map((country) => {
+                    const isSelected = selectedPppCode === country.code;
+                    return (
+                      <button
+                        key={country.code}
+                        type="button"
+                        onClick={() => setSelectedPppCode(country.code)}
+                        className={`p-2 rounded-xl text-left flex items-center justify-between gap-2 border transition-all ${
+                          isSelected
+                            ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-sm'
+                            : 'bg-slate-900/60 border-slate-800/80 text-slate-300 hover:bg-slate-900 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="text-base shrink-0">{country.flag}</span>
+                          <div className="truncate">
+                            <div className="text-xs font-bold truncate">{country.name}</div>
+                            <div className="text-[10px] text-slate-400">
+                              {country.annualIncomeGni} GNI • {country.currencyCode}
+                            </div>
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                            country.discountPercent > 0
+                              ? 'bg-amber-500/20 text-amber-300'
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {country.discountPercent > 0 ? `-${country.discountPercent}%` : 'Base'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Selected Country Pricing & Calculation Card */}
+              {(() => {
+                const currentCountry = getPppCountryByCode(selectedPppCode);
+                const pricing = calculatePppPrice(currentCountry, planCategory);
+                const tierDef = MACRO_TIER_DEFINITIONS[currentCountry.macroTier];
+                const binVerification = verifyCardBinCountryMatch(cardBinInput, currentCountry.code, 'US');
+
+                return (
+                  <div className="p-5 rounded-3xl bg-slate-950 border border-slate-800 space-y-5">
+                    {/* Country Overview Banner */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{currentCountry.flag}</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-base font-extrabold text-white">{currentCountry.name}</h4>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${tierDef.colorScheme.badge}`}>
+                              {tierDef.label}
+                            </span>
+                            <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
+                              {currentCountry.economicTier}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            GNI per capita: <span className="text-slate-200 font-bold">{currentCountry.annualIncomeGni}</span> • {currentCountry.strategyNote}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Plan Toggle (Individual vs Team) */}
+                      <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setPlanCategory('individual')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            planCategory === 'individual'
+                              ? 'bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Individual Pro
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPlanCategory('company')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            planCategory === 'company'
+                              ? 'bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Team Enterprise
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Pricing Breakdown Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Base Anchor (US)</span>
+                        <div className="text-lg font-bold text-slate-400 line-through mt-0.5">
+                          ${planCategory === 'company' ? BASE_COMPANY_PRICE_USD : BASE_PRO_PRICE_USD} / mo
+                        </div>
+                        <span className="text-[10px] text-slate-500">Unadjusted Global Baseline</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                        <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">PPP Local Discount</span>
+                        <div className="text-lg font-black text-amber-300 mt-0.5">
+                          {currentCountry.discountPercent > 0 ? `-${currentCountry.discountPercent}% OFF` : 'Full Price (Tier 1)'}
+                        </div>
+                        <span className="text-[10px] text-amber-400/80">World Bank parity adjustment</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40">
+                        <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Localized Monthly Price</span>
+                        <div className="text-xl font-extrabold text-emerald-300 mt-0.5 flex items-baseline gap-1.5">
+                          <span>${pricing.discountedUsd}</span>
+                          <span className="text-xs text-emerald-400/80 font-semibold">
+                            (~{pricing.localCurrencySymbol}{pricing.localAmount.toLocaleString()} {pricing.localCurrencyCode})
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-emerald-400/80">Billed monthly in local currency</span>
+                      </div>
+                    </div>
+
+                    {/* Anti-Exploitation Card BIN & Geolocation Protection */}
+                    <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                          <span className="text-xs font-bold text-white">Anti-Exploitation &amp; Card BIN Verification</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full border border-cyan-500/40">
+                          MaxMind GeoIP + Stripe BIN Active
+                        </span>
+                      </div>
+
+                      <p className="text-[11px] text-slate-400">
+                        To prevent VPN exploiters from purchasing at lower tiers, the card-issuing bank country must match the billing country.
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 block mb-1">
+                            Card BIN (First 6 Digits)
+                          </label>
+                          <input
+                            type="text"
+                            maxLength={6}
+                            value={cardBinInput}
+                            onChange={(e) => setCardBinInput(e.target.value.replace(/\D/g, ''))}
+                            placeholder="e.g. 424242 or 400000"
+                            className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-400"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 block mb-1">
+                            Verification Status
+                          </label>
+                          <div className={`px-3 py-1.5 rounded-xl border text-xs flex items-center gap-2 font-medium ${
+                            binVerification.isValidMatch
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                              : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                          }`}>
+                            {binVerification.isValidMatch ? (
+                              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                            ) : (
+                              <BadgeAlert className="w-4 h-4 shrink-0 text-amber-400" />
+                            )}
+                            <span className="truncate text-[11px]">{binVerification.statusMessage}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Card Checkout Inputs & 1-Click Activation */}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="sm:col-span-2">
+                          <label className="text-[10px] font-bold text-slate-400 block mb-1">Card Number</label>
+                          <div className="relative">
+                            <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              value={globalCardNumber}
+                              onChange={(e) => setGlobalCardNumber(e.target.value)}
+                              placeholder="4242 •••• •••• 4242"
+                              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-400"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-400 block mb-1">Expiry</label>
+                            <input
+                              type="text"
+                              value={globalCardExpiry}
+                              onChange={(e) => setGlobalCardExpiry(e.target.value)}
+                              placeholder="MM/YY"
+                              className="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-400 text-center"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-400 block mb-1">CVC</label>
+                            <input
+                              type="text"
+                              maxLength={4}
+                              value={globalCardCvc}
+                              onChange={(e) => setGlobalCardCvc(e.target.value)}
+                              placeholder="CVC"
+                              className="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-400 text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleActivateGlobalPpp(planCategory)}
+                        disabled={isProcessing}
+                        className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:from-cyan-400 hover:via-blue-500 hover:to-purple-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-950/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <span>Authorizing Card &amp; Unlocking 100-Hour Suite...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Crown className="w-4 h-4 text-amber-300" />
+                            <span>
+                              Activate {planCategory === 'company' ? 'Enterprise Team (50 Seats)' : 'Creator Pro'} • ${pricing.discountedUsd}/mo ({pricing.localCurrencySymbol}{pricing.localAmount.toLocaleString()} {pricing.localCurrencyCode})
+                            </span>
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
+
+                      <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 pt-1">
+                        <span className="flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-slate-400" /> 256-bit Stripe / Bank Encryption
+                        </span>
+                        <span>•</span>
+                        <span>Cancel anytime with 1 click</span>
+                        <span>•</span>
+                        <span>Includes all 100-hour video &amp; 4K 120fps privileges</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ) : (
             /* India Subscriptions */
@@ -296,17 +734,17 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                         {isCompany ? (
                           <>
                             <Building2 className="w-4 h-4 text-purple-400" />
-                            <span>Team / Company Enterprise Active</span>
+                            <span>{subscription.country === 'IN' ? 'Team / Company Enterprise Active' : `Global Enterprise Active (${subscription.country})`}</span>
                             <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-black uppercase">
-                              50 Team Seats • Rs. 99,999/mo
+                              50 Team Seats • {subscription.localPriceFormatted || (subscription.priceUsd ? `$${subscription.priceUsd}/mo` : 'Rs. 99,999/mo')}
                             </span>
                           </>
                         ) : (
                           <>
                             <Crown className="w-4 h-4 text-amber-400" />
-                            <span>India Creator Pro Active</span>
+                            <span>{subscription.country === 'IN' ? 'India Creator Pro Active' : `Global Creator Pro Active (${subscription.country})`}</span>
                             <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase">
-                              Active (Rs. 999/mo)
+                              {subscription.localPriceFormatted || (subscription.priceUsd ? `$${subscription.priceUsd}/mo` : 'Active (Rs. 999/mo)')}
                             </span>
                           </>
                         )}

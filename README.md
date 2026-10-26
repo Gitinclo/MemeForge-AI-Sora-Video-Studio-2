@@ -146,35 +146,22 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 - npm, pnpm, or bun
 
 ### 1. Installation
-```bash
-git clone <repository-url>
-cd memeforge-ai-leo-video-studio
-npm install
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Gitinclo/MemeForge-AI-Sora-Video-Studio.git
+   cd MemeForge-AI-Sora-Video-Studio
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+3. **Set up environment variables:**
+   Copy the example environment file and fill in your keys:
+   ```bash
+   cp .env.example .env
+   ```
 
-### 2. Environment Configuration
-Create a `.env` file in the project root:
-```bash
-# GEMINI_API_KEY: Required for Gemini Vision, AI Co-Director, and caption synthesis
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
-
-# PORT: Local development server port (default: 3000)
-PORT=3000
-```
-
-### 3. Run Automated Tests
-```bash
-npm test
-```
-Runs the full 31-test suite across 6 test suites covering:
-- Audio synthesis PCM generation and WAV header encoding (`memeAudioEngine.test.ts`)
-- Meme style presets and text layer manipulation (`memeStylePresets.test.ts`)
-- LEO video duration clamping and compute metrics (`videoDurationUtils.test.ts`)
-- Subscription limits (Free vs India Pro Rs. 999 vs Company Rs. 99,999), 10 isolated workspaces, 50 TB Cloud Vault, and Project Management queue metrics (`subscriptionUtils.test.ts`)
-- Cinema VFX 32K Gigapixel math, 1000 FPS 64-bit timebase precision, and 192 kHz audio sample rates (`cinemaEngine.test.ts`)
-- Meme canvas text wrapping, category/mood filtering, and Web3/UPI wallet balance logic (`tests/meme-logic.test.ts`)
-
-### 4. Start the Application
+### 2. Running the Application
 ```bash
 npm run dev
 ```
@@ -182,34 +169,60 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 📱 Android Build Instructions
+## 🧪 Running Tests
 
-### Method A: Building the Release App Bundle (.aab)
+Run the automated unit and integration test suite:
 ```bash
-# 1. Compile production web bundle
+npm test
+```
+Runs the full **52-test suite across 9 test suites** covering:
+- **2026 Multi-Model Engine Migration (`engineMigration2026.test.ts`)**: Sora-2 to Magic Hour / Veo 3.1 / Kling 2.5 / Runway Gen-4.5 / Luma Ray 3 payload adapters and pricing calculators.
+- **LEO 8K DiT Engine (`leo8kEngine.test.ts`)**: 3D spacetime patch tokenization, cascaded 720p→2K→4K→8K pipeline stages, and VLM dense re-captioning.
+- **Audio Synthesis & WAV Encoding (`memeAudioEngine.test.ts`)**: PCM stereo synthesis and 44-byte RIFF WAVE header encoding.
+- **Meme Style Presets (`memeStylePresets.test.ts`)**: Typography preset application and text layer transforms.
+- **Subscription & Enterprise RBAC (`subscriptionUtils.test.ts`)**: Free vs. India Creator Pro (Rs. 999/mo) vs. Company Enterprise (Rs. 99,999/mo), 10 isolated workspaces, and 50 TB Cloud Vault limits.
+- **Video Duration & Compute Telemetry (`videoDurationUtils.test.ts`)**: 100-hour max duration clamping, timecode formatting, and frame compute metrics.
+- **YouTube Data API v3 & Argon Metadata (`youtubeUploadUtils.test.ts`)**: Tag parsing, metadata validation, resumable chunk progress, and Kotlin WorkManager generator templates.
+- **Cinema VFX 32K & 1000 FPS Engine (`cinemaEngine.test.ts`)**: 64-bit sub-frame timebase (`120,000,000,000` ticks/sec), 32K Gigapixel math, and 192 kHz Fairlight audio.
+- **Canvas & Marketplace Logic (`tests/meme-logic.test.ts`)**: Word-wrap, category/mood filtering, and Web3/UPI wallet ledger balance calculations.
+
+Type-check the entire project without emitting files:
+```bash
+npm run lint
+```
+
+---
+
+## 📦 Deployment
+
+### Web / Cloud Run / Docker Production Build
+1. **Build the production client bundle:**
+   ```bash
+   npm run build
+   ```
+2. **Start the full-stack production server (Express + static `dist/`):**
+   ```bash
+   NODE_ENV=production PORT=3000 npm start
+   ```
+   The server binds to `0.0.0.0:3000` and serves both the compiled SPA (`dist/`) and all `/api/*` endpoints.
+
+### 📱 Android Build Instructions (APK & AAB)
+
+#### Method A: Building the Release App Bundle (`.aab`)
+```bash
 npm run build
-
-# 2. Sync web assets with Capacitor Android
 npx cap sync android
-
-# 3. Generate Android App Bundle
 cd android
 ./gradlew bundleRelease
 ```
-The output file will be generated at:
-```
-android/app/build/outputs/bundle/release/app-release.aab
-```
+Output: `android/app/build/outputs/bundle/release/app-release.aab`
 
-### Method B: Building the Debug/Release APK (.apk) for Sideloading
+#### Method B: Building the Debug/Release APK (`.apk`) for Sideloading
 ```bash
 npm run build
 npx cap sync android
 cd android
 ./gradlew assembleDebug
-```
-Install directly onto an attached Android device via ADB:
-```bash
 adb install android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -217,91 +230,107 @@ adb install android/app/build/outputs/apk/debug/app-debug.apk
 
 ## 📡 Backend API Reference
 
-All Gemini model operations are handled server-side via Express routes:
+All AI model and publishing operations are handled server-side via Express routes in `server.ts`:
 
-| Route | Method | Model | Description |
+| Route | Method | Model / Service | Description |
 | :--- | :---: | :--- | :--- |
-| `/api/magic-captions` | `POST` | `gemini-3.8-flash` | Multimodal vision analysis of meme image with 5 proposed captions |
-| `/api/generate-meme-image`| `POST` | `gemini-3.1-flash-lite-image` | Generative image background synthesis |
-| `/api/chat-director` | `POST` | `gemini-4-argon` / `3.8-flash` | Multi-turn comedy co-director chat with high thinking mode |
-| `/api/expand-prompt` | `POST` | `gemini-3.1-flash-lite` | Low-latency cinematic prompt expansion for video generation |
+| `/api/magic-captions` | `POST` | `gemini-3.8-flash` | Multimodal vision analysis of meme image with 5 viral captions |
+| `/api/generate-meme-image`| `POST` | `gemini-3.1-flash-lite-image` | Generative custom meme template & background synthesis |
+| `/api/chat-director` | `POST` | `gemini-4-argon` / `3.8-flash` | Multi-turn comedy co-director chat with deep thinking mode |
+| `/api/expand-prompt` | `POST` | `gemini-3.1-flash-lite` | Low-latency cinematic prompt expansion for video synthesis |
+| `/api/leo/vlm-recaption` | `POST` | `gemini-3.1-flash-lite` | Synthetic VLM dense re-captioning with ARRI Alexa 65 optics specs |
+| `/api/youtube/generate-metadata` | `POST` | `gemini-4-argon` | High-CTR YouTube Title, Description, Tags & Virality Score generator |
+| `/api/youtube/upload` | `POST` | YouTube Data API v3 | Resumable binary video upload with OAuth 2.0 Bearer token |
+| `/api/magic-hour/generate` | `POST` | Magic Hour / 2026 Hub | Sora-compatible drop-in video generation & migration dispatcher |
 
 ---
 
 ## 📂 Project Directory Structure
 
-```
+```text
+├── .github/
+│   ├── ISSUE_TEMPLATE/              # Bug report & feature request templates
+│   ├── workflows/
+│   │   └── build.yml                # GitHub Actions CI (Node 20.x & 22.x lint, test, build)
+│   ├── dependabot.yml               # Automated dependency security updates
+│   └── pull_request_template.md     # Standardized PR checklist
 ├── android/                         # Native Android Gradle project (SDK 36, minSdk 24)
-├── public/                          # PWA icons & manifest assets
-│   ├── icon.svg
-│   ├── manifest.webmanifest
-│   └── pwa-512x512.png
-├── scripts/                         # Build and automation shell & Python scripts
-│   ├── build-apk-aab.sh             # Automated APK/AAB build pipeline script
-│   └── generate_pwa_icons.py        # PWA icon generator
+├── public/                          # PWA icons, SVG logo & manifest.webmanifest
+├── scripts/                         # Build & icon automation scripts
+│   ├── build-apk-aab.sh
+│   └── generate_pwa_icons.py
 ├── tests/
-│   └── meme-logic.test.ts           # Word-wrap, tag/mood filters, and Web3/UPI wallet tests
+│   └── meme-logic.test.ts           # Word-wrap, tag/mood filters & Web3/UPI wallet tests
 ├── src/
 │   ├── components/
-│   │   ├── AiCaptionSuggestionsBar.tsx # Quick-action suggested caption chips
-│   │   ├── AiDirectorChatModal.tsx  # Gemini comedy co-director chat drawer
-│   │   ├── AndroidPackageModal.tsx   # In-app APK/AAB compilation & keystore manager
+│   │   ├── AiCaptionSuggestionsBar.tsx
+│   │   ├── AiDirectorChatModal.tsx
+│   │   ├── AndroidPackageModal.tsx
 │   │   ├── CinemaVfxEditorTab.tsx   # 32K, 1000 FPS, ACES 2.0 & 192 kHz Cinema VFX Workstation
-│   │   ├── LegalDocsModal.tsx       # In-app Terms of Service and Privacy modal
-│   │   ├── MagicCaptionModal.tsx     # Gemini Vision multimodal auto-captioning
-│   │   ├── MarketplaceCheckoutModal.tsx # Web3 & UPI checkout drawer
-│   │   ├── MarketplaceTab.tsx        # Crypto & UPI template marketplace
-│   │   ├── MemeAudioLayerPanel.tsx   # Multi-track meme soundboard & audio synthesizer
-│   │   ├── MemeCanvas.tsx            # HTML5 live typography & sticker canvas editor
-│   │   ├── MemeStylePresetPicker.tsx # Preset font & humor styling switcher
-│   │   ├── MemeTemplateSelector.tsx  # Vector meme templates catalog selector
-│   │   ├── MemeToolbar.tsx           # Text styling, outline, font family & filter controls
-│   │   ├── PWAInstallButton.tsx      # Progressive Web App install prompt banner
-│   │   ├── LeoStudioTab.tsx          # LEO/Veo video studio with up to 100-hour duration
-│   │   ├── SubscriptionModal.tsx     # India UPI (Rs. 999) & Enterprise (Rs. 99,999) billing
-│   │   └── TeamWorkspaceTab.tsx      # Multi-workspace, 50 TB Vault, and Project Management
+│   │   ├── EngineHub2026Modal.tsx   # 2026 Multi-Model Video Hub & Sora Migration Assistant
+│   │   ├── LegalDocsModal.tsx       # In-app Terms, Privacy, NOTICE & Apache 2.0 License viewer
+│   │   ├── LeoStudioTab.tsx         # LEO 8K DiT Video Studio (up to 100-hour duration)
+│   │   ├── MagicCaptionModal.tsx    # Gemini Vision multimodal auto-captioning
+│   │   ├── MarketplaceCheckoutModal.tsx
+│   │   ├── MarketplaceTab.tsx
+│   │   ├── MemeAudioLayerPanel.tsx
+│   │   ├── MemeCanvas.tsx
+│   │   ├── MemeStylePresetPicker.tsx
+│   │   ├── MemeTemplateSelector.tsx
+│   │   ├── MemeToolbar.tsx
+│   │   ├── PWAInstallButton.tsx
+│   │   ├── SubscriptionModal.tsx
+│   │   ├── TeamWorkspaceTab.tsx
+│   │   └── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
 │   ├── data/
-│   │   ├── memeTemplates.ts          # Vector meme templates catalog & sticker presets
-│   │   └── memeStylePresets.ts       # Preset fonts, strokes, and humor styles
+│   │   ├── memeTemplates.ts
+│   │   └── memeStylePresets.ts
 │   ├── types/
-│   │   ├── cinemaEngine.ts           # Types for 32K, 1000 FPS, ACES, 192kHz audio & scopes
-│   │   ├── subscription.ts           # Types for Free, India Pro, Enterprise, Vault & Queue
-│   │   └── meme.ts                   # Core meme, canvas, marketplace & crypto types
+│   │   ├── cinemaEngine.ts
+│   │   ├── meme.ts
+│   │   └── subscription.ts
 │   ├── utils/
-│   │   ├── cinemaEngine.ts           # 64-bit timebase math, 32K compute metrics, .cube LUTs
-│   │   ├── cinemaEngine.test.ts      # Unit tests for cinema resolution, FPS, and audio
-│   │   ├── memeAudioEngine.ts        # Synthetic PCM audio engine & WebM video encoder
-│   │   ├── memeAudioEngine.test.ts   # Audio engine unit tests
-│   │   ├── subscriptionUtils.ts      # Plan limits verification & UPI deep link generators
-│   │   ├── subscriptionUtils.test.ts # Subscription & project queue metrics tests
-│   │   ├── videoDurationUtils.ts     # 100-hour duration clamping & timecode formatting
-│   │   └── videoDurationUtils.test.ts# Video duration unit tests
-│   ├── App.tsx                       # Master navigation & tab routing coordinator
-│   └── main.tsx                      # React root entry point
-├── server.ts                        # Express backend proxying Google GenAI SDK routes
-├── capacitor.config.json            # Capacitor Android native configuration
-└── package.json                     # Dependencies, scripts, and test suite configuration
+│   │   ├── cinemaEngine.ts
+│   │   ├── engineMigration2026.ts
+│   │   ├── leo8kEngine.ts
+│   │   ├── memeAudioEngine.ts
+│   │   ├── subscriptionUtils.ts
+│   │   ├── videoDurationUtils.ts
+│   │   └── youtubeUploadUtils.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── .env.example                     # Safe environment variable template (zero secrets)
+├── .gitignore                       # Git ignore rules including keystores & local secrets
+├── .npmrc                           # npm configuration (legacy-peer-deps=true)
+├── CHANGELOG.md                     # Version history and release notes
+├── CODE_OF_CONDUCT.md               # Contributor Covenant v2.1
+├── CONTRIBUTING.md                  # Contribution workflow & testing guidelines
+├── LICENSE                          # Apache License, Version 2.0
+├── NOTICE                           # Apache 2.0 Section 4(d) Attribution Notice
+├── PRIVACY.md                       # GDPR, CCPA & India DPDPA Privacy Policy
+├── SECURITY.md                      # Vulnerability disclosure & keystore security policy
+├── TERMS.md                         # Commercial licensing & subscription terms
+├── server.ts                        # Express backend proxying Gemini & YouTube routes
+└── package.json                     # Project scripts & dependencies
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md) before opening an issue or submitting a pull request.
 
 ---
 
 ## ⚖️ Legal & Governance Documents
 
-- **[Attribution Notice (NOTICE)](NOTICE)**: Explicit Apache-2.0 Section 4(d) attribution declaration for `Copyright 2026 MemeForge-AI Studio Contributors` and lead architect `Gitinclo`.
-- **[Privacy Policy (PRIVACY.md)](PRIVACY.md)**: Transparent disclosure of local client-side processing, ephemeral AI inference, and compliance with GDPR, CCPA, and Indian DPDPA.
-- **[Terms & Conditions (TERMS.md)](TERMS.md)**: Rules of use, commercial licensing rights, subscription billing terms (Rs. 999/mo & Rs. 99,999/mo), user content ownership, and liability limitations.
-- **[Security Policy (SECURITY.md)](SECURITY.md)**: Private vulnerability disclosure reporting procedures and API/keystore safeguarding policies.
-- **[Contributing Guidelines (CONTRIBUTING.md)](CONTRIBUTING.md)**: Developer workflow, branching conventions, and test execution standards.
-- **[Code of Conduct (CODE_OF_CONDUCT.md)](CODE_OF_CONDUCT.md)**: Contributor Covenant v2.1 community standards.
-
-### Public Code Index & Reference Hub Compliance
-Public code indexing services and AI coding reference hubs (such as XERJ, Copus Hub, or similar platforms) that index this repository are welcome under the **Apache License, Version 2.0**, provided that:
-1. Full author attribution (`Gitinclo`) and the canonical repository URL (`https://github.com/Gitinclo/MemeForge-AI-LEO-Video-Studio`) are maintained.
-2. The `LICENSE` and `NOTICE` files are preserved in their entirety alongside any extracted reference passages.
-3. No code is relicensed under proprietary or conflicting terms.
-4. Per Section 6, indexing does not imply official endorsement or affiliation.
-
----
+- **[License (LICENSE)](LICENSE)**: Licensed under the **Apache License, Version 2.0**.
+- **[Attribution Notice (NOTICE)](NOTICE)**: Mandatory Apache-2.0 Section 4(d) attribution declaration for `Copyright 2026 MemeForge-AI Studio Contributors` and lead architect `Gitinclo`.
+- **[Privacy Policy (PRIVACY.md)](PRIVACY.md)**: Local client-side processing, ephemeral AI inference, and GDPR / CCPA / India DPDPA compliance.
+- **[Terms & Conditions (TERMS.md)](TERMS.md)**: Commercial licensing rights, subscription billing terms (Rs. 999/mo & Rs. 99,999/mo), and liability limitations.
+- **[Security Policy (SECURITY.md)](SECURITY.md)**: Private vulnerability disclosure procedures and API/keystore safeguarding policies.
+- **[Changelog (CHANGELOG.md)](CHANGELOG.md)**: Release history and architectural milestones.
 
 ## 📄 License
-Apache-2.0. Built with Google GenAI SDK and modern web standards.
+
+This project is licensed under the **Apache License 2.0** — see the [LICENSE](LICENSE) and [NOTICE](NOTICE) files for details.

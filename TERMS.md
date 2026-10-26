@@ -1,17 +1,19 @@
 # Terms and Conditions
 
-**Last Updated:** October 22, 2026  
-**Effective Date:** October 22, 2026
+**Last Updated:** October 25, 2026  
+**Effective Date:** October 25, 2026
 
 PLEASE READ THESE TERMS AND CONDITIONS CAREFULLY BEFORE USING MEMEFORGE AI, LEO VIDEO & CINEMA VFX STUDIO.
 
 ---
 
-## 1. Acceptance of Terms
+## 1. Acceptance of Terms & Age Eligibility (18+ / Adult Audience)
 
 By accessing, installing, downloading, or using the **MemeForge AI, LEO Video & Cinema VFX Studio** application, Progressive Web App (PWA), or associated mobile packages (collectively, the "Application" or "Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you must not access or use the Application.
 
-If you are using the Application on behalf of a company, organization, or legal entity (such as under the *Team / Company Enterprise License*), you represent and warrant that you have the authority to bind that entity to these Terms.
+* **Age Requirement (18+ / Target Audience 20–25+):** This Service—including its subscription billing, Web3/UPI marketplace, and Cinema VFX tools—is intended strictly for adult creators, developers, and professionals aged **18 years or older** (primarily serving users aged 20–25+). It is **not** intended for children under 13 or minors under 18.
+* **Optional Accounts & OAuth:** Core meme editing features operate locally without mandatory account creation. Optional account sign-in (such as Google OAuth 2.0 for YouTube publishing or Team Hub workspace seats) is governed by these Terms and, when using YouTube publishing, the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+* **Corporate Authority:** If you are using the Application on behalf of a company, organization, or legal entity (such as under the *Team / Company Enterprise License*), you represent and warrant that you have the legal authority to bind that entity to these Terms.
 
 ---
 
@@ -24,15 +26,15 @@ Subject to your compliance with these Terms, we grant you a personal, revocable,
 
 ---
 
-## 3. Subscription Tiers, Billing & Taxes
+## 3. Subscription Tiers, Optional Payments & Taxes
 
 ### A. Subscription Plans
 * **Free Creator Tier (Rs. 0):** Includes basic live canvas editing, 15-second maximum AI video generation, 720p HD resolution @ 30 FPS, shared eco GPU cluster, and up to 2 team seats.
 * **Individual Creator Pro (Rs. 999 / month):** Unlocks up to 100 hours maximum video duration, 4K Ultra resolution @ 120 FPS, 1 creator seat, priority 4-cluster dispatch, zero watermark, 0% marketplace transaction fee, and unlimited AI captions.
-* **Team / Company Enterprise (Rs. 99,999 / month):** Unlocks up to 50 team member seats with granular Role-Based Access Control (RBAC), dedicated 8-node GPU cluster with zero queue wait, unlimited 100-hour video generation in 4K/120fps or Cinema VFX 32K/1000fps modes, and official B2B tax invoicing with 18% Goods & Services Tax (GST) Input Tax Credit.
+* **Team / Company Enterprise (Rs. 99,999 / month):** Unlocks up to 50 team member seats with granular Role-Based Access Control (RBAC), 10 isolated workspaces, 50 TB Cloud Vault, dedicated 8-node GPU cluster with zero queue wait, unlimited 100-hour video generation in 4K/120fps or Cinema VFX 32K/1000fps modes, and official B2B tax invoicing with 18% Goods & Services Tax (GST) Input Tax Credit.
 
 ### B. Payment Methods & Renewals
-* Payments for Indian plans are processed via Unified Payments Interface (UPI AutoPay, Google Pay, PhonePe, Paytm, BHIM), Corporate NetBanking, or NEFT/RTGS mandate.
+* Optional payments for Indian plans are processed via Unified Payments Interface (UPI AutoPay, Google Pay, PhonePe, Paytm, BHIM), Corporate NetBanking, or NEFT/RTGS mandate. Marketplace items also support non-custodial Web3 transactions.
 * Subscriptions automatically renew on a monthly basis on the renewal date displayed in the Application, unless cancelled prior to the renewal date.
 
 ### C. Cancellation & Refund Policy
@@ -61,8 +63,8 @@ You represent and warrant that:
 You agree that you will **not** use the Application to:
 1. Generate, publish, or distribute content that is defamatory, obscene, pornographic, promoting violence, inciting hatred, or harassing individuals or groups.
 2. Create deceptive synthetic media ("deepfakes") intended to mislead the public, defame individuals, impersonate government officials, or commit fraud.
-3. Attempt to reverse-engineer, decompile, disassemble, or extract the source code or proprietary algorithms of the Application, except where permitted by applicable open-source licenses.
-4. Launch automated attacks, overload, or disrupt the distributed GPU compute cluster, 64-bit timebase pipeline, or server-side API proxies (e.g. attempting denial-of-service through abusive script queries).
+3. Attempt to reverse-engineer, decompile, disassemble, or extract the source code or proprietary algorithms of the Application, except where permitted by the Apache License 2.0.
+4. Launch automated attacks, overload, or disrupt the distributed GPU compute cluster, 64-bit timebase pipeline, or server-side API proxies.
 5. Exploit or bypass plan limits (e.g., circumvention of the 15-second Free duration cap or seat limits without an active paid subscription).
 
 ---
@@ -120,5 +122,6 @@ These Terms shall be governed by and construed in accordance with the laws of In
 
 If you have any questions or concerns regarding these Terms and Conditions, please contact us at:
 
-* **Email:** `lijogeorge1133@gmail.com`
-* **Project Maintainer:** MemeForge AI Studio Engineering Team
+* **Email:** `lijogeorge1133@gmail.com` / `creatergame31@gmail.com`
+* **Project Maintainer:** MemeForge AI Studio Engineering Team (`@Gitinclo`)
+* **Repository:** `https://github.com/Gitinclo/MemeForge-AI-Sora-Video-Studio`

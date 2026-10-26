@@ -41,7 +41,7 @@ Ensure you have the following installed locally:
 
 2. **Install Dependencies**:
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 3. **Configure Environment Variables**:
@@ -67,7 +67,7 @@ Ensure you have the following installed locally:
 We enforce a strict test-before-merge policy. Before submitting any changes, verify that the entire test suite and linter pass cleanly:
 
 ```bash
-# 1. Run all automated unit tests (23+ tests)
+# 1. Run all automated unit tests (52 tests across 9 suites)
 npm test
 
 # 2. Run TypeScript static type checking
@@ -77,7 +77,7 @@ npm run lint
 npm run build
 ```
 
-When introducing new core features or computational logic (e.g. audio encoders, timebase calculations, format converters), **always include corresponding unit tests** in `src/utils/*.test.ts`.
+When introducing new core features or computational logic (e.g. audio encoders, timebase calculations, format converters), **always include corresponding unit tests** in `src/utils/*.test.ts` or `tests/*.test.ts`.
 
 ---
 

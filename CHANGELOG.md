@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-10-25
+
+### Added
+- **2026 Multi-Model Video Engine Hub & Sora Migration Assistant**:
+  - Added `EngineHub2026Modal.tsx` and `src/utils/engineMigration2026.ts` supporting post-Sora ecosystem models (**Google Veo 3.1 Ultra**, **Magic Hour API**, **Runway Gen-4.5**, **Kling 2.5 Master**, **Luma Dream Machine Ray 3**, and **Wan 2.1 / HunyuanVideo 8K**).
+  - Drop-in Sora-2 payload migration adapter, cost comparison calculator, and `/api/magic-hour/generate` server endpoint.
+- **LEO 8K Diffusion Transformer (DiT) Synthesis Engine**:
+  - Added `src/utils/leo8kEngine.ts` implementing 3D spacetime patch tokenization, 4-stage cascaded resolution pipeline (`720p Base` → `2K Latent` → `4K Optical` → `8K Cinema Master [7680×4320]`), and `/api/leo/vlm-recaption` synthetic VLM dense re-captioning.
+- **YouTube Data API v3 Publisher & Gemini 4 Argon SEO**:
+  - Added `YouTubePublishTab.tsx` and `src/utils/youtubeUploadUtils.ts` with resumable binary chunked upload (`/api/youtube/upload`), Gemini 4 Argon viral title/description/tag synthesis (`/api/youtube/generate-metadata`), and Android Kotlin `WorkManager` code templates.
+- **In-App Legal & Attribution Viewer**:
+  - Expanded `LegalDocsModal.tsx` with full tabs for `Terms`, `Privacy`, `NOTICE` (Apache 2.0 Section 4(d)), and `LICENSE` (Apache 2.0).
+- **Expanded Automated Test Suite (52 Passing Tests)**:
+  - Added `engineMigration2026.test.ts`, `leo8kEngine.test.ts`, `youtubeUploadUtils.test.ts`, and `tests/meme-logic.test.ts`, bringing total automated test coverage to **52 passing tests across 9 suites**.
+
+### Security & CI
+- Removed hardcoded Firebase/Google API credentials (`firebase-applet-config.json`) and hardened `.gitignore` and `.env.example`.
+- Added `.npmrc` (`legacy-peer-deps=true`) and updated `.github/workflows/build.yml` to prevent npm Arborist `edgesOut` dependency graph errors in GitHub Actions runners.
+
+---
+
 ## [1.2.0] - 2026-10-22
 
 ### Added

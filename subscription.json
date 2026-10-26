@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GlobalSubscriptionPricingTiers",
+  "strategy": "Purchasing Power Parity (PPP)",
+  "referenceBasePriceUsd": 10.0,
+  "appStudioBasePriceUsd": {
+    "creatorPro": 19.0,
+    "teamEnterprise": 999.0
+  },
+  "indiaDedicatedAnchorInr": {
+    "creatorPro": 999,
+    "teamEnterprise": 99999
+  },
+  "references": [
+    {
+      "name": "datasets/ppp",
+      "url": "https://github.com/datasets/ppp",
+      "description": "World Bank Purchasing Power Parity dataset"
+    },
+    {
+      "name": "iosdevmax/ppp-pricing",
+      "url": "https://github.com/iosdevmax/ppp-pricing",
+      "description": "App Store & Google Play automated regional pricing tool"
+    },
+    {
+      "name": "zachleat/parity-purchasing-power-price",
+      "url": "https://github.com/zachleat/parity-purchasing-power-price",
+      "description": "Web component for dynamic client-side PPP pricing"
+    }
+  ],
+  "tiers": {
+    "tier_1": {
+      "name": "Tier 1: Full Price",
+      "discountPercent": 0,
+      "referencePriceUsd": 10.0,
+      "proPriceUsd": 19.0,
+      "enterprisePriceUsd": 999.0,
+      "description": "High purchasing power & stable currencies",
+      "countries": [
+        "Australia",
+        "Austria",
+        "Belgium",
+        "Canada",
+        "Denmark",
+        "Finland",
+        "France",
+        "Germany",
+        "Iceland",
+        "Ireland",
+        "Israel",
+        "Japan",
+        "Luxembourg",
+        "Netherlands",
+        "New Zealand",
+        "Norway",
+        "Qatar",
+        "Singapore",
+        "South Korea",
+        "Sweden",
+        "Switzerland",
+        "United Arab Emirates",
+        "United Kingdom",
+        "United States"
+      ]
+    },
+    "tier_2": {
+      "name": "Tier 2: Regional Discount",
+      "discountPercent": 25,
+      "discountRange": "20% - 30%",
+      "referencePriceUsd": 7.5,
+      "proPriceUsd": 14.25,
+      "enterprisePriceUsd": 749.0,
+      "description": "Strong economies with slightly lower disposable income or regional price sensitivity",
+      "countries": [
+        "Bahamas",
+        "Chile",
+        "Costa Rica",
+        "Croatia",
+        "Czechia",
+        "Estonia",
+        "Greece",
+        "Hungary",
+        "Italy",
+        "Kuwait",
+        "Latvia",
+        "Lithuania",
+        "Malaysia",
+        "Panama",
+        "Poland",
+        "Portugal",
+        "Saudi Arabia",
+        "Slovakia",
+        "Slovenia",
+        "Spain",
+        "Taiwan",
+        "Uruguay"
+      ]
+    },
+    "tier_3": {
+      "name": "Tier 3: Emerging Markets",
+      "discountPercent": 50,
+      "discountRange": "40% - 60%",
+      "referencePriceUsd": 5.0,
+      "proPriceUsd": 9.5,
+      "enterprisePriceUsd": 499.0,
+      "description": "Developing economies with growing tech sectors but lower currency strength",
+      "countries": [
+        "Albania",
+        "Armenia",
+        "Azerbaijan",
+        "Brazil",
+        "Bulgaria",
+        "China",
+        "Colombia",
+        "Dominican Republic",
+        "Ecuador",
+        "Georgia",
+        "Indonesia",
+        "Kazakhstan",
+        "Maldives",
+        "Mexico",
+        "Moldova",
+        "Montenegro",
+        "Peru",
+        "Philippines",
+        "Romania",
+        "Serbia",
+        "South Africa",
+        "Thailand",
+        "Turkey",
+        "Vietnam"
+      ]
+    },
+    "tier_4": {
+      "name": "Tier 4: Parity Pricing",
+      "discountPercent": 75,
+      "discountRange": "70% - 85%",
+      "referencePriceUsd": 2.5,
+      "proPriceUsd": 4.75,
+      "enterprisePriceUsd": 199.0,
+      "indiaSpecialInr": {
+        "pro": 999,
+        "enterprise": 99999
+      },
+      "description": "High volume, price-sensitive markets where localized micro-pricing is essential for conversion",
+      "countries": [
+        "Afghanistan",
+        "Algeria",
+        "Bangladesh",
+        "Bolivia",
+        "Cambodia",
+        "Cameroon",
+        "Egypt",
+        "Ghana",
+        "India",
+        "Jordan",
+        "Kenya",
+        "Kyrgyzstan",
+        "Morocco",
+        "Nepal",
+        "Nigeria",
+        "Pakistan",
+        "Sri Lanka",
+        "Tunisia",
+        "Ukraine",
+        "Uzbekistan",
+        "Zambia"
+      ]
+    }
+  },
+  "security": {
+    "antiExploitation": true,
+    "cardBinValidation": true,
+    "geoIpVerification": true,
+    "fallbackTier": "tier_1"
+  }
+}

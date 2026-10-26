@@ -72,7 +72,7 @@ export default function App() {
   const [isAndroidModalOpen, setIsAndroidModalOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [subscriptionModalCategory, setSubscriptionModalCategory] = useState<'individual' | 'company'>('individual');
-  const [legalDocModal, setLegalDocModal] = useState<'terms' | 'privacy' | null>(null);
+  const [legalDocModal, setLegalDocModal] = useState<'terms' | 'privacy' | 'security' | 'notice' | 'license' | null>(null);
 
   // User Subscription State (persisted in localStorage, default Free)
   const [subscription, setSubscription] = useState<UserSubscription>(() => {
@@ -1382,6 +1382,30 @@ export default function App() {
             className="hover:text-cyan-300 underline underline-offset-2 transition-colors cursor-pointer"
           >
             Privacy Policy
+          </button>
+          <span className="text-slate-700">•</span>
+          <button
+            type="button"
+            onClick={() => setLegalDocModal('security')}
+            className="hover:text-rose-300 underline underline-offset-2 transition-colors cursor-pointer"
+          >
+            Security Policy
+          </button>
+          <span className="text-slate-700">•</span>
+          <button
+            type="button"
+            onClick={() => setLegalDocModal('notice')}
+            className="hover:text-purple-300 underline underline-offset-2 transition-colors cursor-pointer"
+          >
+            NOTICE (Attribution)
+          </button>
+          <span className="text-slate-700">•</span>
+          <button
+            type="button"
+            onClick={() => setLegalDocModal('license')}
+            className="hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
+          >
+            Apache 2.0 License
           </button>
         </div>
       </footer>

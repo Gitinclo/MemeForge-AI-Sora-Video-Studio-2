@@ -24,6 +24,9 @@ test-results/
 .env.production.local
 .env*.local
 !.env.example
+firebase-applet-config.local.json
+google-services.json
+service-account*.json
 
 # Logs
 logs/
