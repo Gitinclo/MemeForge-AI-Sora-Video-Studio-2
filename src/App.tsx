@@ -14,6 +14,7 @@ import { PWAInstallButton } from './components/PWAInstallButton';
 import { CinemaVfxEditorTab } from './components/CinemaVfxEditorTab';
 import { YouTubePublishTab } from './components/YouTubePublishTab';
 import { LegalDocsModal } from './components/LegalDocsModal';
+import { EnterpriseB2BTab } from './components/EnterpriseB2BTab';
 import { MEME_TEMPLATES } from './data/memeTemplates';
 import { UserSubscription } from './types/subscription';
 import {
@@ -66,7 +67,7 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'meme' | 'leo' | 'cinema' | 'youtube' | 'team' | 'market'>('meme');
+  const [activeTab, setActiveTab] = useState<'meme' | 'leo' | 'cinema' | 'youtube' | 'team' | 'market' | 'enterprise'>('meme');
   const [canvasSnapshotForYouTube, setCanvasSnapshotForYouTube] = useState<string | null>(null);
   const [leoPublishContext, setLeoPublishContext] = useState<{ title: string; prompt: string } | null>(null);
   const [isAndroidModalOpen, setIsAndroidModalOpen] = useState(false);
@@ -95,47 +96,106 @@ export default function App() {
   const [currentImageSrc, setCurrentImageSrc] = useState<string>(defaultTemplate.svgDataUri);
   const [activeTemplate, setActiveTemplate] = useState<MemeTemplate | null>(defaultTemplate);
 
-  const [textLayers, setTextLayers] = useState<TextLayer[]>([
-    {
-      id: 'top_1',
-      text: defaultTemplate.defaultTopText,
-      x: 50,
-      y: 12,
-      fontSize: 44,
-      fontFamily: 'Impact',
-      textColor: '#ffffff',
-      outlineColor: '#000000',
-      outlineWidth: 4,
-      backgroundColor: 'transparent',
-      textAlign: 'center',
-      isUppercase: true,
-      isBold: true,
-      shadow: true,
-      rotation: 0,
-    },
-    {
-      id: 'bottom_1',
-      text: defaultTemplate.defaultBottomText,
-      x: 50,
-      y: 88,
-      fontSize: 44,
-      fontFamily: 'Impact',
-      textColor: '#ffffff',
-      outlineColor: '#000000',
-      outlineWidth: 4,
-      backgroundColor: 'transparent',
-      textAlign: 'center',
-      isUppercase: true,
-      isBold: true,
-      shadow: true,
-      rotation: 0,
-    },
-  ]);
+  const [textLayers, setTextLayers] = useState<TextLayer[]>(() => {
+    try {
+      const saved = localStorage.getItem('memeforge_autosave_layout');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.textLayers) && parsed.textLayers.length > 0) {
+          return parsed.textLayers;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [
+      {
+        id: 'top_1',
+        text: defaultTemplate.defaultTopText,
+        x: 50,
+        y: 12,
+        fontSize: 44,
+        fontFamily: 'Impact',
+        textColor: '#ffffff',
+        outlineColor: '#000000',
+        outlineWidth: 4,
+        backgroundColor: 'transparent',
+        textAlign: 'center',
+        isUppercase: true,
+        isBold: true,
+        shadow: true,
+        rotation: 0,
+      },
+      {
+        id: 'bottom_1',
+        text: defaultTemplate.defaultBottomText,
+        x: 50,
+        y: 88,
+        fontSize: 44,
+        fontFamily: 'Impact',
+        textColor: '#ffffff',
+        outlineColor: '#000000',
+        outlineWidth: 4,
+        backgroundColor: 'transparent',
+        textAlign: 'center',
+        isUppercase: true,
+        isBold: true,
+        shadow: true,
+        rotation: 0,
+      },
+    ];
+  });
 
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>('top_1');
-  const [stickers, setStickers] = useState<MemeSticker[]>([]);
-  const [filter, setFilter] = useState<CanvasFilter>('none');
+  const [stickers, setStickers] = useState<MemeSticker[]>(() => {
+    try {
+      const saved = localStorage.getItem('memeforge_autosave_layout');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.stickers)) return parsed.stickers;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [];
+  });
+  const [filter, setFilter] = useState<CanvasFilter>(() => {
+    try {
+      const saved = localStorage.getItem('memeforge_autosave_layout');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.filter) return parsed.filter;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return 'none';
+  });
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
+
+  // Auto-save current meme layout (textLayers, stickers, filter) every 30 seconds
+  const latestLayoutRef = useRef({ textLayers, stickers, filter });
+  useEffect(() => {
+    latestLayoutRef.current = { textLayers, stickers, filter };
+  }, [textLayers, stickers, filter]);
+
+  useEffect(() => {
+    const autoSaveInterval = setInterval(() => {
+      try {
+        localStorage.setItem(
+          'memeforge_autosave_layout',
+          JSON.stringify({
+            ...latestLayoutRef.current,
+            savedAt: new Date().toISOString(),
+          })
+        );
+      } catch (e) {
+        console.error('Failed to auto-save meme layout:', e);
+      }
+    }, 30000);
+
+    return () => clearInterval(autoSaveInterval);
+  }, []);
 
   // Audio Layer state
   const [audioConfig, setAudioConfig] = useState<MemeAudioConfig>({
@@ -951,6 +1011,19 @@ export default function App() {
             <span className="hidden sm:inline">Team Hub</span>
             <span className="sm:hidden">Team</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('enterprise')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'enterprise'
+                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Enterprise B2B</span>
+            <span className="sm:hidden">B2B</span>
+          </button>
         </div>
 
         {/* Top Right Quick Actions */}
@@ -1301,6 +1374,16 @@ export default function App() {
             onOpenSubscriptionModal={(category?: 'individual' | 'company') => {
               setSubscriptionModalCategory(category || 'company');
               setIsSubscriptionModalOpen(true);
+            }}
+          />
+        )}
+
+        {/* TAB 6: ENTERPRISE B2B LORA TRAINING DASHBOARD & MODEL CONSISTENCY SANDBOX */}
+        {activeTab === 'enterprise' && (
+          <EnterpriseB2BTab
+            onDeployToLeoStudio={(title, prompt) => {
+              setLeoPublishContext({ title, prompt });
+              setActiveTab('leo');
             }}
           />
         )}
