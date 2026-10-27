@@ -9,6 +9,11 @@ import {
   SandboxPresetScenario,
   DatasetUploadImage,
 } from '../types/b2bEnterprise';
+import {
+  clampNumber,
+  createPrefixedId,
+  encodeSvgDataUri,
+} from './sharedCoreEngine';
 
 const PHASE_ORDER: LoraTrainingPhase[] = [
   'validating_dataset',
@@ -49,7 +54,7 @@ function createProductSvgDataUri(
     <text x="400" y="226" fill="#f8fafc" font-family="sans-serif" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="2">${label}</text>
     <text x="400" y="252" fill="${accentColor}" font-family="monospace" font-size="11" font-weight="600" text-anchor="middle">${sublabel}</text>
   </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  return encodeSvgDataUri(svg);
 }
 
 export function generateLossCurve(totalSteps: number, currentStep: number): LoraLossPoint[] {
@@ -360,10 +365,10 @@ export function perturbGpuClusterTelemetry(
     const isBusy = node.activeJobId ? runningJobIds.has(node.activeJobId) : false;
     const delta = ((idx % 2 === 0 ? 1 : -1) * ((Date.now() / 1000) % 3)) | 0;
     const utilizationPercent = isBusy
-      ? Math.min(99, Math.max(84, node.utilizationPercent + delta))
-      : Math.min(28, Math.max(12, 18 + delta));
+      ? clampNumber(node.utilizationPercent + delta, 84, 99)
+      : clampNumber(18 + delta, 12, 28);
     const powerDrawWatts = isBusy
-      ? Math.min(node.powerCapWatts, Math.max(580, node.powerDrawWatts + delta * 4))
+      ? clampNumber(node.powerDrawWatts + delta * 4, 580, node.powerCapWatts)
       : Math.max(160, Math.round(node.powerCapWatts * 0.25));
 
     return {
@@ -430,7 +435,7 @@ export function evaluateSandboxConsistency(params: {
     logoIntegrity >= 98.0 && geometrySilhouetteIou >= 97.5 && materialPurity >= 97.0;
 
   return {
-    id: `eval-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    id: createPrefixedId('eval'),
     jobId: job.id,
     modelName: job.modelName,
     triggerToken: job.triggerToken,

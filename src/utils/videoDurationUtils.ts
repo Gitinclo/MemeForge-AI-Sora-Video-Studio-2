@@ -1,3 +1,5 @@
+import { clampNumber } from './sharedCoreEngine';
+
 export const MAX_VIDEO_DURATION_HOURS = 100;
 export const MIN_VIDEO_DURATION_HOURS = 1 / 3600; // 1 second
 
@@ -66,8 +68,7 @@ export const DURATION_PRESETS: DurationPreset[] = [
  */
 export function clampVideoDuration(hours: number): number {
   if (isNaN(hours) || hours <= 0) return MIN_VIDEO_DURATION_HOURS;
-  if (hours > MAX_VIDEO_DURATION_HOURS) return MAX_VIDEO_DURATION_HOURS;
-  return hours;
+  return clampNumber(hours, MIN_VIDEO_DURATION_HOURS, MAX_VIDEO_DURATION_HOURS, MIN_VIDEO_DURATION_HOURS);
 }
 
 /**

@@ -2,6 +2,7 @@
  * YouTube Upload & Metadata Generation Utilities
  * Adheres to YouTube Data API v3 specifications and Google OAuth guidelines.
  */
+import { clampNumber, formatByteSize } from './sharedCoreEngine';
 
 export interface YouTubeMetadata {
   title: string;
@@ -101,20 +102,13 @@ export function calculateUploadProgress(
     return { percent: 0, formattedUploaded: '0 B', formattedTotal: '0 B' };
   }
 
-  const clampedUploaded = Math.min(Math.max(uploadedBytes, 0), totalBytes);
-  const percent = Math.min(100, Math.round((clampedUploaded / totalBytes) * 100));
-
-  const formatSize = (bytes: number): string => {
-    if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
-    return `${bytes} B`;
-  };
+  const clampedUploaded = clampNumber(uploadedBytes, 0, totalBytes, 0);
+  const percent = clampNumber(Math.round((clampedUploaded / totalBytes) * 100), 0, 100, 0);
 
   return {
     percent,
-    formattedUploaded: formatSize(clampedUploaded),
-    formattedTotal: formatSize(totalBytes),
+    formattedUploaded: formatByteSize(clampedUploaded),
+    formattedTotal: formatByteSize(totalBytes),
   };
 }
 

@@ -1,23 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MemeCanvas } from './components/MemeCanvas';
-import { MemeToolbar } from './components/MemeToolbar';
-import { MemeTemplateSelector } from './components/MemeTemplateSelector';
-import { MagicCaptionModal } from './components/MagicCaptionModal';
-import { LeoStudioTab } from './components/LeoStudioTab';
-import { TeamWorkspaceTab } from './components/TeamWorkspaceTab';
-import { AiDirectorChatModal } from './components/AiDirectorChatModal';
-import { AndroidPackageModal } from './components/AndroidPackageModal';
-import { MarketplaceTab } from './components/MarketplaceTab';
-import { MarketplaceCheckoutModal } from './components/MarketplaceCheckoutModal';
-import { SubscriptionModal } from './components/SubscriptionModal';
-import { PWAInstallButton } from './components/PWAInstallButton';
-import { CinemaVfxEditorTab } from './components/CinemaVfxEditorTab';
-import { YouTubePublishTab } from './components/YouTubePublishTab';
-import { LegalDocsModal } from './components/LegalDocsModal';
-import { EnterpriseB2BTab } from './components/EnterpriseB2BTab';
-import { MEME_TEMPLATES } from './data/memeTemplates';
-import { UserSubscription } from './types/subscription';
 import {
+  MemeCanvas,
+  MemeToolbar,
+  MemeTemplateSelector,
+  MagicCaptionModal,
+  LeoStudioTab,
+  TeamWorkspaceTab,
+  AiDirectorChatModal,
+  AndroidPackageModal,
+  MarketplaceTab,
+  MarketplaceCheckoutModal,
+  SubscriptionModal,
+  PWAInstallButton,
+  CinemaVfxEditorTab,
+  YouTubePublishTab,
+  LegalDocsModal,
+  EnterpriseB2BTab,
+} from './components';
+import { MEME_TEMPLATES } from './data/memeTemplates';
+import {
+  UserSubscription,
   TextLayer,
   MemeSticker,
   CanvasFilter,
@@ -28,13 +30,19 @@ import {
   TransactionRecord,
   MarketplaceListing,
   MemeAudioConfig,
-} from './types/meme';
+} from './types';
 import {
   MEME_AUDIO_EFFECTS,
   playMemeAudio,
   stopMemeAudio,
   exportMemeVideoWithAudio,
-} from './utils/memeAudioEngine';
+  MEMEFORGE_SUBSCRIPTION_STORAGE_KEY,
+  MEMEFORGE_AUTOSAVE_STORAGE_KEY,
+  MEMEFORGE_AUTOSAVE_INTERVAL_MS,
+  readStorageJson,
+  writeStorageJson,
+  triggerBrowserDownload,
+} from './utils';
 import {
   Wand2,
   Sparkles,
@@ -76,20 +84,14 @@ export default function App() {
   const [legalDocModal, setLegalDocModal] = useState<'terms' | 'privacy' | 'security' | 'notice' | 'license' | null>(null);
 
   // User Subscription State (persisted in localStorage, default Free)
-  const [subscription, setSubscription] = useState<UserSubscription>(() => {
-    try {
-      const saved = localStorage.getItem('memeforge_subscription');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return {
+  const [subscription, setSubscription] = useState<UserSubscription>(() =>
+    readStorageJson<UserSubscription>(MEMEFORGE_SUBSCRIPTION_STORAGE_KEY, {
       plan: 'free',
       isActive: true,
       country: 'IN',
       priceInr: 0,
-    };
-  });
+    })
+  );
 
   // Active Meme state
   const defaultTemplate = MEME_TEMPLATES[0];
@@ -97,16 +99,12 @@ export default function App() {
   const [activeTemplate, setActiveTemplate] = useState<MemeTemplate | null>(defaultTemplate);
 
   const [textLayers, setTextLayers] = useState<TextLayer[]>(() => {
-    try {
-      const saved = localStorage.getItem('memeforge_autosave_layout');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.textLayers) && parsed.textLayers.length > 0) {
-          return parsed.textLayers;
-        }
-      }
-    } catch (e) {
-      console.error(e);
+    const saved = readStorageJson<{ textLayers?: TextLayer[] } | null>(
+      MEMEFORGE_AUTOSAVE_STORAGE_KEY,
+      null
+    );
+    if (saved && Array.isArray(saved.textLayers) && saved.textLayers.length > 0) {
+      return saved.textLayers;
     }
     return [
       {
@@ -148,28 +146,18 @@ export default function App() {
 
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>('top_1');
   const [stickers, setStickers] = useState<MemeSticker[]>(() => {
-    try {
-      const saved = localStorage.getItem('memeforge_autosave_layout');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.stickers)) return parsed.stickers;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return [];
+    const saved = readStorageJson<{ stickers?: MemeSticker[] } | null>(
+      MEMEFORGE_AUTOSAVE_STORAGE_KEY,
+      null
+    );
+    return saved && Array.isArray(saved.stickers) ? saved.stickers : [];
   });
   const [filter, setFilter] = useState<CanvasFilter>(() => {
-    try {
-      const saved = localStorage.getItem('memeforge_autosave_layout');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.filter) return parsed.filter;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return 'none';
+    const saved = readStorageJson<{ filter?: CanvasFilter } | null>(
+      MEMEFORGE_AUTOSAVE_STORAGE_KEY,
+      null
+    );
+    return saved?.filter || 'none';
   });
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
 
@@ -181,18 +169,11 @@ export default function App() {
 
   useEffect(() => {
     const autoSaveInterval = setInterval(() => {
-      try {
-        localStorage.setItem(
-          'memeforge_autosave_layout',
-          JSON.stringify({
-            ...latestLayoutRef.current,
-            savedAt: new Date().toISOString(),
-          })
-        );
-      } catch (e) {
-        console.error('Failed to auto-save meme layout:', e);
-      }
-    }, 30000);
+      writeStorageJson(MEMEFORGE_AUTOSAVE_STORAGE_KEY, {
+        ...latestLayoutRef.current,
+        savedAt: new Date().toISOString(),
+      });
+    }, MEMEFORGE_AUTOSAVE_INTERVAL_MS);
 
     return () => clearInterval(autoSaveInterval);
   }, []);
@@ -771,12 +752,7 @@ export default function App() {
     // Restore interactive selection box
     (canvas as any).restoreInteractiveSelection?.();
 
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = `meme_${Date.now()}.${format}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    triggerBrowserDownload(dataUrl, `meme_${Date.now()}.${format}`);
   };
 
   // BUG FIX: Pristine clipboard copy without selection rectangle baked in
@@ -863,14 +839,7 @@ export default function App() {
       // Restore interactive selection box
       (canvas as any).restoreInteractiveSelection?.();
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `meme_video_${Date.now()}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      triggerBrowserDownload(blob, `meme_video_${Date.now()}.webm`, 2000);
 
       setIsExportingVideo(false);
       setExportProgress(null);
@@ -1433,11 +1402,7 @@ export default function App() {
         initialPlanCategory={subscriptionModalCategory}
         onUpdateSubscription={(updated) => {
           setSubscription(updated);
-          try {
-            localStorage.setItem('memeforge_subscription', JSON.stringify(updated));
-          } catch (e) {
-            console.error(e);
-          }
+          writeStorageJson(MEMEFORGE_SUBSCRIPTION_STORAGE_KEY, updated);
         }}
       />
 

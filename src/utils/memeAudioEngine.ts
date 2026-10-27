@@ -1,23 +1,7 @@
-export interface MemeAudioEffect {
-  id: string;
-  name: string;
-  category: 'Classic' | 'Reactions' | 'Dramatic' | 'Gaming' | 'Funny';
-  emoji: string;
-  durationSec: number;
-  description: string;
-  type: 'builtin' | 'custom';
-  tags: string[];
-}
+import { MemeAudioEffect, MemeAudioConfig } from '../types/meme';
+import { clampNumber, triggerBrowserDownload } from './sharedCoreEngine';
 
-export interface MemeAudioConfig {
-  selectedEffectId: string | null;
-  volume: number; // 0.0 - 1.0
-  playbackRate: number; // 0.5 - 2.0
-  loop: boolean;
-  delaySec: number; // 0.0 - 3.0
-  customAudioUrl?: string;
-  customAudioName?: string;
-}
+export type { MemeAudioEffect, MemeAudioConfig };
 
 export const MEME_AUDIO_EFFECTS: MemeAudioEffect[] = [
   {
@@ -209,7 +193,7 @@ export function encodeWAV(
     for (let ch = 0; ch < numChannels; ch++) {
       let sample = channels[ch][i];
       // Hard clipping limiter
-      sample = Math.max(-1, Math.min(1, sample));
+      sample = clampNumber(sample, -1, 1, 0);
       // Convert to 16-bit signed integer (-32768 to 32767)
       const int16 = sample < 0 ? sample * 32768 : sample * 32767;
       view.setInt16(offset, Math.floor(int16), true);
@@ -604,8 +588,8 @@ export async function playMemeAudio(
   // If custom uploaded audio
   if (config.customAudioUrl) {
     const audio = new Audio(config.customAudioUrl);
-    audio.volume = Math.max(0, Math.min(1, volume));
-    audio.playbackRate = Math.max(0.25, Math.min(4, rate));
+    audio.volume = clampNumber(volume, 0, 1, 1);
+    audio.playbackRate = clampNumber(rate, 0.25, 4, 1);
     audio.loop = isLoop;
     audio.onended = () => {
       onEnded?.();
@@ -697,14 +681,7 @@ export function downloadMemeAudioTrack(
   fileName = 'meme_sound.wav'
 ): void {
   const blob = getMemeAudioWavBlob(config);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  triggerBrowserDownload(blob, fileName, 1000);
 }
 
 // Export Video Meme (.webm or .mp4) with embedded Audio Track

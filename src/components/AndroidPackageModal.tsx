@@ -24,8 +24,9 @@ import {
   getKotlinDependenciesCode,
   getAndroidManifestCode,
 } from '../utils/youtubeUploadUtils';
+import { triggerBrowserDownload } from '../utils/sharedCoreEngine';
 
-interface AndroidPackageModalProps {
+export interface AndroidPackageModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -92,14 +93,7 @@ export const AndroidPackageModal: React.FC<AndroidPackageModalProps> = ({
 
   const downloadFile = (filename: string, content: string, type: string) => {
     const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    triggerBrowserDownload(blob, filename);
   };
 
   const handleDownloadBuildScript = () => {

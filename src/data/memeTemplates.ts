@@ -1,8 +1,9 @@
 import { MemeTemplate, MemeSticker, MemeMood } from '../types/meme';
+import { encodeSvgDataUri } from '../utils/sharedCoreEngine';
 
 // Helpers to generate SVG data URIs for meme templates so they never 404
 function svgToUri(svg: string): string {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg.trim())}`;
+  return encodeSvgDataUri(svg);
 }
 
 export const MEME_TEMPLATES: MemeTemplate[] = [
