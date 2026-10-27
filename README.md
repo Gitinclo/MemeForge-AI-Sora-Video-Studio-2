@@ -3,11 +3,14 @@
 > **Next-generation multimedia studio combining multimodal AI meme creation, LEO/Veo video synthesis up to 100 hours, native Android (APK & AAB) packaging, localized India UPI & Enterprise subscriptions, and a cinema/VFX-grade editing architecture capable of 32K (32000×32000), 1000 FPS, 32-bit float color, and 192 kHz Fairlight audio.**
 
 [![Gemini](https://img.shields.io/badge/Gemini%20API-3.8%20Flash%20%7C%204%20Argon-7c3aed?style=for-the-badge&logo=google)](https://ai.google.dev/)
+[![Original AI Studio Applet](https://img.shields.io/badge/AI%20Studio%20Origin-4d0cb3f2--610b--4819--909e--06de8300dcfb-4f46e5?style=for-the-badge&logo=google)](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
 [![Cinema VFX 32K](https://img.shields.io/badge/Cinema%20VFX-32K%20%7C%201000%20FPS-06b6d4?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)
 [![Fairlight Audio](https://img.shields.io/badge/Fairlight%20Audio-192%20kHz%20%7C%2032--bit%20Float-10b981?style=for-the-badge)](https://web.dev/web-audio-basics/)
 [![Android APK & AAB](https://img.shields.io/badge/Android-APK%20%26%20AAB%20Offline%20Build-f59e0b?style=for-the-badge&logo=android)](https://developer.android.com/)
 [![UPI & Subscriptions](https://img.shields.io/badge/India%20Billing-Rs.%20999%20%7C%20Rs.%2099%2C999-6366f1?style=for-the-badge)](https://www.npci.org.in/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+
+> **Original AI Studio Applet**: [`https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true`](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
 
 ---
 
@@ -190,7 +193,8 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **73-test suite across 11 test suites** covering:
+Runs the full **72-test suite across 11 test suites** covering:
+- **Shared Core Engine (`sharedCoreEngine.test.ts`)**: Numeric clamping, UTF-8 SVG data URI encoding, byte size formatting, prefixed ID generation, `localStorage` JSON adapters, and Original AI Studio Applet (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) URL resolution.
 - **Enterprise B2B LoRA & Model Sandbox Engine (`b2bEnterpriseEngine.test.ts`)**: 5-stage LoRA training progression, ETA formatting, H100/B200 GPU telemetry perturbation, `{{token}}` prompt injection, and physical invariant consistency scoring.
 - **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
 - **2026 Multi-Model Engine Migration (`engineMigration2026.test.ts`)**: Sora-2 to Magic Hour / Veo 3.1 / Kling 2.5 / Runway Gen-4.5 / Luma Ray 3 payload adapters and pricing calculators.
@@ -299,10 +303,12 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── MemeTemplateSelector.tsx
 │   │   ├── MemeToolbar.tsx
 │   │   ├── ModelSandbox.tsx         # Pre-deployment LoRA consistency sandbox & invariant verifier
+│   │   ├── OriginalAppletBridgeModal.tsx # Canonical AI Studio Applet (4d0cb3f2) launcher & state bridge
 │   │   ├── PWAInstallButton.tsx
 │   │   ├── SubscriptionModal.tsx    # India UPI & 4-Tier Global PPP subscription manager
 │   │   ├── TeamWorkspaceTab.tsx
-│   │   └── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
+│   │   ├── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
+│   │   └── index.ts                 # Centralized component barrel export
 │   ├── data/
 │   │   ├── memeTemplates.ts
 │   │   └── memeStylePresets.ts
@@ -310,8 +316,10 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── b2bEnterprise.ts
 │   │   ├── cinemaEngine.ts
 │   │   ├── meme.ts
-│   │   └── subscription.ts
+│   │   ├── subscription.ts
+│   │   └── index.ts                 # Centralized domain type barrel export
 │   ├── utils/
+│   │   ├── sharedCoreEngine.ts      # Shared core helpers, storage adapters & Original Applet URL engine
 │   │   ├── b2bEnterpriseEngine.ts
 │   │   ├── cinemaEngine.ts
 │   │   ├── engineMigration2026.ts
@@ -320,7 +328,8 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── pppPricingUtils.ts
 │   │   ├── subscriptionUtils.ts
 │   │   ├── videoDurationUtils.ts
-│   │   └── youtubeUploadUtils.ts
+│   │   ├── youtubeUploadUtils.ts
+│   │   └── index.ts                 # Centralized engine & utility barrel export
 │   ├── App.tsx                      # Main studio orchestrator + 30s localStorage auto-save
 │   └── main.tsx
 ├── .env.example                     # Safe environment variable template (zero secrets)

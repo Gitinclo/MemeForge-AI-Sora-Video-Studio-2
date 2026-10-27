@@ -8,6 +8,10 @@ import {
   readStorageJson,
   writeStorageJson,
   MEMEFORGE_AUTOSAVE_INTERVAL_MS,
+  ORIGINAL_AISTUDIO_APPLET_ID,
+  ORIGINAL_AISTUDIO_APPLET_URL,
+  extractAiStudioAppletId,
+  buildAiStudioAppletUrl,
 } from './sharedCoreEngine';
 
 test('clampNumber clamps within inclusive bounds and handles NaN', () => {
@@ -44,4 +48,17 @@ test('readStorageJson and writeStorageJson safely handle non-browser Node enviro
   assert.deepEqual(readStorageJson('test_key', fallback), fallback);
   assert.equal(writeStorageJson('test_key', fallback), false);
   assert.equal(MEMEFORGE_AUTOSAVE_INTERVAL_MS, 30000);
+});
+
+test('extractAiStudioAppletId and buildAiStudioAppletUrl resolve original applet URL accurately', () => {
+  assert.equal(
+     extractAiStudioAppletId('https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true'),
+    ORIGINAL_AISTUDIO_APPLET_ID
+  );
+  assert.equal(extractAiStudioAppletId('invalid-input'), null);
+  assert.equal(buildAiStudioAppletUrl(ORIGINAL_AISTUDIO_APPLET_ID, true), ORIGINAL_AISTUDIO_APPLET_URL);
+  assert.equal(
+    buildAiStudioAppletUrl(ORIGINAL_AISTUDIO_APPLET_URL, false),
+    'https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb'
+  );
 });

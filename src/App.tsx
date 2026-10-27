@@ -16,6 +16,7 @@ import {
   YouTubePublishTab,
   LegalDocsModal,
   EnterpriseB2BTab,
+  OriginalAppletBridgeModal,
 } from './components';
 import { MEME_TEMPLATES } from './data/memeTemplates';
 import {
@@ -39,6 +40,7 @@ import {
   MEMEFORGE_SUBSCRIPTION_STORAGE_KEY,
   MEMEFORGE_AUTOSAVE_STORAGE_KEY,
   MEMEFORGE_AUTOSAVE_INTERVAL_MS,
+  ORIGINAL_AISTUDIO_APPLET_URL,
   readStorageJson,
   writeStorageJson,
   triggerBrowserDownload,
@@ -79,6 +81,7 @@ export default function App() {
   const [canvasSnapshotForYouTube, setCanvasSnapshotForYouTube] = useState<string | null>(null);
   const [leoPublishContext, setLeoPublishContext] = useState<{ title: string; prompt: string } | null>(null);
   const [isAndroidModalOpen, setIsAndroidModalOpen] = useState(false);
+  const [isOriginalBridgeOpen, setIsOriginalBridgeOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [subscriptionModalCategory, setSubscriptionModalCategory] = useState<'individual' | 'company'>('individual');
   const [legalDocModal, setLegalDocModal] = useState<'terms' | 'privacy' | 'security' | 'notice' | 'license' | null>(null);
@@ -1062,6 +1065,16 @@ export default function App() {
             <span className="md:hidden">APK / AAB</span>
           </button>
 
+          {/* Original AI Studio Applet Bridge Button */}
+          <button
+            onClick={() => setIsOriginalBridgeOpen(true)}
+            className="p-2 sm:px-3 sm:py-2 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200 rounded-xl border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all"
+            title="Open Original AI Studio Applet Bridge (4d0cb3f2-610b-4819-909e-06de8300dcfb)"
+          >
+            <Share2 className="w-4 h-4 text-indigo-400" />
+            <span className="hidden xl:inline">Original Studio</span>
+          </button>
+
           {/* AI Co-Director / Comedy writer button */}
           <button
             onClick={() => setIsDirectorChatOpen(true)}
@@ -1413,11 +1426,40 @@ export default function App() {
         initialDoc={legalDocModal || 'terms'}
       />
 
+      {/* Original AI Studio Applet Bridge Modal */}
+      <OriginalAppletBridgeModal
+        isOpen={isOriginalBridgeOpen}
+        onClose={() => setIsOriginalBridgeOpen(false)}
+        currentLayout={{ textLayers, stickers, filter }}
+        onImportLayout={(imported) => {
+          if (Array.isArray(imported.textLayers) && imported.textLayers.length > 0) {
+            setTextLayers(imported.textLayers);
+            setSelectedLayerId(imported.textLayers[0]?.id || null);
+          }
+          if (Array.isArray(imported.stickers)) {
+            setStickers(imported.stickers);
+          }
+          if (imported.filter) {
+            setFilter(imported.filter);
+          }
+        }}
+      />
+
       {/* Footer info bar */}
       <footer className="mt-auto border-t border-slate-900 bg-slate-950 px-4 py-3 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
           <span>MemeForge AI Studio • 2026 Edition</span>
+          <span className="text-slate-700">•</span>
+          <a
+            href={ORIGINAL_AISTUDIO_APPLET_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors font-semibold"
+            title="Open Original AI Studio Applet (4d0cb3f2-610b-4819-909e-06de8300dcfb)"
+          >
+            Original Applet (4d0cb3f2)
+          </a>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-slate-500">
           <span className="hidden md:inline">

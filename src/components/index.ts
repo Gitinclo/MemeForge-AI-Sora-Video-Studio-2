@@ -22,6 +22,7 @@ export { MemeStylePresetPicker } from './MemeStylePresetPicker';
 export { MemeTemplateSelector } from './MemeTemplateSelector';
 export { MemeToolbar } from './MemeToolbar';
 export { ModelSandbox } from './ModelSandbox';
+export { OriginalAppletBridgeModal } from './OriginalAppletBridgeModal';
 export { PWAInstallButton } from './PWAInstallButton';
 export { SubscriptionModal } from './SubscriptionModal';
 export { TeamWorkspaceTab } from './TeamWorkspaceTab';

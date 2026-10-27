@@ -9,6 +9,34 @@ export const MEMEFORGE_SUBSCRIPTION_STORAGE_KEY = 'memeforge_subscription';
 export const MEMEFORGE_AUTOSAVE_STORAGE_KEY = 'memeforge_autosave_layout';
 export const MEMEFORGE_AUTOSAVE_INTERVAL_MS = 30_000;
 
+export const ORIGINAL_AISTUDIO_APPLET_ID = '4d0cb3f2-610b-4819-909e-06de8300dcfb';
+export const ORIGINAL_AISTUDIO_APPLET_URL =
+  'https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true';
+
+/**
+ * Extracts a UUID applet identifier from an AI Studio URL or raw UUID string.
+ */
+export function extractAiStudioAppletId(input: string): string | null {
+  if (!input || typeof input !== 'string') return null;
+  const trimmed = input.trim();
+  const uuidMatch = trimmed.match(
+    /([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/
+  );
+  return uuidMatch ? uuidMatch[1].toLowerCase() : null;
+}
+
+/**
+ * Builds a canonical AI Studio Applet URL with optional ?fullscreenApplet=true query parameter.
+ */
+export function buildAiStudioAppletUrl(
+  appletIdOrUrl: string = ORIGINAL_AISTUDIO_APPLET_ID,
+  fullscreen: boolean = true
+): string {
+  const extractedId = extractAiStudioAppletId(appletIdOrUrl) || ORIGINAL_AISTUDIO_APPLET_ID;
+  const baseUrl = `https://ai.studio/apps/${extractedId}`;
+  return fullscreen ? `${baseUrl}?fullscreenApplet=true` : baseUrl;
+}
+
 /**
  * Clamps a numeric value within an inclusive [min, max] range.
  * Returns fallback (defaults to min) if value is NaN or non-finite.
