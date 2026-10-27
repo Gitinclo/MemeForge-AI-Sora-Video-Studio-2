@@ -1,18 +1,19 @@
 # Terms and Conditions
 
-**Last Updated:** October 25, 2026  
-**Effective Date:** October 25, 2026
+**Last Updated:** October 27, 2026  
+**Effective Date:** October 27, 2026
 
 PLEASE READ THESE TERMS AND CONDITIONS CAREFULLY BEFORE USING MEMEFORGE AI, LEO VIDEO & CINEMA VFX STUDIO.
 
 ---
 
-## 1. Acceptance of Terms & Age Eligibility (18+ / Adult Audience)
+## 1. Acceptance of Terms, Age Eligibility & User Account Responsibility
 
 By accessing, installing, downloading, or using the **MemeForge AI, LEO Video & Cinema VFX Studio** application, Progressive Web App (PWA), or associated mobile packages (collectively, the "Application" or "Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you must not access or use the Application.
 
-* **Age Requirement (18+ / Target Audience 20–25+):** This Service—including its subscription billing, Web3/UPI marketplace, and Cinema VFX tools—is intended strictly for adult creators, developers, and professionals aged **18 years or older** (primarily serving users aged 20–25+). It is **not** intended for children under 13 or minors under 18.
+* **Age Requirement (18+ / Target Audience 20–25+):** This Service—including its subscription billing, Web3/UPI marketplace, Enterprise B2B LoRA Studio, and Cinema VFX tools—is intended strictly for adult creators, developers, and professionals aged **18 years or older** (primarily serving users aged 20–25+). It is **not** intended for children under 13 or minors under 18.
 * **Optional Accounts & OAuth:** Core meme editing features operate locally without mandatory account creation. Optional account sign-in (such as Google OAuth 2.0 for YouTube publishing or Team Hub workspace seats) is governed by these Terms and, when using YouTube publishing, the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+* **User Responsibility for Account & Password Security:** You are solely responsible for maintaining the confidentiality and security of your account credentials, passwords, API tokens, OAuth sessions, and non-custodial Web3 wallets, and you accept full legal responsibility for all activities, renders, uploads, and transactions that occur under your account. You agree to notify us immediately at `lijogeorge1133@gmail.com` if you suspect any unauthorized use of your account.
 * **Corporate Authority:** If you are using the Application on behalf of a company, organization, or legal entity (such as under the *Team / Company Enterprise License*), you represent and warrant that you have the legal authority to bind that entity to these Terms.
 
 ---
@@ -104,11 +105,11 @@ You agree to defend, indemnify, and hold harmless the Application maintainers, d
 
 ---
 
-## 10. Modifications & Termination
+## 10. Modifications, Account Termination & Right to Ban Without Notice
 
 We reserve the right to modify these Terms at any time. When modifications occur, we will update the "Last Updated" date at the top of these Terms. Continued use of the Application after changes are posted constitutes your acceptance of the revised Terms.
 
-We may terminate or suspend your access to the Application immediately, without prior notice or liability, if you breach these Terms.
+* **Account Termination & Right to Ban Without Notice:** We reserve the absolute right, in our sole discretion, to suspend, ban, restrict, or permanently terminate your account, workspace seats, custom LoRA endpoints, and access to the Application **immediately and without prior notice or liability** if you breach these Terms, violate our Acceptable Use Policy, attempt PPP pricing/payment fraud, or engage in abusive or unlawful conduct. Upon such termination for cause, your right to use the Service will cease immediately, and you shall not be entitled to any refund or compensation for denying service.
 
 ---
 

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-10-27
+
+### Added
+- **Enterprise B2B Real-Time LoRA Training Status Dashboard (`LoraTrainingStatusDashboard.tsx`)**:
+  - Live 5-stage pipeline progression (`validating_dataset` → `extracting_latents` → `training_lora` → `compiling_safetensors` → `completed`), step counters, ETA countdowns, and 20-point loss convergence sparklines.
+  - Dedicated GPU cluster telemetry across **NVIDIA H100 SXM5 (80GB)** and **NVIDIA B200 Blackwell (192GB)** nodes tracking compute utilization (`%`), allocated VRAM (`GB`), NVLink bandwidth (`GB/s`), power draw (`W`), and junction temperature (`°C`).
+  - Operator pipeline controls for Pause, Resume, Boost (`+250 Steps`), Abort, and direct checkpoint handoff to the Model Sandbox.
+- **Enterprise Model Consistency Sandbox (`ModelSandbox.tsx`)**:
+  - 5 preset stress-test scenarios (*Studio Macro Travertine Pedestal*, *High Motion & Particle Drift*, *Dramatic Low-Key Chiaroscuro*, *Lifestyle Hands Interaction*, and *Micro-Typography & Foil Stamp*).
+  - Custom prompt editor with automatic `{{token}}` trigger injection, cinema lens rig selector (`50mm Macro Probe Lens`, `35mm Prime Arri Alexa`, `85mm Anamorphic Panavision`, `FPV Dynamic Drone Orbit`), aspect ratio switcher (`16:9`, `9:16`, `1:1`, `21:9`), and diffusion sampling step tuning.
+  - Physical invariant scorecards verifying **Logo & Kerning Integrity %** ($\ge 98.0\%$), **Geometry Silhouette IoU %** ($\ge 97.5\%$), and **BRDF Material Purity %** ($\ge 97.0\%$), interactive diagnostic overlays, SOC 2 JSON compliance report export, and one-click deployment to LEO Video Studio.
+- **10–20 Image Custom LoRA Product Model Builder (`EnterpriseProductModelBuilderModal.tsx`)**:
+  - Interactive multi-angle calibration dataset uploader and hyperparameter configurator (`Rank 32 / 64 / 128`, `BF16` / `FP8-Dynamic`).
+- **Global Purchasing Power Parity (PPP) Subscription Engine (`subscription.md`, `subscription.json`, `pppPricingUtils.ts`)**:
+  - World Bank GNI per-capita 4-tier global pricing model across 90+ countries with Card BIN + MaxMind GeoIP anti-exploitation validation.
+- **30-Second Automatic Layout Persistence (`src/App.tsx`)**:
+  - Automatic `localStorage` auto-save (`memeforge_autosave_layout`) every 30 seconds preserving active meme text layers, stickers, and filters across browser refreshes.
+- **Expanded Automated Test Suite (73 Passing Tests across 11 Suites)**:
+  - Added `src/utils/b2bEnterpriseEngine.test.ts` and `src/utils/pppPricingUtils.test.ts`.
+
+---
+
 ## [1.3.0] - 2026-10-25
 
 ### Added

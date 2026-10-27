@@ -67,7 +67,7 @@ Ensure you have the following installed locally:
 We enforce a strict test-before-merge policy. Before submitting any changes, verify that the entire test suite and linter pass cleanly:
 
 ```bash
-# 1. Run all automated unit tests (52 tests across 9 suites)
+# 1. Run all automated unit tests (73 tests across 11 suites)
 npm test
 
 # 2. Run TypeScript static type checking

@@ -15,12 +15,13 @@
 
 **MemeForge AI Studio** is a unified viral creation and cinema-grade production workstation. It bridges the gap between viral internet culture and high-end film engineering:
 
-1. **Meme Studio**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, 16+ trending vector templates, sticker overlays, and synthesized multi-track audio layers.
+1. **Meme Studio & Auto-Save**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and **automatic 30-second `localStorage` layout persistence** (`memeforge_autosave_layout`).
 2. **Marketplace & Crypto/UPI**: Buy and sell viral templates using Web3 wallets (ETH, SOL, MEME, USDT) or Indian UPI AutoPay (GPay, PhonePe, Paytm, BHIM).
-3. **LEO / Veo 3 Video Studio**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K Ultra with camera motion controls and prompt expansion.
-4. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
-5. **Team Hub & Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted asset vaults, and localized Indian subscriptions (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise).
-6. **Mobile Packaging & Security**: Offline Android APK & AAB bundle generation with strict security policies protecting developer credentials.
+3. **LEO / Veo 3 Video Studio**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra with camera motion controls and prompt expansion.
+4. **Enterprise B2B LoRA Studio & Model Sandbox**: Train custom product digital-twin LoRA weights from 10–20 calibration images, monitor live **LoRA Training Status & NVIDIA H100/B200 GPU Telemetry**, and verify physical invariants (Logo Integrity, Silhouette IoU, BRDF Material Purity) in the **Model Consistency Sandbox** before wide-scale deployment.
+5. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
+6. **Team Hub & Global PPP Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted 50 TB asset vaults, localized Indian plans (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise), and **4-Tier Global Purchasing Power Parity (PPP)** pricing across 90+ countries.
+7. **Mobile Packaging & Security**: Offline Android APK & AAB bundle generation with strict security policies protecting developer credentials.
 
 ---
 
@@ -139,6 +140,20 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 
 ---
 
+### 7. 🏢 Enterprise B2B LoRA Training Dashboard & Model Consistency Sandbox
+- **10–20 Image Product Digital-Twin LoRA Builder (`EnterpriseProductModelBuilderModal.tsx`)**:
+  - Calibrate custom product LoRA weights (`Rank 32 / 64 / 128`, `BF16` or `FP8-Dynamic`) with unique trigger tokens (e.g., `aurum_flacon_v4`, `vanguard_chrono_x1`).
+- **Real-Time LoRA Training Status Dashboard (`LoraTrainingStatusDashboard.tsx`)**:
+  - Live 5-stage pipeline tracking (`validating_dataset` → `extracting_latents` → `training_lora` → `compiling_safetensors` → `completed`), step progress counters, dynamic ETA countdowns, and loss convergence sparklines.
+  - **Dedicated GPU Cluster Telemetry**: Real-time monitoring across **NVIDIA H100 SXM5 (80GB)** and **NVIDIA B200 Blackwell (192GB)** nodes, displaying compute utilization (`%`), allocated VRAM (`GB`), NVLink interconnect bandwidth (`GB/s`), power draw (`W`), and junction temperatures (`°C`).
+  - Interactive operator controls to Pause, Resume, Boost (`+250 Steps`), Abort, or open checkpoints directly in the Model Sandbox.
+- **Model Consistency Sandbox (`ModelSandbox.tsx`)**:
+  - **5 Enterprise Preset Stress-Test Scenarios**: *Studio Macro Travertine Pedestal*, *High Motion & Particle Drift*, *Dramatic Low-Key Chiaroscuro*, *Lifestyle Hands Interaction*, and *Micro-Typography & Foil Stamp*.
+  - **Custom Optics & Prompt Controls**: Automatic `{{token}}` trigger injection, cinema lens rig selector (`50mm Macro Probe Lens`, `35mm Prime Arri Alexa`, `85mm Anamorphic Panavision`, `FPV Dynamic Drone Orbit`), aspect ratios (`16:9`, `9:16`, `1:1`, `21:9`), and diffusion sampling step tuning (`20–60 steps`).
+  - **Physical Invariant Scorecards & Inspection Viewport**: Verifies **Logo & Kerning Integrity %** ($\ge 98.0\%$), **Geometry Silhouette IoU %** ($\ge 97.5\%$), and **BRDF Material Purity %** ($\ge 97.0\%$) with interactive viewport overlays (*Color Render*, *Logo Mask*, *Silhouette IoU*, *BRDF Materials*), downloadable SOC 2 JSON compliance reports, and one-click deployment to LEO Video Studio.
+
+---
+
 ## 🛠️ Getting Started (Local Development)
 
 ### Prerequisites
@@ -175,7 +190,9 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **52-test suite across 9 test suites** covering:
+Runs the full **73-test suite across 11 test suites** covering:
+- **Enterprise B2B LoRA & Model Sandbox Engine (`b2bEnterpriseEngine.test.ts`)**: 5-stage LoRA training progression, ETA formatting, H100/B200 GPU telemetry perturbation, `{{token}}` prompt injection, and physical invariant consistency scoring.
+- **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
 - **2026 Multi-Model Engine Migration (`engineMigration2026.test.ts`)**: Sora-2 to Magic Hour / Veo 3.1 / Kling 2.5 / Runway Gen-4.5 / Luma Ray 3 payload adapters and pricing calculators.
 - **LEO 8K DiT Engine (`leo8kEngine.test.ts`)**: 3D spacetime patch tokenization, cascaded 720p→2K→4K→8K pipeline stages, and VLM dense re-captioning.
 - **Audio Synthesis & WAV Encoding (`memeAudioEngine.test.ts`)**: PCM stereo synthesis and 44-byte RIFF WAVE header encoding.
@@ -268,8 +285,11 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── AndroidPackageModal.tsx
 │   │   ├── CinemaVfxEditorTab.tsx   # 32K, 1000 FPS, ACES 2.0 & 192 kHz Cinema VFX Workstation
 │   │   ├── EngineHub2026Modal.tsx   # 2026 Multi-Model Video Hub & Sora Migration Assistant
+│   │   ├── EnterpriseB2BTab.tsx     # Enterprise B2B LoRA Suite, Training Telemetry & Model Sandbox
+│   │   ├── EnterpriseProductModelBuilderModal.tsx # 10–20 Image Custom LoRA Calibration Builder
 │   │   ├── LegalDocsModal.tsx       # In-app Terms, Privacy, NOTICE & Apache 2.0 License viewer
 │   │   ├── LeoStudioTab.tsx         # LEO 8K DiT Video Studio (up to 100-hour duration)
+│   │   ├── LoraTrainingStatusDashboard.tsx # Real-time LoRA training progress, ETA & H100/B200 telemetry
 │   │   ├── MagicCaptionModal.tsx    # Gemini Vision multimodal auto-captioning
 │   │   ├── MarketplaceCheckoutModal.tsx
 │   │   ├── MarketplaceTab.tsx
@@ -278,26 +298,30 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── MemeStylePresetPicker.tsx
 │   │   ├── MemeTemplateSelector.tsx
 │   │   ├── MemeToolbar.tsx
+│   │   ├── ModelSandbox.tsx         # Pre-deployment LoRA consistency sandbox & invariant verifier
 │   │   ├── PWAInstallButton.tsx
-│   │   ├── SubscriptionModal.tsx
+│   │   ├── SubscriptionModal.tsx    # India UPI & 4-Tier Global PPP subscription manager
 │   │   ├── TeamWorkspaceTab.tsx
 │   │   └── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
 │   ├── data/
 │   │   ├── memeTemplates.ts
 │   │   └── memeStylePresets.ts
 │   ├── types/
+│   │   ├── b2bEnterprise.ts
 │   │   ├── cinemaEngine.ts
 │   │   ├── meme.ts
 │   │   └── subscription.ts
 │   ├── utils/
+│   │   ├── b2bEnterpriseEngine.ts
 │   │   ├── cinemaEngine.ts
 │   │   ├── engineMigration2026.ts
 │   │   ├── leo8kEngine.ts
 │   │   ├── memeAudioEngine.ts
+│   │   ├── pppPricingUtils.ts
 │   │   ├── subscriptionUtils.ts
 │   │   ├── videoDurationUtils.ts
 │   │   └── youtubeUploadUtils.ts
-│   ├── App.tsx
+│   ├── App.tsx                      # Main studio orchestrator + 30s localStorage auto-save
 │   └── main.tsx
 ├── .env.example                     # Safe environment variable template (zero secrets)
 ├── .gitignore                       # Git ignore rules including keystores & local secrets
@@ -310,6 +334,8 @@ All AI model and publishing operations are handled server-side via Express route
 ├── PRIVACY.md                       # GDPR, CCPA & India DPDPA Privacy Policy
 ├── SECURITY.md                      # Vulnerability disclosure & keystore security policy
 ├── TERMS.md                         # Commercial licensing & subscription terms
+├── subscription.json                # Machine-readable Global PPP pricing tiers & BIN rules
+├── subscription.md                  # Global Purchasing Power Parity (PPP) pricing documentation
 ├── server.ts                        # Express backend proxying Gemini & YouTube routes
 └── package.json                     # Project scripts & dependencies
 ```
@@ -326,9 +352,10 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and ou
 
 - **[License (LICENSE)](LICENSE)**: Licensed under the **Apache License, Version 2.0**.
 - **[Attribution Notice (NOTICE)](NOTICE)**: Mandatory Apache-2.0 Section 4(d) attribution declaration for `Copyright 2026 MemeForge-AI Studio Contributors` and lead architect `Gitinclo`.
-- **[Privacy Policy (PRIVACY.md)](PRIVACY.md)**: Local client-side processing, ephemeral AI inference, and GDPR / CCPA / India DPDPA compliance.
-- **[Terms & Conditions (TERMS.md)](TERMS.md)**: Commercial licensing rights, subscription billing terms (Rs. 999/mo & Rs. 99,999/mo), and liability limitations.
-- **[Security Policy (SECURITY.md)](SECURITY.md)**: Private vulnerability disclosure procedures and API/keystore safeguarding policies.
+- **[Privacy Policy (PRIVACY.md)](PRIVACY.md)**: Account data retention, Right to be Forgotten (GDPR), password/credential encryption, payment processor disclosures, and India DPDPA compliance.
+- **[Terms & Conditions (TERMS.md)](TERMS.md)**: Account security responsibilities, right to terminate/ban abusive accounts without notice, commercial licensing rights, and subscription billing terms.
+- **[Security Policy (SECURITY.md)](SECURITY.md)**: Private vulnerability disclosure procedures via GitHub Security Advisories or maintainer email (`lijogeorge1133@gmail.com` / `creatergame31@gmail.com`).
+- **[Global PPP Pricing (subscription.md)](subscription.md)**: World Bank GNI Purchasing Power Parity 4-tier global pricing model (`subscription.md` & `subscription.json`).
 - **[Changelog (CHANGELOG.md)](CHANGELOG.md)**: Release history and architectural milestones.
 
 ## 📄 License

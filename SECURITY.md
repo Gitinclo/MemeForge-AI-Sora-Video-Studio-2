@@ -6,10 +6,11 @@ We actively maintain and provide security updates for the following versions of 
 
 | Version | Supported          | Security Status |
 | :------ | :----------------- | :-------------- |
-| 1.3.x   | :white_check_mark: | Current Release (Active Support) |
+| 1.4.x   | :white_check_mark: | Current Release (Active Support) |
+| 1.3.x   | :white_check_mark: | Security & Maintenance Updates |
 | 1.2.x   | :white_check_mark: | Security & Maintenance Updates |
 | 1.1.x   | :white_check_mark: | Critical Security Fixes Only |
-| < 1.1.0 | :x:                | Deprecated (Upgrade to 1.3.x) |
+| < 1.1.0 | :x:                | Deprecated (Upgrade to 1.4.x) |
 
 ---
 

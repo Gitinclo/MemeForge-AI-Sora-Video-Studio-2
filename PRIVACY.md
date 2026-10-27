@@ -1,7 +1,7 @@
 # Privacy Policy
 
-**Last Updated:** October 25, 2026  
-**Effective Date:** October 25, 2026
+**Last Updated:** October 27, 2026  
+**Effective Date:** October 27, 2026
 
 Welcome to **MemeForge AI, LEO Video & Cinema VFX Studio** ("we," "our," "us," or the "Application"). We are committed to protecting your personal privacy, transparently disclosing our data practices, and giving you complete control over your content.
 
@@ -13,16 +13,16 @@ This Privacy Policy explains how we collect, use, disclose, and safeguard your i
 
 ### A. Optional Account, OAuth & Subscription Information
 * **No Mandatory Account for Core Studio:** You can use the core Meme Canvas, typography editor, and audio synthesizer locally without creating an account.
-* **Optional Account & Subscription Billing:** When you choose to create a workspace profile or activate a subscription (such as *India Creator Pro* at Rs. 999/month or *Team / Company Enterprise* at Rs. 99,999/month), we collect your name, business email address, company name, and Indian Goods and Services Tax Identification Number (GSTIN) solely to generate official B2B tax invoices and allocate workspace seats.
+* **Optional Account & Subscription Billing:** When you choose to create a workspace profile or activate a subscription (such as *India Creator Pro* at Rs. 999/month, *Team / Company Enterprise* at Rs. 99,999/month, or *Global Purchasing Power Parity (PPP)* tiers), we collect your name, username, business email address, company name, and Indian Goods and Services Tax Identification Number (GSTIN) solely to generate official B2B tax invoices and allocate workspace seats.
 * **Google OAuth 2.0 & YouTube Data API v3:** If you choose to connect your Google account to publish videos directly to YouTube, client-side OAuth access tokens (`youtube.upload` scope) are passed ephemerally via `Authorization: Bearer` headers to initiate resumable uploads on the YouTube Data API v3. We do not store long-lived Google passwords or raw refresh tokens in plain text.
 * **Team Collaborative Data:** If you invite team collaborators via the Team Hub, we store their email address, display name, and assigned role permissions (e.g., Director, VFX Artist, Editor, Sound Designer, Reviewer).
-* **Payment Identifiers (UPI & NetBanking):** For optional transactions processed via Indian Unified Payments Interface (UPI) or Corporate NetBanking, we record public Virtual Payment Addresses (VPA / UPI IDs) and Unique Transaction Reference (UTR) numbers. **We never collect, store, or have access to your bank passwords, debit/credit card PINs, or UPI MPINs.**
+* **Payment Identifiers & Anti-Arbitrage Verification (UPI, NetBanking & Global PPP):** For optional transactions processed via Indian Unified Payments Interface (UPI), Corporate NetBanking, or international payment processors, we share necessary transaction metadata with payment processors and verify card issuing country BINs (first 6 digits) and IP geolocation solely to prevent cross-border PPP pricing fraud. **We never collect, store, or have access to your bank passwords, full credit/debit card numbers, CVVs, or UPI MPINs.**
 * **Web3 Public Addresses:** When connecting a non-custodial Web3 wallet (e.g., Ethereum or Solana), we only read your public wallet address. We never request or store private keys or seed phrases.
 * **User Prompts & Feedback:** Text prompts entered for meme caption generation, AI co-director brainstorming, and video scene descriptions.
 
-### B. Uploaded Images, Canvas Media & Audio
-* **Local In-Browser Processing:** By default, images you upload, text layers you compose, and synthetic audio you generate are rendered locally within your device's browser using HTML5 Canvas, WebGL/WebGPU, and the Web Audio API.
-* **AI Multimodal Vision Inference:** When you invoke **AI Magic Caption** or **Gemini 4 Argon YouTube Metadata**, the image frame is transmitted securely over HTTPS to our server-side API proxy (`/api/magic-captions` or `/api/youtube/generate-metadata`) and forwarded to the Google Gemini API strictly to analyze scene context and propose captions/metadata. **We do not retain, store, sell, or use your uploaded images to train AI models.**
+### B. Uploaded Images, Canvas Media, Enterprise LoRA Calibration & Audio
+* **Local In-Browser Processing & 30-Second Auto-Save:** By default, images you upload, text layers you compose, stickers, and synthetic audio you generate are rendered locally within your device's browser using HTML5 Canvas, WebGL/WebGPU, and the Web Audio API, and auto-saved every 30 seconds to local browser storage (`memeforge_autosave_layout`).
+* **AI Multimodal Vision Inference & Enterprise B2B LoRA Models:** When you invoke **AI Magic Caption** or **Gemini 4 Argon YouTube Metadata**, the image frame is transmitted securely over HTTPS to our server-side API proxy (`/api/magic-captions` or `/api/youtube/generate-metadata`) and forwarded to the Google Gemini API strictly to analyze scene context and propose captions/metadata. When Enterprise B2B clients calibrate isolated product LoRA models (`10–20 calibration images`), weights are isolated strictly to that tenant's dedicated workspace. **We never sell or use your uploaded images to train public foundation models.**
 
 ### C. Automatically Collected Technical Data
 * **Device & Environment Data:** Browser type and version, operating system, display resolution, GPU hardware vendor, and WebGPU compute capabilities (used to determine proxy rendering such as 1/16 Super Proxy for 32K projects).
@@ -35,19 +35,21 @@ This Privacy Policy explains how we collect, use, disclose, and safeguard your i
 
 We use the collected information for the following legitimate business purposes:
 1. **Provide and Maintain the Studio:** To render the live typography canvas, execute 64-bit frame-accurate video timelines, calculate 32K/1000 FPS bandwidth telemetry, and process multi-track 192 kHz Fairlight audio.
-2. **AI Multimodal Services:** To propose contextual captions, synthesize dense 8K VLM prompts, generate high-CTR YouTube metadata, and power the AI comedy co-director.
-3. **Billing, GST Invoicing & Seat Allocation:** To verify optional UPI AutoPay and Corporate NetBanking payments, allocate multi-seat quotas (up to 50 seats for Enterprise plans), and issue tax-compliant 18% GST invoices.
+2. **AI Multimodal & Enterprise LoRA Services:** To propose contextual captions, synthesize dense 8K VLM prompts, verify physical invariants in the Model Consistency Sandbox, generate high-CTR YouTube metadata, and power the AI comedy co-director.
+3. **Billing, GST Invoicing & Seat Allocation:** To verify optional UPI AutoPay, Corporate NetBanking, and Global PPP payments, allocate multi-seat quotas (up to 50 seats for Enterprise plans), and issue tax-compliant 18% GST invoices.
 4. **Offline Android Compilation:** To compile standalone `.apk` and `.aab` packages for offline device sideloading and internal testing.
 5. **Customer Support & Security:** To investigate technical errors, prevent denial-of-service exploits, and respond to inquiries.
 
 ---
 
-## 3. Data Storage, Retention & Security
+## 3. Data Storage, Retention & Password/Credential Security
 
-* **Client-First Storage Architecture:** All project files, text layers, audio stems, and timeline snapshots reside locally on your device unless explicitly shared with your team workspace.
-* **Server-Side Ephemeral Processing:** Video prompts and multimodal image frames processed by our backend API routes are handled strictly in volatile memory (RAM) during the lifecycle of the HTTP request and are discarded immediately upon completion.
-* **Security Safeguards:**
-  * All communications between the client and our servers use TLS 1.3 encryption.
+* **Data Retention Policy:**
+  * **Client-First Local Data:** Local project drafts, auto-saved layouts (`memeforge_autosave_layout`), text layers, audio stems, and timeline snapshots remain on your local device until you clear your browser storage.
+  * **Account & Workspace Records:** If you create a workspace account, we retain your account profile (email, username, workspace role) only for as long as your account remains active. Upon account deletion or a "Right to be Forgotten" request, all personal account data and custom LoRA weights are permanently purged within **30 days** (except statutory B2B tax invoices required to be retained under Indian GST / accounting laws).
+  * **Server-Side Ephemeral Processing:** Video prompts and multimodal image frames processed by our backend API routes are handled strictly in volatile memory (RAM) during the lifecycle of the HTTP request and are discarded immediately upon completion.
+* **Password & Credential Security:**
+  * **Industry-Standard Encryption:** We protect all user accounts, credentials, and authentication tokens using industry-standard encryption, including **TLS 1.3** encryption in transit, **AES-256 GCM** encryption at rest for Enterprise Cloud Vault assets, and salted cryptographic hashing / OAuth 2.0 token isolation so plain-text passwords are never stored or exposed.
   * Direct-to-store automated publishing is disabled across all studio tiers to prevent developer keystore leaks and credential exploitation.
   * API keys and secrets are maintained strictly in server-side environment variables and are never exposed to client-side code.
 
