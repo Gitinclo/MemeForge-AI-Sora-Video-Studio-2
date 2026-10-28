@@ -72,6 +72,20 @@ export interface MagicCaption {
 
 export type CanvasFilter = 'none' | 'deep_fried' | 'vintage' | 'high_contrast' | 'cyberpunk' | 'grayscale' | 'warm';
 
+export type MemeTransitionType = 'none' | 'fade' | 'slide' | 'dissolve';
+
+export type SlideDirection = 'left' | 'right' | 'up' | 'down';
+
+export type TransitionEasing = 'linear' | 'easeInOutCubic' | 'easeOutQuart';
+
+export interface MemeTransitionConfig {
+  type: MemeTransitionType;
+  durationMs: number;
+  easing: TransitionEasing;
+  slideDirection: SlideDirection;
+  dissolveGridSize: number;
+}
+
 export interface VideoProjectSpec {
   title: string;
   prompt: string;

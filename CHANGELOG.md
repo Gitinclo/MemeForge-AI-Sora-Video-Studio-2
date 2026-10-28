@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-10-28
+
+### Added & Improved
+- **Target Environment: Linux Host for a Text-to-Video AI Model (`LinuxDitClusterHostModal.tsx`, `linuxDitClusterEngine.ts`, `linuxDitClusterEngine.test.ts`)**:
+  - **1. GPU Cluster Orchestration**: Supports **Kubernetes** for containers alongside **Slurm** (`sbatch` / Pyxis / Enroot) or **Ray** (`KubeRay` / `TorchTrainer`) across thousands of GPUs (`NVIDIA Blackwell B200 SXM`, `NVIDIA Hopper H100 SXM5`, `NVIDIA H100 vGPU`, or `AMD Instinct MI300X` with the **AMD ROCm** compute stack).
+  - **2. High-Speed Networking**: Configures **GPUDirect RDMA** (`nvidia-peermem` / `mlx5_ib`) over **InfiniBand NDR 400Gb/s** or **RoCEv2 400Gb/s** plus **SR-IOV** Virtual Functions (`sriov_numvfs` and `SriovNetworkNodePolicy`) so containers reach NICs at near-native line rate without CPU bounce buffers.
+  - **3. Fast Storage & GPUDirect Storage (GDS)**: Includes client mounts for **Lustre** (`/mnt/lustre/dit_video_datasets`), **IBM Spectrum Scale / GPFS** (`/gpfs/dit_video_datasets`), and **WekaFS** (`/mnt/wekafs/dit_video_datasets`) paired with **GPUDirect Storage** (`nvidia-fs` and `/etc/cufile.json`) to DMA 4K/high-FPS video datasets straight from NVMe to GPU HBM.
+  - **4. Memory Management**: Calculates **1 GB** and **2 MB HugePages** (`default_hugepagesz=1G hugepagesz=1G`, `hugetlbfs`) to slash TLB address-translation overhead when loading multi-hundred-GB DiT weights, and strictly disables swap (`swapoff -a`, `vm.swappiness=0`).
+  - **5. Minimal Footprint & Recommended Linux Host OS**: Profiles **NVIDIA Base Command OS**, **Ubuntu Server 24.04 LTS (HPC Kernel)**, **RHEL 9 HPC**, **Bottlerocket**, **RHEL CoreOS**, and **Alpine Minimal** with headless `multi-user.target` enforcement, a 5-pillar readiness audit, and downloadable Linux-only host bootstrap scripts (`provision-linux-dit-host.sh`), Kubernetes SR-IOV + GDS manifests (`k8s-dit-sriov-gds-cluster.yaml`), and multi-node Slurm/Ray job scripts.
+- **MemeCanvas Transition Effect Library (`MemeCanvas.tsx`, `memeTransitionEngine.ts`, `memeTransitionEngine.test.ts`)**:
+  - Implemented smooth hardware-accelerated 2D canvas transitions when switching between meme templates or custom image backgrounds with **Fade** (cross-fade), **Slide** (directional push), **Dissolve** (deterministic 8×8 Bayer-like block matrix reveal), and **Instant (None)** presets, adjustable duration (`200ms`–`1200ms`), and a manual **Replay** button.
+- **YouTube Mobile & Native App Handoff Protection (`YouTubePublishTab.tsx`, `youtubeUploadUtils.ts`)**:
+  - Added `isSimulatedYouTubeVideoId`, `resolveYouTubeWatchBehavior`, and `formatMetadataClipboardBlock` so simulated demo uploads never open a broken `"This video is unavailable"` YouTube URL on mobile devices, while real OAuth 2.0 uploads open directly on YouTube and local MP4/WebM exports support 1-tap metadata copy + native YouTube Studio handoff.
+- **Expanded Automated Test Suite (96 Passing Tests across 15 Suites)**:
+  - Added `src/utils/linuxDitClusterEngine.test.ts` and `src/utils/memeTransitionEngine.test.ts` plus new mobile YouTube handoff unit tests in `src/utils/youtubeUploadUtils.test.ts`.
+
+---
+
 ## [1.5.0] - 2026-10-28
 
 ### Added & Improved

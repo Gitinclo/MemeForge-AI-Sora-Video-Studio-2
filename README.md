@@ -18,9 +18,9 @@
 
 **MemeForge AI Studio** is a unified viral creation and cinema-grade production workstation. It bridges the gap between viral internet culture and high-end film engineering:
 
-1. **Meme Studio & Auto-Save**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and **automatic 30-second `localStorage` layout persistence** (`memeforge_autosave_layout`).
+1. **Meme Studio, Transition FX & Auto-Save**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, **animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`)**, 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and **automatic 30-second `localStorage` layout persistence** (`memeforge_autosave_layout`).
 2. **Marketplace & Crypto/UPI**: Buy and sell viral templates using Web3 wallets (ETH, SOL, MEME, USDT) or Indian UPI AutoPay (GPay, PhonePe, Paytm, BHIM).
-3. **LEO / Veo 3 Video Studio**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra with camera motion controls and prompt expansion.
+3. **LEO / Veo 3 Video Studio & Linux DiT Cluster Host Architect**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra, backed by both a **Single-GPU Vibe Coder Guide** (Docker + FastAPI + S3/R2) and a **Multi-Thousand-GPU Linux DiT Cluster Host Workbench** (Kubernetes + Slurm/Ray, InfiniBand/RoCE RDMA + SR-IOV, Lustre/GPFS/WekaFS + GPUDirect Storage, 1GB/2MB HugePages, and zero-swap minimal Linux).
 4. **Enterprise B2B LoRA Studio & Model Sandbox**: Train custom product digital-twin LoRA weights from 10–20 calibration images, monitor live **LoRA Training Status & NVIDIA H100/B200 GPU Telemetry**, and verify physical invariants (Logo Integrity, Silhouette IoU, BRDF Material Purity) in the **Model Consistency Sandbox** before wide-scale deployment.
 5. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
 6. **Team Hub & Global PPP Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted 50 TB asset vaults, localized Indian plans (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise), and **4-Tier Global Purchasing Power Parity (PPP)** pricing across 90+ countries.
@@ -101,9 +101,11 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 
 ---
 
-### 3. 🪄 AI Magic Caption & Meme Canvas Editor
+### 3. 🪄 AI Magic Caption, Transition FX & Meme Canvas Editor
 - **Multimodal Gemini Vision**: Analyzes facial expressions, scene geometry, and cultural irony directly from images.
 - **5 Viral Caption Tones**: Sarcastic & Witty, Gen Z / Brainrot, Tech & Developer, Corporate Workplace, and Wholesome.
+- **Template & Background Transition Effect Library (`MemeCanvas.tsx` & `memeTransitionEngine.ts`)**:
+  - Animates transitions between meme templates or custom uploaded backgrounds using **Fade** (smooth opacity cross-fade), **Slide** (directional push slide), **Dissolve** (deterministic 8×8 Bayer-like block matrix reveal), or **Instant (None)** presets with adjustable duration (`200ms`–`1200ms`), cubic ease-out interpolation, and a manual **Replay** trigger.
 - **Interactive Typography**: Classic Impact, Anton, Bebas Neue, Montserrat Bold, Orbitron, and Permanent Marker.
 - **Direct Canvas Repositioning**: Freeform click-and-drag positioning, multi-layer stacking, and customizable outline strokes (0–10px) with glow effects.
 - **Audio SFX Synthesizer**: In-app Web Audio API synthesizer generating iconic sound effects (MLG Airhorn, Sad Violin, Vine Boom, Wow, Record Scratch, Bruh, Dramatic Dun Dun Dun) with synchronized WebM video exports.
@@ -183,6 +185,23 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
     1. `Dockerfile` based on `nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04` with Python 3.11, PyTorch CUDA, Diffusers, FastAPI, and Boto3.
     2. `app.py` exposing `POST /generate` (5-minute timeout, MP4 export, S3/R2 upload & CDN link) and the follow-up `GET /health` endpoint + per-job GPU VRAM memory logging (`torch.cuda.max_memory_allocated()`).
 
+### 10. 🖧 Target Environment: Linux Host for a Text-to-Video AI Model (DiT Cluster) (`LinuxDitClusterHostModal.tsx` & `linuxDitClusterEngine.ts`)
+- **1. GPU Cluster Orchestration**:
+  - Supports **Kubernetes** for container orchestration paired with **Slurm** (`sbatch` / Pyxis / Enroot) or **Ray** (`KubeRay` / `TorchTrainer`) to split multi-node Diffusion Transformer (DiT) work across thousands of GPUs (**NVIDIA Blackwell B200 SXM**, **NVIDIA Hopper H100 SXM5**, **NVIDIA H100 vGPU**, or **AMD Instinct MI300X**).
+  - Configures low-latency GPU access through **NVIDIA Data Center / vGPU drivers** or the **AMD ROCm** compute stack (`amdgpu` kernel driver, HIP, RCCL) on AMD hardware.
+- **2. High-Speed Networking (RDMA & SR-IOV)**:
+  - Supports **GPUDirect RDMA** (`nvidia-peermem`, `mlx5_ib`) over **InfiniBand NDR 400Gb/s** or **RoCEv2 400Gb/s** so GPUs on separate nodes read and write each other's HBM directly without CPU bounce buffers.
+  - Provisions **SR-IOV** Virtual Functions (`sriov_numvfs` and `SriovNetworkNodePolicy`) so containers and VMs access NICs at near-native line rate.
+- **3. Fast Storage (Parallel File Systems & GPUDirect Storage)**:
+  - Configures parallel file system client mounts for **Lustre** (`/mnt/lustre/dit_video_datasets`), **IBM Spectrum Scale (GPFS)** (`/gpfs/dit_video_datasets`), and **WekaFS** (`/mnt/wekafs/dit_video_datasets`) rather than local disk alone.
+  - Enables **GPUDirect Storage (GDS)** (`nvidia-fs` and `/etc/cufile.json`) to DMA 4K and high-frame-rate video datasets straight from NVMe drives into GPU memory, bypassing CPU and system RAM.
+- **4. Memory Management (HugePages & Zero Swap)**:
+  - Calculates **1 GB** and **2 MB HugePages** (`default_hugepagesz=1G hugepagesz=1G`, `hugetlbfs`, and Kubernetes `hugepages-1Gi` / `hugepages-2Mi` resources) to slash TLB address-translation overhead when loading multi-hundred-GB DiT model weights.
+  - Strictly disables swap (`swapoff -a`, `/etc/fstab` cleanup, `vm.swappiness=0`) so disk paging never stalls synchronous generation.
+- **5. Minimal Footprint & Recommended Linux Distributions**:
+  - Profiles HPC-tuned **NVIDIA Base Command OS**, **Ubuntu Server 24.04 LTS (HPC Kernel)**, and **RHEL 9 HPC**, alongside immutable minimal Linux distributions (**Bottlerocket**, **RHEL CoreOS**, and **Alpine Minimal**) running a headless monolithic Linux kernel (`systemctl set-default multi-user.target`) with GUIs, unused drivers, and non-essential daemons stripped out.
+  - Generates downloadable Linux-only artifacts: `provision-linux-dit-host.sh`, `k8s-dit-sriov-gds-cluster.yaml`, and multi-node Slurm/Ray job scripts.
+
 ---
 
 ## 🛠️ Getting Started (Local Development)
@@ -221,9 +240,11 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **78-test suite across 13 test suites** covering:
+Runs the full **96-test suite across 15 test suites** covering:
 - **Shared Core Engine (`sharedCoreEngine.test.ts`)**: Numeric clamping, UTF-8 SVG data URI encoding, byte size formatting, prefixed ID generation, `localStorage` JSON adapters, and Original AI Studio Applet (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) URL resolution.
 - **Vibe Coder Sora-Style App Guide Engine (`vibeCoderGuideEngine.test.ts`)**: 24 GB vs. 40–80 GB GPU VRAM evaluation, `enable_model_cpu_offload()` compatibility, Amazon S3 vs. Cloudflare R2 CDN cost calculation, and Ubuntu CUDA `Dockerfile` + FastAPI `/generate` (5m timeout) & `/health` code generation.
+- **Linux Host for Text-to-Video DiT Cluster Engine (`linuxDitClusterEngine.test.ts`)**: HPC & minimal Linux OS catalog validation, NVIDIA vGPU / bare-metal & AMD ROCm stack checks, Lustre/GPFS/WekaFS + GPUDirect Storage evaluation, 1GB/2MB HugePages TLB calculation, 5-pillar readiness auditing, and Linux-only bootstrap / Kubernetes SR-IOV / Slurm & Ray script generation.
+- **MemeCanvas Transition FX Engine (`memeTransitionEngine.test.ts`)**: Cubic ease-out interpolation, `fade`, `slide`, `dissolve`, and `none` transition progress math, directional slide offsets, and deterministic 64-tile dissolve thresholds.
 - **Enterprise B2B LoRA & Model Sandbox Engine (`b2bEnterpriseEngine.test.ts`)**: 5-stage LoRA training progression, ETA formatting, H100/B200 GPU telemetry perturbation, `{{token}}` prompt injection, and physical invariant consistency scoring.
 - **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
 - **2026 Multi-Model Engine Migration (`engineMigration2026.test.ts`)**: Sora-2 to Magic Hour / Veo 3.1 / Kling 2.5 / Runway Gen-4.5 / Luma Ray 3 payload adapters and pricing calculators.
@@ -232,7 +253,7 @@ Runs the full **78-test suite across 13 test suites** covering:
 - **Meme Style Presets (`memeStylePresets.test.ts`)**: Typography preset application and text layer transforms.
 - **Subscription & Enterprise RBAC (`subscriptionUtils.test.ts`)**: Free vs. India Creator Pro (Rs. 999/mo) vs. Company Enterprise (Rs. 99,999/mo), 10 isolated workspaces, and 50 TB Cloud Vault limits.
 - **Video Duration & Compute Telemetry (`videoDurationUtils.test.ts`)**: 100-hour max duration clamping, timecode formatting, and frame compute metrics.
-- **YouTube Data API v3 & Argon Metadata (`youtubeUploadUtils.test.ts`)**: Tag parsing, metadata validation, resumable chunk progress, and Kotlin WorkManager generator templates.
+- **YouTube Data API v3, Mobile Handoff & Argon Metadata (`youtubeUploadUtils.test.ts`)**: Tag parsing, metadata validation, simulated vs. real YouTube video ID guard (`isSimulatedYouTubeVideoId`), clipboard metadata formatting, resumable chunk progress, and Kotlin WorkManager generator templates.
 - **Cinema VFX 32K & 1000 FPS Engine (`cinemaEngine.test.ts`)**: 64-bit sub-frame timebase (`120,000,000,000` ticks/sec), 32K Gigapixel math, and 192 kHz Fairlight audio.
 - **Canvas & Marketplace Logic (`tests/meme-logic.test.ts`)**: Word-wrap, category/mood filtering, and Web3/UPI wallet ledger balance calculations.
 
@@ -324,12 +345,13 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── EnterpriseProductModelBuilderModal.tsx # 10–20 Image Custom LoRA Calibration Builder
 │   │   ├── LegalDocsModal.tsx       # In-app Terms, Privacy, NOTICE & Apache 2.0 License viewer
 │   │   ├── LeoStudioTab.tsx         # LEO 8K DiT Video Studio (up to 100-hour duration)
+│   │   ├── LinuxDitClusterHostModal.tsx # Multi-Thousand-GPU Linux Host DiT Cluster Workbench
 │   │   ├── LoraTrainingStatusDashboard.tsx # Real-time LoRA training progress, ETA & H100/B200 telemetry
 │   │   ├── MagicCaptionModal.tsx    # Gemini Vision multimodal auto-captioning
 │   │   ├── MarketplaceCheckoutModal.tsx
 │   │   ├── MarketplaceTab.tsx
 │   │   ├── MemeAudioLayerPanel.tsx
-│   │   ├── MemeCanvas.tsx
+│   │   ├── MemeCanvas.tsx           # Interactive Meme Canvas with Fade, Slide & Dissolve transitions
 │   │   ├── MemeStylePresetPicker.tsx
 │   │   ├── MemeTemplateSelector.tsx
 │   │   ├── MemeToolbar.tsx
@@ -358,7 +380,9 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── cinemaEngine.ts
 │   │   ├── engineMigration2026.ts
 │   │   ├── leo8kEngine.ts
+│   │   ├── linuxDitClusterEngine.ts # Linux Host DiT Cluster configurator, HugePages & K8s/Slurm/Ray generator
 │   │   ├── memeAudioEngine.ts
+│   │   ├── memeTransitionEngine.ts  # Fade, Slide & Dissolve transition interpolation & Bayer tile engine
 │   │   ├── pppPricingUtils.ts
 │   │   ├── subscriptionUtils.ts
 │   │   ├── vibeCoderGuideEngine.ts  # Single-GPU VRAM calculator, S3/R2 estimator & Dockerfile/FastAPI generator

@@ -136,6 +136,70 @@ export function generateLocalFallbackMetadata(context: {
   };
 }
 
+export interface YouTubeWatchResolution {
+  mode: 'live_youtube' | 'in_app_preview';
+  canOpenExternalYouTube: boolean;
+  displayUrl: string;
+  statusBadge: string;
+  explanation: string;
+}
+
+/**
+ * Checks if a videoId is a synthetic/simulated preview ID (e.g., yt_..., sim_...)
+ * rather than a real 11-character YouTube Data API v3 ID.
+ */
+export function isSimulatedYouTubeVideoId(videoId: string | null | undefined): boolean {
+  if (!videoId || typeof videoId !== 'string') return true;
+  const trimmed = videoId.trim();
+  if (trimmed.startsWith('yt_') || trimmed.startsWith('sim_') || trimmed.startsWith('mock_')) {
+    return true;
+  }
+  return !/^[a-zA-Z0-9_-]{11}$/.test(trimmed);
+}
+
+/**
+ * Resolves how the UI should handle "Watch" actions after an upload so that
+ * simulated/sandbox uploads open in the In-App Studio Player instead of
+ * launching the native YouTube mobile app with a non-existent video ID
+ * ("This video is unavailable").
+ */
+export function resolveYouTubeWatchBehavior(result: {
+  videoId?: string | null;
+  simulated?: boolean;
+  watchUrl?: string | null;
+}): YouTubeWatchResolution {
+  const isSimulated = Boolean(result.simulated) || isSimulatedYouTubeVideoId(result.videoId);
+  const cleanId = result.videoId?.trim() || 'sim_preview';
+
+  if (isSimulated) {
+    return {
+      mode: 'in_app_preview',
+      canOpenExternalYouTube: false,
+      displayUrl: `memeforge://studio-player/${cleanId}`,
+      statusBadge: 'Sandbox Studio Preview (In-App Player)',
+      explanation:
+        'Published in Sandbox Mode without a live Google OAuth 2.0 Bearer token (ya29.*). Because synthetic IDs do not exist on YouTube servers (which causes the YouTube mobile app to show "This video is unavailable"), this video plays directly in the In-App Studio Player and can be shared as a real .webm video file to your YouTube mobile app.',
+    };
+  }
+
+  return {
+    mode: 'live_youtube',
+    canOpenExternalYouTube: true,
+    displayUrl: result.watchUrl || `https://youtu.be/${cleanId}`,
+    statusBadge: 'Live on YouTube (OAuth 2.0 Verified)',
+    explanation:
+      'Uploaded directly to your YouTube channel via YouTube Data API v3 resumable chunked upload.',
+  };
+}
+
+/**
+ * Formats viral metadata into a clean clipboard block for pasting into the native YouTube app
+ */
+export function formatMetadataClipboardBlock(metadata: YouTubeMetadata): string {
+  const hashtags = metadata.tags.map((t) => `#${t.replace(/\s+/g, '')}`).join(' ');
+  return `${metadata.title}\n\n${metadata.description}\n\nTags: ${metadata.tags.join(', ')}\n${hashtags}`;
+}
+
 /**
  * Returns modern Android Kotlin implementation files requested by the user
  */

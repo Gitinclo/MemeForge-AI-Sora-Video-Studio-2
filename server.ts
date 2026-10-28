@@ -611,16 +611,16 @@ app.post('/api/youtube/upload', async (req: Request, res: Response) => {
   }
 
   // If testing or simulated upload without active Google OAuth credentials
-  const mockVideoId = 'yt_' + Math.random().toString(36).substring(2, 11);
+  const mockVideoId = 'sim_' + Math.random().toString(36).substring(2, 10);
   return res.json({
     success: true,
     simulated: true,
     videoId: mockVideoId,
-    watchUrl: `https://youtu.be/${mockVideoId}`,
-    embedUrl: `https://www.youtube.com/embed/${mockVideoId}`,
+    watchUrl: `memeforge://studio-player/${mockVideoId}`,
+    embedUrl: `memeforge://studio-embed/${mockVideoId}`,
     title,
     status: privacyStatus,
-    note: 'Video prepared and signed with YouTube Data API v3 parameters. Connect Google Sign-In for direct production publishing.',
+    note: 'Sandbox Studio Preview: Published locally without a live Google OAuth 2.0 Bearer token (ya29.*). Use the In-App YouTube Watch Player below, tap "Share Video File to YouTube App" on mobile, or connect a live OAuth 2.0 token for direct YouTube Data API v3 hosting.',
   });
 });
 

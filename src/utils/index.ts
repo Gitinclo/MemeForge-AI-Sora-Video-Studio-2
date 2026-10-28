@@ -15,3 +15,6 @@ export * from './subscriptionUtils';
 export * from './vibeCoderGuideEngine';
 export * from './videoDurationUtils';
 export * from './youtubeUploadUtils';
+export * from './memeTransitionEngine';
+export * from './linuxDitClusterEngine';
+

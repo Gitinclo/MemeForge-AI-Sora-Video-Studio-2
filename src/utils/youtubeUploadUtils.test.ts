@@ -11,6 +11,9 @@ import {
   getKotlinArgonGeneratorCode,
   getKotlinDependenciesCode,
   getAndroidManifestCode,
+  isSimulatedYouTubeVideoId,
+  resolveYouTubeWatchBehavior,
+  formatMetadataClipboardBlock,
 } from './youtubeUploadUtils.js';
 
 test('parseTags: handles comma-separated string with hashtags and whitespace', () => {
@@ -104,4 +107,41 @@ test('Kotlin template generators: produce valid code snippets with Argon and Wor
   const manifestCode = getAndroidManifestCode();
   assert.ok(manifestCode.includes('android.permission.INTERNET'));
   assert.ok(manifestCode.includes('android.permission.FOREGROUND_SERVICE'));
+});
+
+test('isSimulatedYouTubeVideoId & resolveYouTubeWatchBehavior: prevents fake YouTube links from dead-ending on mobile', () => {
+  assert.equal(isSimulatedYouTubeVideoId('yt_9a8b7c6d5'), true);
+  assert.equal(isSimulatedYouTubeVideoId('sim_12345678'), true);
+  assert.equal(isSimulatedYouTubeVideoId('dQw4w9WgXcQ'), false);
+
+  const simRes = resolveYouTubeWatchBehavior({
+    videoId: 'yt_9a8b7c6d5',
+    simulated: true,
+    watchUrl: 'https://youtu.be/yt_9a8b7c6d5',
+  });
+  assert.equal(simRes.mode, 'in_app_preview');
+  assert.equal(simRes.canOpenExternalYouTube, false);
+  assert.ok(simRes.displayUrl.startsWith('memeforge://studio-player/'));
+
+  const liveRes = resolveYouTubeWatchBehavior({
+    videoId: 'dQw4w9WgXcQ',
+    simulated: false,
+    watchUrl: 'https://youtu.be/dQw4w9WgXcQ',
+  });
+  assert.equal(liveRes.mode, 'live_youtube');
+  assert.equal(liveRes.canOpenExternalYouTube, true);
+  assert.equal(liveRes.displayUrl, 'https://youtu.be/dQw4w9WgXcQ');
+});
+
+test('formatMetadataClipboardBlock: formats title, description, and hashtags for native app paste', () => {
+  const block = formatMetadataClipboardBlock({
+    title: 'AI Meme Test',
+    description: 'Funny clip',
+    tags: ['ai meme', 'shorts'],
+    categoryId: '23',
+    privacyStatus: 'public',
+    isMadeForKids: false,
+  });
+  assert.ok(block.includes('AI Meme Test'));
+  assert.ok(block.includes('#aimeme #shorts'));
 });

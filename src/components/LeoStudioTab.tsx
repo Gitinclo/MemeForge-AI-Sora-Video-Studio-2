@@ -62,6 +62,7 @@ import {
 } from '../utils/leo8kEngine';
 import { EngineHub2026Modal } from './EngineHub2026Modal';
 import { VibeCoderGuideModal } from './VibeCoderGuideModal';
+import { LinuxDitClusterHostModal } from './LinuxDitClusterHostModal';
 import {
   VideoEngineId,
   VIDEO_ENGINES_2026,
@@ -114,6 +115,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const [selectedEngineId, setSelectedEngineId] = useState<VideoEngineId>('leo-8k');
   const [isEngineHubOpen, setIsEngineHubOpen] = useState(false);
   const [isVibeGuideOpen, setIsVibeGuideOpen] = useState(false);
+  const [isLinuxDitHostOpen, setIsLinuxDitHostOpen] = useState(false);
 
   // Seedance 1.0 (Hedra) 6-Axis Physics & Trajectory Spline State
   const [seedancePan, setSeedancePan] = useState(15); // degrees
@@ -466,21 +468,30 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
             <Server className="w-3.5 h-3.5 text-cyan-400" />
             <span>Vibe Coder&apos;s GPU Guide</span>
           </button>
+
+          <button
+            onClick={() => setIsLinuxDitHostOpen(true)}
+            className="px-3 py-1.5 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+            title="Target Environment: Linux Host for a Text-to-Video AI Model (K8s, Slurm/Ray, RDMA/SR-IOV, Lustre/GPFS/WekaFS + GDS, HugePages)"
+          >
+            <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Linux DiT Cluster Host</span>
+          </button>
         </div>
       </div>
 
-      {/* Vibe Coder's Sora-Style Video App Quick-Start Strip */}
+      {/* Vibe Coder's Sora-Style Video App & Linux DiT Cluster Host Quick-Start Strip */}
       <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2 text-xs text-cyan-400 font-semibold">
-            <span>Running a Sora-Style Video App: A Vibe Coder&apos;s Guide</span>
+            <span>Infrastructure &amp; Host Architecture</span>
             <span className="text-slate-600">·</span>
             <span className="text-slate-300 font-normal">
-              Start small (Runway / Luma / Veo API or Wan / CogVideoX on 1 rented GPU) · Single Docker container on Ubuntu CUDA · Store MP4s on S3 / Cloudflare R2 + CDN
+              Single-GPU Docker + S3/R2 (Vibe Coder Guide) or Multi-Thousand-GPU Linux DiT Host (K8s + Slurm/Ray · InfiniBand/RoCE RDMA + SR-IOV · Lustre/GPFS/WekaFS + GPUDirect Storage · 1GB HugePages · Swap=0)
             </span>
           </div>
           <p className="text-xs text-slate-400">
-            Check model card VRAM (24 GB with CPU model offloading vs. 40–80 GB cards), skip InfiniBand/RDMA &amp; Kubernetes/Slurm for single-GPU apps, and generate a ready-to-run Dockerfile + FastAPI <code className="text-cyan-300 font-mono">/generate</code> (5m timeout) &amp; <code className="text-emerald-300 font-mono">/health</code> service.
+            Generate single-container FastAPI services or full HPC Linux host configs (<code className="text-emerald-300 font-mono">provision-linux-dit-host.sh</code>, Kubernetes SR-IOV + GDS manifests, and Slurm/Ray jobs) for NVIDIA H100/B200 or AMD MI300X ROCm clusters.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -489,7 +500,14 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
             className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
             <Terminal className="w-3.5 h-3.5" />
-            <span>Open Vibe Coder Guide &amp; FastAPI Builder</span>
+            <span>Single-GPU Vibe Guide</span>
+          </button>
+          <button
+            onClick={() => setIsLinuxDitHostOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <Server className="w-3.5 h-3.5" />
+            <span>Linux DiT Cluster Host (H100/B200)</span>
           </button>
         </div>
       </div>
@@ -1969,6 +1987,12 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
         isOpen={isVibeGuideOpen}
         onClose={() => setIsVibeGuideOpen(false)}
         initialPrompt={spec.prompt}
+      />
+
+      {/* Target Environment: Linux Host for a Text-to-Video AI Model (DiT Cluster) Modal */}
+      <LinuxDitClusterHostModal
+        isOpen={isLinuxDitHostOpen}
+        onClose={() => setIsLinuxDitHostOpen(false)}
       />
     </div>
   );

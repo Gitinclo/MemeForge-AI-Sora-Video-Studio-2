@@ -1,7 +1,7 @@
 {
   "name": "memeforge-ai-leo-video-studio",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.6.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
@@ -10,7 +10,7 @@
     "start": "node server.ts",
     "clean": "node -e \"const fs=require('fs');['dist','server.js'].forEach(p=>{try{fs.rmSync(p,{recursive:true,force:true})}catch(e){}})\"",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/utils/sharedCoreEngine.test.ts src/utils/vibeCoderGuideEngine.test.ts src/utils/b2bEnterpriseEngine.test.ts src/utils/pppPricingUtils.test.ts src/utils/memeAudioEngine.test.ts src/data/memeStylePresets.test.ts src/utils/videoDurationUtils.test.ts src/utils/subscriptionUtils.test.ts src/utils/cinemaEngine.test.ts src/utils/youtubeUploadUtils.test.ts src/utils/leo8kEngine.test.ts src/utils/engineMigration2026.test.ts tests/meme-logic.test.ts"
+    "test": "tsx --test src/utils/sharedCoreEngine.test.ts src/utils/vibeCoderGuideEngine.test.ts src/utils/linuxDitClusterEngine.test.ts src/utils/b2bEnterpriseEngine.test.ts src/utils/pppPricingUtils.test.ts src/utils/memeAudioEngine.test.ts src/data/memeStylePresets.test.ts src/utils/videoDurationUtils.test.ts src/utils/subscriptionUtils.test.ts src/utils/cinemaEngine.test.ts src/utils/youtubeUploadUtils.test.ts src/utils/leo8kEngine.test.ts src/utils/engineMigration2026.test.ts src/utils/memeTransitionEngine.test.ts tests/meme-logic.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
