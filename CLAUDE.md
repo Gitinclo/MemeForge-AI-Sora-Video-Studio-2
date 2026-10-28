@@ -82,6 +82,8 @@ Build a text-to-video generator in PyTorch. It takes a text prompt and outputs a
 ---
 
 ## Repository Integration in MemeForge AI Studio (`v1.8.0`)
+- **On-Disk Python 3.11+ / PyTorch 2.x Package**: `pytorch_dit/` (`vae.py`, `patchify.py`, `dit.py`, `attention.py`, `text.py`, `sampler.py`, `pipeline.py`, `tests/thresholds.py`, `bench.py`)
 - **Interactive Spec & Simulator Engine**: `src/utils/pytorchDitBuildSpecEngine.ts`
 - **Unit Test Suite**: `src/utils/pytorchDitBuildSpecEngine.test.ts`
-- **Interactive UI Workbench**: `src/components/PyTorchDitBuildSpecModal.tsx` (accessible from the **LEO Video Studio** header via the **PyTorch DiT Build Spec** button)
+- **Interactive UI Workbench**: `src/components/PyTorchDitBuildSpecModal.tsx` (accessible from the **LEO Video Studio** header via the **PyTorch DiT Build Spec (CLAUDE.md)** button)
+

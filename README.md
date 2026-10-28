@@ -8,7 +8,8 @@
 [![Fairlight Audio](https://img.shields.io/badge/Fairlight%20Audio-192%20kHz%20%7C%2032--bit%20Float-10b981?style=for-the-badge)](https://web.dev/web-audio-basics/)
 [![Android APK & AAB](https://img.shields.io/badge/Android-APK%20%26%20AAB%20Offline%20Build-f59e0b?style=for-the-badge&logo=android)](https://developer.android.com/)
 [![UPI & Subscriptions](https://img.shields.io/badge/India%20Billing-Rs.%20999%20%7C%20Rs.%2099%2C999-6366f1?style=for-the-badge)](https://www.npci.org.in/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![PyTorch 2.x + Triton DiT Spec](https://img.shields.io/badge/PyTorch%202.x%20DiT-CLAUDE.md%20%7C%20AGENTS.md-ee4c2c?style=for-the-badge&logo=pytorch)](./CLAUDE.md)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%20110%20Tests-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
 > **Original AI Studio Applet**: [`https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true`](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
 
@@ -20,7 +21,7 @@
 
 1. **Meme Studio, Transition FX & Auto-Save**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, **animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`)**, 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and **automatic 30-second `localStorage` layout persistence** (`memeforge_autosave_layout`).
 2. **Marketplace & Crypto/UPI**: Buy and sell viral templates using Web3 wallets (ETH, SOL, MEME, USDT) or Indian UPI AutoPay (GPay, PhonePe, Paytm, BHIM).
-3. **LEO / Veo 3 Video Studio, Timeline Keyframe Animator & Linux DiT Cluster Host Architect**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra with **Timeline Keyframe Text Animation (Position X/Y, Scale, Rotation & `.webm` Video Export)**, backed by both a **Single-GPU Vibe Coder Guide** (Docker + FastAPI + S3/R2) and a **Multi-Thousand-GPU Linux DiT Cluster Host Workbench & Server OS Reference (Ranks 1–10)**.
+3. **LEO / Veo 3 Video Studio, Timeline Keyframe Animator, PyTorch DiT Software Build Spec & Linux Cluster Host Architect**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra with **Timeline Keyframe Text Animation (Position X/Y, Scale, Rotation & `.webm` Video Export)**, backed by a **Single-GPU Vibe Coder Guide** (Docker + FastAPI + S3/R2), a **Multi-Thousand-GPU Linux DiT Cluster Host Workbench & Server OS Reference (Ranks 1–10)**, and the **PyTorch 2.x + Triton Text-to-Video Diffusion Transformer Software Build Spec (`CLAUDE.md` / `AGENTS.md` / `pytorch_dit/`)**.
 4. **Enterprise B2B LoRA Studio & Model Sandbox**: Train custom product digital-twin LoRA weights from 10–20 calibration images, monitor live **LoRA Training Status & NVIDIA H100/B200 GPU Telemetry**, and verify physical invariants (Logo Integrity, Silhouette IoU, BRDF Material Purity) in the **Model Consistency Sandbox** before wide-scale deployment.
 5. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
 6. **Team Hub & Global PPP Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted 50 TB asset vaults, localized Indian plans (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise), and **4-Tier Global Purchasing Power Parity (PPP)** pricing across 90+ countries.
@@ -213,16 +214,24 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 - **Keyframed Video Export (`.webm`)**:
   - Sweeps the playhead from `0%` to `100%` and records the live canvas stream (`MediaRecorder` / `video/webm`) with all keyframed text layers baked into the exported video file.
 
-### 12. 🧠 Build Spec: Text-to-Video Diffusion Transformer (`CLAUDE.md`, `AGENTS.md`, `PyTorchDitBuildSpecModal.tsx` & `pytorchDitBuildSpecEngine.ts`)
-- **Saved at Repo Root (`/CLAUDE.md` & `/AGENTS.md`)**:
-  - Automatically read by Claude Code, Cursor, and Codex as a software-only PyTorch 2.x + Triton specification (explicitly excluding custom silicon/ASIC design, Sora-scale scratch training, and hardware-level HBM tuning).
-- **7 Core PyTorch 2.x Modules + Acceptance Tests & Benchmark**:
-  - **`vae.py` (Causal 3D VAE)**: Compresses `[B, C, T, H, W]` → `[B, c, T/8, H/8, W/8]` (with optional `16x` spatial compression), enforces causal left-only time padding (`pad_t_left = k_t - 1, pad_t_right = 0`), and decodes in temporal chunks in `BF16` to cap peak GPU memory.
-  - **`patchify.py` (3D Patch Tokenizer)**: Splits latents into `1×2×2` patches, flattens them into a token sequence, and adds factorized `(T, H, W)` sinusoidal positional embeddings.
-  - **`dit.py` (Diffusion Transformer)**: Executes `RMSNorm → Self-Attention → Cross-Attention to Text → SwiGLU MLP` with `adaLN` timestep conditioning, alternating **Spatial Attention** (within frame) and **Temporal Attention** (same position across frames) while never running full $N \times N$ attention across all spacetime tokens at once.
-  - **`attention.py`**: Uses `torch.nn.functional.scaled_dot_product_attention` / FlashAttention without materializing the $N \times N$ matrix, alongside `naive_attention_reference` for `BF16` testing (`atol <= 1e-3`).
-  - **`text.py` & `sampler.py`**: Uses pretrained **T5-XXL (`google/t5-v1_1-xxl`)** embeddings for cross-attention and a configurable rectified-flow denoising loop with Classifier-Free Guidance (`cfg_scale`).
-  - **`pipeline.py`, `tests/thresholds.py` & `bench.py`**: Implements `generate(prompt, frames, height, width, steps, seed)`, per-channel **FP8 (E4M3) / INT8** quantization (keeping `input_embedding`, `timestep_embedding`, `final_output_projection`, and `vae.decode` in `BF16`), fused `RMSNorm`/`SwiGLU`, acceptance tests (`PSNR >= 32.0 dB`, `LPIPS <= 0.05`), and latency / `tokens/sec` / peak VRAM benchmarking.
+### 12. 🧠 Build Spec: Text-to-Video Diffusion Transformer (`CLAUDE.md`, `AGENTS.md`, `pytorch_dit/`, `PyTorchDitBuildSpecModal.tsx` & `pytorchDitBuildSpecEngine.ts`)
+- **Saved at Repo Root (`/CLAUDE.md` & `/AGENTS.md`) + On-Disk Python Package (`/pytorch_dit/`)**:
+  - Automatically read by **Claude Code** (`CLAUDE.md`) and **Cursor / Codex** (`AGENTS.md`) as a pure software project in **Python 3.11+**, **PyTorch 2.x**, and **Triton** (explicitly scoping out custom silicon/ASIC design, Sora-scale scratch training, and hardware-specific HBM tuning).
+- **7 Core PyTorch 2.x Modules + Acceptance Tests & Benchmark (`pytorch_dit/`)**:
+  - **`pytorch_dit/vae.py` (Causal 3D VAE)**: Compresses `[B, C, T, H, W]` → `[B, c, T/8, H/8, W/8]` (with optional `16x` spatial compression), enforces causal left-only time padding (`pad_t_left = (k_t - 1) * d_t, pad_t_right = 0`), and decodes in temporal chunks in `BF16` to cap peak GPU memory.
+  - **`pytorch_dit/patchify.py` (3D Patch Tokenizer)**: Splits latents into `1×2×2` patches, flattens them into a token sequence, and adds factorized `(T, H, W)` sinusoidal positional embeddings.
+  - **`pytorch_dit/dit.py` (Diffusion Transformer)**: Executes `RMSNorm → Self-Attention → Cross-Attention to Text → SwiGLU MLP` with `adaLN` timestep conditioning, alternating **Spatial Attention** (within frame) and **Temporal Attention** (same position across frames) while never running full $N \times N$ attention across all spacetime tokens at once.
+  - **`pytorch_dit/attention.py`**: Uses `torch.nn.functional.scaled_dot_product_attention` / FlashAttention without materializing the $N \times N$ matrix, alongside `naive_attention_reference` for `BF16` testing (`atol <= 1e-3`).
+  - **`pytorch_dit/text.py` & `pytorch_dit/sampler.py`**: Uses pretrained **T5-XXL (`google/t5-v1_1-xxl`, 4096-dim)** embeddings for cross-attention and a configurable rectified-flow denoising loop with Classifier-Free Guidance (`cfg_scale`).
+  - **`pytorch_dit/pipeline.py`, `pytorch_dit/tests/thresholds.py` & `pytorch_dit/bench.py`**: Implements `generate(prompt, frames, height, width, steps, seed) -> video tensor [B, T, H, W, C]`, per-channel **FP8 (E4M3) / INT8** quantization (keeping `input_embedding`, `timestep_embedding`, `final_output_projection`, and `vae.decode` in `BF16`), fused `RMSNorm`/`SwiGLU`, acceptance tests (`PSNR >= 32.0 dB`, `LPIPS <= 0.05`), and latency / `tokens/sec` / peak VRAM benchmarking.
+- **7-Step Build Order & Rules**:
+  1. **Tiny config (`8 frames @ 64×64`)** end-to-end shape check (`[1, 8, 64, 64, 3]` ↔ `[1, 1, 8, 8, 16]`).
+  2. **VAE encode/decode round-trip** & left-only causal time invariance.
+  3. **DiT** with alternating spatial and temporal attention.
+  4. **Text conditioning** (`T5-XXL`) and **CFG sampler**.
+  5. **Per-channel FP8/INT8 quantization** and fused kernels (`torch.compile` / Triton) + optional 2:4 structured sparsity.
+  6. **Benchmark (`bench.py`)** reporting latency (ms), `tokens/sec`, and peak GPU memory (MB).
+  7. **Multi-GPU** sequence parallelism (time/space token split) followed by tensor parallelism for large layers.
 
 ---
 
@@ -353,6 +362,17 @@ All AI model and publishing operations are handled server-side via Express route
 │   └── pull_request_template.md     # Standardized PR checklist
 ├── android/                         # Native Android Gradle project (SDK 36, minSdk 24)
 ├── public/                          # PWA icons, SVG logo & manifest.webmanifest
+├── pytorch_dit/                     # Python 3.11+ & PyTorch 2.x Text-to-Video DiT Implementation
+│   ├── tests/
+│   │   └── thresholds.py            # Acceptance tests (VAE shape/causality, SDPA vs naive, PSNR >= 32 dB)
+│   ├── attention.py                 # Fused SDPA / FlashAttention & naive reference (atol <= 1e-3 in BF16)
+│   ├── bench.py                     # Latency (ms), throughput (tokens/sec) & peak GPU VRAM benchmark
+│   ├── dit.py                       # Alternating Spatial/Temporal DiTBlock, RMSNorm, SwiGLU & adaLN
+│   ├── patchify.py                  # 3D (1×2×2) Patch Tokenizer & factorized (T, H, W) pos embeddings
+│   ├── pipeline.py                  # End-to-end generate() & per-channel FP8 (E4M3) / INT8 quantizer
+│   ├── sampler.py                   # Configurable Flow-Matching / Euler denoising loop with CFG
+│   ├── text.py                      # Pretrained T5-XXL (google/t5-v1_1-xxl) text conditioning module
+│   └── vae.py                       # Causal 3D VAE (8x temporal, 8x/16x spatial, left-only time padding)
 ├── scripts/                         # Build & icon automation scripts
 │   ├── build-apk-aab.sh
 │   └── generate_pwa_icons.py
@@ -448,6 +468,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and ou
 
 ## ⚖️ Legal & Governance Documents
 
+- **[PyTorch DiT Agent Build Spec (CLAUDE.md)](CLAUDE.md) & [(AGENTS.md)](AGENTS.md)**: Automatic software build spec for Claude Code, Cursor, and Codex.
 - **[License (LICENSE)](LICENSE)**: Licensed under the **Apache License, Version 2.0**.
 - **[Attribution Notice (NOTICE)](NOTICE)**: Mandatory Apache-2.0 Section 4(d) attribution declaration for `Copyright 2026 MemeForge-AI Studio Contributors` and lead architect `Gitinclo`.
 - **[Privacy Policy (PRIVACY.md)](PRIVACY.md)**: Account data retention, Right to be Forgotten (GDPR), password/credential encryption, payment processor disclosures, and India DPDPA compliance.
