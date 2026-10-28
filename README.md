@@ -1,31 +1,29 @@
-# MemeForge AI, LEO Video & Cinema VFX Studio
+# MemeForge AI & LEO Video Studio (`v2.0.0`)
 
-> **Next-generation multimedia studio combining multimodal AI meme creation, LEO/Veo video synthesis up to 100 hours, native Android (APK & AAB) packaging, localized India UPI & Enterprise subscriptions, and a cinema/VFX-grade editing architecture capable of 32K (32000×32000), 1000 FPS, 32-bit float color, and 192 kHz Fairlight audio.**
+> **Next-generation unified 4-module creative & cinema workstation combining MemeForge AI, the Sora 2 Ultra AI Video Generator (`32K` 32000×32000 · `1000 FPS` · `100-Hour` continuous horizon + 11-Pass AI VFX Suite), Cinema 32K NLE & 192 kHz Fairlight Audio, and Enterprise Cloud Collaboration (CRDT Conflict Resolution, Timestamped Frame Comments, Offline Sync, E2EE, RBAC, NLE XML/EDL Interchange, and Dropbox/Google Drive Sync).**
 
 [![Gemini](https://img.shields.io/badge/Gemini%20API-3.8%20Flash%20%7C%204%20Argon-7c3aed?style=for-the-badge&logo=google)](https://ai.google.dev/)
 [![Original AI Studio Applet](https://img.shields.io/badge/AI%20Studio%20Origin-4d0cb3f2--610b--4819--909e--06de8300dcfb-4f46e5?style=for-the-badge&logo=google)](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
+[![Sora 2 Ultra 32K](https://img.shields.io/badge/Sora%202%20Ultra-32K%20%7C%201000%20FPS%20%7C%20100H-f59e0b?style=for-the-badge)](./src/utils/sora2UltraEngine.ts)
 [![Cinema VFX 32K](https://img.shields.io/badge/Cinema%20VFX-32K%20%7C%201000%20FPS-06b6d4?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)
 [![Fairlight Audio](https://img.shields.io/badge/Fairlight%20Audio-192%20kHz%20%7C%2032--bit%20Float-10b981?style=for-the-badge)](https://web.dev/web-audio-basics/)
 [![Android APK & AAB](https://img.shields.io/badge/Android-APK%20%26%20AAB%20Offline%20Build-f59e0b?style=for-the-badge&logo=android)](https://developer.android.com/)
 [![UPI & Subscriptions](https://img.shields.io/badge/India%20Billing-Rs.%20999%20%7C%20Rs.%2099%2C999-6366f1?style=for-the-badge)](https://www.npci.org.in/)
 [![PyTorch 2.x + Triton DiT Spec](https://img.shields.io/badge/PyTorch%202.x%20DiT-CLAUDE.md%20%7C%20AGENTS.md-ee4c2c?style=for-the-badge&logo=pytorch)](./CLAUDE.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%20110%20Tests-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%20114%20Tests-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
 > **Original AI Studio Applet**: [`https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true`](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
 
 ---
 
-## 🌟 Overview
+## 🌟 Overview (`v2.0.0` Unified 4-Module Studio Architecture)
 
-**MemeForge AI Studio** is a unified viral creation and cinema-grade production workstation. It bridges the gap between viral internet culture and high-end film engineering:
+**MemeForge AI & LEO Video Studio (`v2.0.0`)** organizes its top header navigation around a **Unified 4-Module Studio Switcher** (`Alt+1`–`Alt+4`) alongside instant utility access to **Marketplace**, **YouTube**, and **B2B LoRA**:
 
-1. **Meme Studio, Transition FX & Auto-Save**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, **animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`)**, 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and **automatic 30-second `localStorage` layout persistence** (`memeforge_autosave_layout`).
-2. **Marketplace & Crypto/UPI**: Buy and sell viral templates using Web3 wallets (ETH, SOL, MEME, USDT) or Indian UPI AutoPay (GPay, PhonePe, Paytm, BHIM).
-3. **LEO / Veo 3 Video Studio, Timeline Keyframe Animator, PyTorch DiT Software Build Spec & Linux Cluster Host Architect**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra with **Timeline Keyframe Text Animation (Position X/Y, Scale, Rotation & `.webm` Video Export)**, backed by a **Single-GPU Vibe Coder Guide** (Docker + FastAPI + S3/R2), a **Multi-Thousand-GPU Linux DiT Cluster Host Workbench & Server OS Reference (Ranks 1–10)**, and the **PyTorch 2.x + Triton Text-to-Video Diffusion Transformer Software Build Spec (`CLAUDE.md` / `AGENTS.md` / `pytorch_dit/`)**.
-4. **Enterprise B2B LoRA Studio & Model Sandbox**: Train custom product digital-twin LoRA weights from 10–20 calibration images, monitor live **LoRA Training Status & NVIDIA H100/B200 GPU Telemetry**, and verify physical invariants (Logo Integrity, Silhouette IoU, BRDF Material Purity) in the **Model Consistency Sandbox** before wide-scale deployment.
-5. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
-6. **Team Hub & Global PPP Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted 50 TB asset vaults, localized Indian plans (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise), and **4-Tier Global Purchasing Power Parity (PPP)** pricing across 90+ countries.
-7. **Mobile-First Responsive UI, PWA & Android Packaging**: Zero-overflow responsive studio header with horizontal scrollable navigation (`.nav`), compact mobile `"⋯"` overflow drawer, adaptive `auto-fill` template grid, wrapping color swatches, touchscreen-aware shortcut hints (`@media (hover: none)`), installable Progressive Web App (PWA) with offline service worker, and local Android APK & AAB bundle generation.
+1. **Module 1 · MemeForge AI (`Alt+1`)**: Multimodal Gemini Vision "Magic Caption" (5 clickable viral captions that auto-overlay onto the canvas), live drag-and-drop typography editor, animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`), 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and automatic 30-second `localStorage` layout persistence.
+2. **Module 2 · LEO AI Video Studio — Sora 2 Ultra (`Alt+2`)**: Next-generation **Sora 2 Ultra Text-to-Video Generator** supporting up to **`32K Master (32000×32000)`** (`1,024 MP/frame` with `8×8` zero-seam Causal 3D VAE spatial tiling), **`1000 FPS`** (`1ms` high-speed shutter interval), and **`100 Hours`** (`360,000,000` frames @ `1000 FPS`) continuous autoregressive streaming with a **5-Act Hierarchical Episodic Memory Checkpoint Planner**, **11-Pass Neural AI Toolset Panel** (Object Removal, Masking, Rotoscoping, Frame Interpolation, Upscaling, Denoise, Stabilization, Auto-Subtitles, Speech Enhancement, Background Replacement, AI Color Matching), **Timeline Keyframe Animator**, **Linux DiT Cluster Host Workbench**, and **PyTorch 2.x + Triton Build Spec (`CLAUDE.md` / `AGENTS.md`)**.
+3. **Module 3 · Cinema 32K NLE & Fairlight Audio Engine (`Alt+3`)**: 64-bit sub-frame timebase (`23.976` to `1000 FPS`), `720p` to `32K` (`32000×32000`) resolution with 16/24/32-bit float color pipeline (`ACES 2.0`, `OCIO`, `HDR10+`, `Dolby Vision`, `HLG`, `Rec.709/2020`, `DCI-P3`, `BT.2100`), 6 real-time scopes + `.cube` LUT loader, `44.1`–`192 kHz` 64-bit Fairlight audio mixer (`7.1`, `Dolby Atmos`, `Ambisonics`, `VST3`, side-chain routing), Fusion node tab, `[Ripple, Roll, Slip, Slide, Blade]` tools, and GPU Render Graph (`Vulkan`, `Metal`, `DX12`, Multi-GPU, Render Farm, `H.264`, `HEVC`, `AV1`, `ProRes 422/4444`, `DNxHR`, `CineForm`, `OpenEXR 16/32f`, `TIFF`, `PNG`, `JPEG XL`).
+4. **Module 4 · Enterprise Cloud Vault & Collaboration (`Alt+4`)**: Real-time frame-accurate timestamped comments, version history snapshots, CRDT automated conflict resolution (`Auto-Merge`, `Keep Local`, `Keep Remote`), offline queue sync toggle, zero-knowledge E2EE (`AES-256-GCM`) with session key rotation, RBAC (`Admin`/`Editor`/`Viewer`), 1-click NLE `FCPXML` & `CMX 3600 EDL` export, and **Dropbox Business** & **Google Drive Workspace** cloud sync.
 
 ---
 
@@ -424,6 +422,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── b2bEnterpriseEngine.ts
 │   │   ├── cinemaEngine.ts
 │   │   ├── engineMigration2026.ts
+│   │   ├── enterpriseCollabEngine.ts # Timestamped comments, CRDT conflict resolution, E2EE, RBAC & XML/EDL export
 │   │   ├── leo8kEngine.ts
 │   │   ├── leoKeyframeEngine.ts     # LEO Video Studio Timeline Keyframe interpolation engine (Position, Scale, Rotation)
 │   │   ├── linuxDitClusterEngine.ts # Linux Host DiT Cluster configurator, OS Reference (Ranks 1–10) & K8s/Slurm/Ray generator
@@ -431,6 +430,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── memeTransitionEngine.ts  # Fade, Slide & Dissolve transition interpolation & Bayer tile engine
 │   │   ├── pppPricingUtils.ts
 │   │   ├── pytorchDitBuildSpecEngine.ts # PyTorch 2.x DiT Software Spec, [B,T,H,W,C] shape trace & acceptance tests
+│   │   ├── sora2UltraEngine.ts      # Sora 2 Ultra (32K · 1000 FPS · 100-Hour) metrics & 5-Act episodic chapter planner
 │   │   ├── subscriptionUtils.ts
 │   │   ├── vibeCoderGuideEngine.ts  # Single-GPU VRAM calculator, S3/R2 estimator & Dockerfile/FastAPI generator
 │   │   ├── videoDurationUtils.ts

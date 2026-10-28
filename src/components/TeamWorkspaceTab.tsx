@@ -72,6 +72,19 @@ import {
   canAccessProjectManagementDashboard,
   calculateProjectQueueMetrics,
 } from '../utils/subscriptionUtils';
+import {
+  TimestampedComment,
+  TimelineMergeConflict,
+  CloudStorageConnector,
+  E2eeSecurityConfig,
+  RbacStandardRole,
+  INITIAL_TIMESTAMPED_COMMENTS,
+  INITIAL_MERGE_CONFLICTS,
+  INITIAL_CLOUD_CONNECTORS,
+  INITIAL_E2EE_CONFIG,
+  exportNleTimelineXml,
+  exportCmx3600Edl,
+} from '../utils/enterpriseCollabEngine';
 
 interface TeamWorkspaceTabProps {
   versionHistory: VersionSnapshot[];
@@ -89,6 +102,67 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
   // Navigation tabs: Project Management, Workspaces, Enterprise Vault, Roles & RBAC, Timeline Snapshots
   const [activeSubTab, setActiveSubTab] = useState<'projects' | 'workspaces' | 'vault' | 'members' | 'versions'>('projects');
   const [currentBranch, setCurrentBranch] = useState('main-cut');
+
+  // MODULE 4: Real-Time Timestamped Comments, Automated Conflict Resolution, Offline Sync, E2EE, RBAC & Cloud Sync
+  const [timestampedComments, setTimestampedComments] = useState<TimestampedComment[]>(INITIAL_TIMESTAMPED_COMMENTS);
+  const [newCommentTimecode, setNewCommentTimecode] = useState<string>('00:01:42:15');
+  const [newCommentText, setNewCommentText] = useState<string>('');
+  const [mergeConflicts, setMergeConflicts] = useState<TimelineMergeConflict[]>(INITIAL_MERGE_CONFLICTS);
+  const [offlineSyncEnabled, setOfflineSyncEnabled] = useState<boolean>(false);
+  const [pendingOfflineDeltas, setPendingOfflineDeltas] = useState<number>(3);
+  const [e2eeConfig, setE2eeConfig] = useState<E2eeSecurityConfig>(INITIAL_E2EE_CONFIG);
+  const [cloudConnectors, setCloudConnectors] = useState<CloudStorageConnector[]>(INITIAL_CLOUD_CONNECTORS);
+  const [selectedRbacTier, setSelectedRbacTier] = useState<RbacStandardRole>('Admin');
+
+  const handleAddTimestampedComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommentText.trim()) return;
+    const item: TimestampedComment = {
+      id: `cmt-${Date.now()}`,
+      author: 'Alex Rivera',
+      role: selectedRbacTier,
+      avatarColor: 'bg-amber-500',
+      timecode: newCommentTimecode || '00:00:00:00',
+      frameNumber: 2450,
+      text: newCommentText.trim(),
+      createdAt: 'Just now',
+      resolved: false,
+    };
+    setTimestampedComments((prev) => [item, ...prev]);
+    setNewCommentText('');
+    if (offlineSyncEnabled) {
+      setPendingOfflineDeltas((n) => n + 1);
+    }
+  };
+
+  const handleResolveConflict = (conflictId: string, strategy: TimelineMergeConflict['resolutionStrategy']) => {
+    setMergeConflicts((prev) =>
+      prev.map((c) =>
+        c.id === conflictId ? { ...c, status: 'auto_resolved', resolutionStrategy: strategy } : c
+      )
+    );
+    setProjectDashboardSuccessMessage(`✓ Timeline conflict resolved via ${strategy}`);
+    setTimeout(() => setProjectDashboardSuccessMessage(''), 3500);
+  };
+
+  const handleSyncCloudProvider = (providerId: 'dropbox' | 'gdrive') => {
+    setCloudConnectors((prev) =>
+      prev.map((c) =>
+        c.id === providerId
+          ? {
+              ...c,
+              status: 'synced',
+              lastSyncedAt: 'Just now',
+              syncedFilesCount: c.syncedFilesCount + 1,
+            }
+          : c
+      )
+    );
+    const label = providerId === 'dropbox' ? 'Dropbox Business' : 'Google Drive Workspace';
+    setProjectDashboardSuccessMessage(`✓ Synced latest NLE masters & proxies with ${label}`);
+    setTimeout(() => setProjectDashboardSuccessMessage(''), 3500);
+  };
+
 
   // Project Management & Video Production Queue state
   const [productionJobs, setProductionJobs] = useState<VideoProductionJob[]>([
@@ -1089,9 +1163,59 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
                     <Download className="w-3.5 h-3.5 text-cyan-400" />
                     <span>JSON</span>
                   </button>
+                  <button
+                    onClick={() => {
+                      exportNleTimelineXml(activeWorkspace.name, 60, 3840, 2160);
+                      setProjectDashboardSuccessMessage('✓ Exported Final Cut / Premiere NLE XML (.xml)');
+                      setTimeout(() => setProjectDashboardSuccessMessage(''), 3500);
+                    }}
+                    className="px-2.5 py-1.5 text-cyan-300 hover:text-white hover:bg-slate-850 rounded-lg text-xs font-mono font-bold transition-colors"
+                    title="Export NLE XML Sequence (.xml)"
+                  >
+                    NLE XML
+                  </button>
+                  <button
+                    onClick={() => {
+                      exportCmx3600Edl(activeWorkspace.name);
+                      setProjectDashboardSuccessMessage('✓ Exported CMX 3600 Broadcast EDL (.edl)');
+                      setTimeout(() => setProjectDashboardSuccessMessage(''), 3500);
+                    }}
+                    className="px-2.5 py-1.5 text-amber-300 hover:text-white hover:bg-slate-850 rounded-lg text-xs font-mono font-bold transition-colors"
+                    title="Export CMX 3600 EDL (.edl)"
+                  >
+                    EDL
+                  </button>
                 </div>
+
+                {/* Offline Sync Toggle & E2EE Badge */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !offlineSyncEnabled;
+                    setOfflineSyncEnabled(next);
+                    if (!next && pendingOfflineDeltas > 0) {
+                      setPendingOfflineDeltas(0);
+                      setProjectDashboardSuccessMessage(`✓ Flushed ${pendingOfflineDeltas} offline delta snapshots to cloud cluster`);
+                      setTimeout(() => setProjectDashboardSuccessMessage(''), 3500);
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition-colors flex items-center gap-1.5 ${
+                    offlineSyncEnabled
+                      ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                      : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${offlineSyncEnabled ? 'text-amber-400' : 'text-emerald-400'}`} />
+                  <span>{offlineSyncEnabled ? `Offline Queue (${pendingOfflineDeltas} Deltas)` : 'Online Sync Active'}</span>
+                </button>
+
+                <span className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>E2EE: {e2eeConfig.cipherSuite.split(' ')[0]}</span>
+                </span>
               </div>
             </div>
+
 
             {/* 4 Telemetry Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -1588,8 +1712,233 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
               </div>
             </div>
           </div>
+
+          {/* SECTION 4 & 5 GRID: REAL-TIME TIMESTAMPED COMMENTS + AUTOMATED CONFLICT RESOLUTION & CLOUD SYNC */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* PANEL 4: REAL-TIME FRAME-ACCURATE TIMESTAMPED COMMENTS */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-cyan-400" />
+                    <span>Real-Time Timestamped Frame Comments</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Frame-locked review markers synced across Admin, Editor &amp; Viewer seats
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  {(['Admin', 'Editor', 'Viewer'] as const).map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => setSelectedRbacTier(role)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition-colors ${
+                        selectedRbacTier === role
+                          ? 'bg-cyan-500 text-slate-950 border-cyan-400'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <form onSubmit={handleAddTimestampedComment} className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={newCommentTimecode}
+                  onChange={(e) => setNewCommentTimecode(e.target.value)}
+                  className="w-full sm:w-28 px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 font-mono text-xs"
+                  placeholder="00:01:42:15"
+                  title="SMPTE Timecode"
+                />
+                <input
+                  type="text"
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder={`Add timestamped note as ${selectedRbacTier}...`}
+                  className="flex-1 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shrink-0"
+                >
+                  Post Marker
+                </button>
+              </form>
+
+              <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                {timestampedComments.map((cmt) => (
+                  <div
+                    key={cmt.id}
+                    className={`p-3 rounded-2xl border flex items-start justify-between gap-3 text-xs ${
+                      cmt.resolved
+                        ? 'bg-slate-950/50 border-slate-800/60 opacity-70'
+                        : 'bg-slate-950 border-slate-800'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold">
+                          {cmt.timecode} (F{cmt.frameNumber})
+                        </span>
+                        <span className="font-bold text-white">{cmt.author}</span>
+                        <span className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-amber-300">
+                          {cmt.role}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">{cmt.createdAt}</span>
+                      </div>
+                      <p className="text-slate-300 leading-relaxed">{cmt.text}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTimestampedComments((prev) =>
+                          prev.map((item) =>
+                            item.id === cmt.id ? { ...item, resolved: !item.resolved } : item
+                          )
+                        )
+                      }
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold shrink-0 ${
+                        cmt.resolved
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                      }`}
+                    >
+                      {cmt.resolved ? '✓ Resolved' : 'Resolve'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PANEL 5: AUTOMATED CONFLICT RESOLUTION, E2EE SETTINGS & DROPBOX / GOOGLE DRIVE SYNC */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-purple-400" />
+                    <span>CRDT Conflict Resolution, E2EE &amp; Cloud Sync</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Automated timeline merge engine, zero-knowledge E2EE &amp; Dropbox / Google Drive connectors
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setE2eeConfig((prev) => ({
+                      ...prev,
+                      keyFingerprint: `SHA256:${Math.random().toString(16).slice(2, 14)}e9a1b4c8d2`,
+                    }))
+                  }
+                  className="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-mono font-bold"
+                  title="Rotate Zero-Knowledge E2EE Session Key"
+                >
+                  Rotate E2EE Key
+                </button>
+              </div>
+
+              {/* Automated Conflict Resolution List */}
+              <div className="space-y-2">
+                {mergeConflicts.map((conf) => (
+                  <div
+                    key={conf.id}
+                    className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 text-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-white truncate">
+                        {conf.trackName} · {conf.clipName}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${
+                          conf.status === 'auto_resolved'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        }`}
+                      >
+                        {conf.status === 'auto_resolved' ? `✓ ${conf.resolutionStrategy}` : 'Conflict Pending'}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-mono text-slate-400">
+                      Local ({conf.localAuthor}): {conf.localChange} | Remote ({conf.remoteAuthor}): {conf.remoteChange}
+                    </div>
+                    <div className="flex items-center gap-1.5 pt-1">
+                      {(['CRDT Auto-Merge', 'Keep Local', 'Keep Remote'] as const).map((strat) => (
+                        <button
+                          key={strat}
+                          type="button"
+                          onClick={() => handleResolveConflict(conf.id, strat)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border transition-colors ${
+                            conf.resolutionStrategy === strat && conf.status === 'auto_resolved'
+                              ? 'bg-purple-500/25 border-purple-400 text-purple-200'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {strat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Dropbox & Google Drive Sync Integration */}
+              <div className="space-y-2 pt-2 border-t border-slate-800">
+                <div className="flex items-center justify-between text-xs font-mono text-slate-300">
+                  <span className="font-bold text-white">Dropbox &amp; Google Drive Sync Integration</span>
+                  <span className="text-emerald-400 text-[10px]">{e2eeConfig.keyFingerprint.slice(0, 22)}…</span>
+                </div>
+                {cloudConnectors.map((conn) => (
+                  <div
+                    key={conn.id}
+                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white">{conn.name}</span>
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[10px]">
+                          {conn.syncedFilesCount} files · {conn.bandwidthMbps} Mbps
+                        </span>
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-400 truncate">
+                        {conn.syncFolder} · Last synced {conn.lastSyncedAt}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <label className="flex items-center gap-1 text-[10px] font-mono text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={conn.autoSyncMasters}
+                          onChange={(e) =>
+                            setCloudConnectors((prev) =>
+                              prev.map((c) =>
+                                c.id === conn.id ? { ...c, autoSyncMasters: e.target.checked } : c
+                              )
+                            )
+                          }
+                          className="rounded border-slate-700 bg-slate-900"
+                        />
+                        <span>Auto-Sync</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleSyncCloudProvider(conn.id)}
+                        className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-mono font-bold text-[10px]"
+                      >
+                        Sync Now
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
+
 
       {/* SUB-TAB 1: MULTI-WORKSPACE MANAGEMENT (10 Workspaces for Team Enterprise) */}
       {activeSubTab === 'workspaces' && (

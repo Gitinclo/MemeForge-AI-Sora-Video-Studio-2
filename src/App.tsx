@@ -884,6 +884,28 @@ export default function App() {
     return () => window.removeEventListener('paste', handlePaste);
   }, []);
 
+  // Unified 4-Module Studio Switcher keyboard shortcuts (Alt+1 to Alt+4)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey) return;
+      if (e.key === '1') {
+        e.preventDefault();
+        setActiveTab('meme');
+      } else if (e.key === '2') {
+        e.preventDefault();
+        setActiveTab('leo');
+      } else if (e.key === '3') {
+        e.preventDefault();
+        setActiveTab('cinema');
+      } else if (e.key === '4') {
+        e.preventDefault();
+        setActiveTab('team');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="min-h-screen w-full max-w-full bg-slate-950 text-slate-100 flex flex-col">
       {/* Top Main Navigation Header */}
@@ -899,74 +921,97 @@ export default function App() {
                 MemeForge AI
               </h1>
               <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-widest hidden sm:inline-block shrink-0">
-                Studio
+                v2.0 Studio
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden md:block truncate">
-              Magic Caption • Live Editor • Crypto &amp; UPI Marketplace • LEO Video
+              M1 MemeForge • M2 Sora 2 (32K/1000fps/100h) • M3 Cinema 32K NLE • M4 Enterprise Cloud
             </p>
           </div>
         </div>
 
-        {/* Studio Navigation Tabs (Horizontally scrollable on mobile/tablet, never overflows page) */}
+        {/* Unified 4-Module Studio Switcher + Secondary Utility Pills */}
         <nav
-          aria-label="Studio Navigation"
+          aria-label="Unified 4-Module Studio Switcher"
           className="nav order-3 xl:order-2 w-full xl:w-auto max-w-full overflow-x-auto whitespace-nowrap no-scrollbar flex items-center gap-1 p-1 bg-slate-900 rounded-2xl border border-slate-800 min-w-0"
         >
           <button
             onClick={() => setActiveTab('meme')}
+            title="Module 1: MemeForge AI Studio (Alt+1)"
             className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'meme'
                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
+            <span className="text-[10px] font-mono opacity-75">M1</span>
             <span className="text-sm">🎭</span>
-            <span>Meme Studio</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('market')}
-            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              activeTab === 'market'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Marketplace</span>
+            <span>MemeForge AI</span>
           </button>
 
           <button
             onClick={() => setActiveTab('leo')}
+            title="Module 2: LEO AI Video Studio — Sora 2 Ultra 32K · 1000 FPS · 100h (Alt+2)"
             className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'leo'
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
+            <span className="text-[10px] font-mono opacity-75">M2</span>
             <Film className="w-3.5 h-3.5" />
-            <span>LEO Video</span>
+            <span>LEO Video (Sora 2)</span>
           </button>
 
           <button
             onClick={() => setActiveTab('cinema')}
+            title="Module 3: Cinema 32K NLE & Fairlight Audio Engine (Alt+3)"
             className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'cinema'
                 ? 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 text-white shadow-md shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
+            <span className="text-[10px] font-mono opacity-75">M3</span>
             <Boxes className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Cinema VFX (32K)</span>
-            <span className="sm:hidden">32K VFX</span>
+            <span className="hidden sm:inline">Cinema 32K NLE</span>
+            <span className="sm:hidden">32K NLE</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('team')}
+            title="Module 4: Enterprise Cloud Vault & Collaboration Suite (Alt+4)"
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'team'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span className="text-[10px] font-mono opacity-75">M4</span>
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Enterprise Cloud</span>
+            <span className="sm:hidden">Cloud</span>
+          </button>
+
+          <span className="h-4 w-px bg-slate-800 mx-0.5 shrink-0" />
+
+          <button
+            onClick={() => setActiveTab('market')}
+            className={`shrink-0 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'market'
+                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Marketplace</span>
           </button>
 
           <button
             onClick={() => {
               handleOpenYouTubePublishFromMeme();
             }}
-            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'youtube'
                 ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
                 : 'text-slate-400 hover:text-white'
@@ -974,33 +1019,18 @@ export default function App() {
           >
             <Youtube className="w-3.5 h-3.5 text-red-500" />
             <span className="hidden sm:inline">YouTube</span>
-            <span className="sm:hidden">YT</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('team')}
-            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              activeTab === 'team'
-                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Team Hub</span>
-            <span className="sm:hidden">Team</span>
           </button>
 
           <button
             onClick={() => setActiveTab('enterprise')}
-            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'enterprise'
                 ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Enterprise B2B</span>
-            <span className="sm:hidden">B2B</span>
+            <span className="hidden sm:inline">B2B LoRA</span>
           </button>
         </nav>
 

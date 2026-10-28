@@ -102,6 +102,7 @@ import {
   benchmarkTimebaseAccuracy64,
   generateRenderTileGrid,
 } from '../utils/cinemaEngine';
+import { exportNleTimelineXml, exportCmx3600Edl } from '../utils/enterpriseCollabEngine';
 import { UserSubscription } from '../types/subscription';
 
 interface CinemaVfxEditorTabProps {
@@ -2242,7 +2243,7 @@ export const CinemaVfxEditorTab: React.FC<CinemaVfxEditorTabProps> = () => {
                 </div>
               )}
 
-              {/* Performance Foundation Toggles */}
+              {/* Performance Foundation Toggles & GPU Render Graph Controls */}
               <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
                 {(
                   [
@@ -2269,19 +2270,156 @@ export const CinemaVfxEditorTab: React.FC<CinemaVfxEditorTabProps> = () => {
                     />
                   </label>
                 ))}
+                <label className="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                  <span className="text-slate-300 truncate">HW Compute Shaders</span>
+                  <input
+                    type="checkbox"
+                    checked={perfConfig.hardwareEncodingDecoding}
+                    onChange={(e) =>
+                      setPerfConfig({ ...perfConfig, hardwareEncodingDecoding: e.target.checked })
+                    }
+                    className="rounded border-slate-700 bg-slate-900"
+                  />
+                </label>
+                <label className="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                  <span className="text-slate-300 truncate">Background Conform</span>
+                  <input
+                    type="checkbox"
+                    checked={perfConfig.backgroundConformActive}
+                    onChange={(e) =>
+                      setPerfConfig({ ...perfConfig, backgroundConformActive: e.target.checked })
+                    }
+                    className="rounded border-slate-700 bg-slate-900"
+                  />
+                </label>
               </div>
 
-              {/* Dispatch Render Button & Queue */}
-              <button
-                type="button"
-                onClick={handleQueueRenderJob}
-                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
-              >
-                <Server className="w-4 h-4" />
-                <span>
-                  Dispatch {projectSpec.codec} to {projectSpec.renderFarmNodes}-Node Render Farm
-                </span>
-              </button>
+              {/* Proxy Mode, Dynamic RAM Cache, Multi-GPU & Render Farm Node Controls */}
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5 text-xs font-mono">
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block mb-1">Proxy Mode</span>
+                    <select
+                      value={projectSpec.proxyQuality}
+                      onChange={(e) =>
+                        setProjectSpec({
+                          ...projectSpec,
+                          proxyQuality: e.target.value as ProxyQuality,
+                        })
+                      }
+                      className="w-full px-1.5 py-1 rounded bg-slate-900 border border-slate-800 text-white text-[11px]"
+                    >
+                      {(
+                        [
+                          '1:1 Full Master',
+                          '1/2 Proxy',
+                          '1/4 Proxy',
+                          '1/8 Proxy',
+                          '1/16 Super Proxy',
+                        ] as const
+                      ).map((pq) => (
+                        <option key={pq} value={pq}>
+                          {pq}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block mb-1">Multi-GPU</span>
+                    <select
+                      value={perfConfig.multiGpuCount}
+                      onChange={(e) => {
+                        const count = Number(e.target.value);
+                        setPerfConfig({ ...perfConfig, multiGpuCount: count });
+                        setRenderTiles(generateRenderTileGrid(4, 6, 1024, count));
+                      }}
+                      className="w-full px-1.5 py-1 rounded bg-slate-900 border border-slate-800 text-cyan-300 text-[11px]"
+                    >
+                      {[1, 2, 4, 8].map((g) => (
+                        <option key={g} value={g}>
+                          {g}x Local GPUs
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block mb-1">Render Farm</span>
+                    <select
+                      value={projectSpec.renderFarmNodes}
+                      onChange={(e) =>
+                        setProjectSpec({
+                          ...projectSpec,
+                          renderFarmNodes: Number(e.target.value),
+                        })
+                      }
+                      className="w-full px-1.5 py-1 rounded bg-slate-900 border border-slate-800 text-amber-300 text-[11px]"
+                    >
+                      {[1, 4, 8, 16, 32, 64].map((n) => (
+                        <option key={n} value={n}>
+                          {n} Cluster Nodes
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="text-slate-400">Dynamic RAM Cache Pool</span>
+                    <span className="text-emerald-400 font-bold">{perfConfig.dynamicRamCacheGb} GB RAM</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={16}
+                    max={512}
+                    step={16}
+                    value={perfConfig.dynamicRamCacheGb}
+                    onChange={(e) =>
+                      setPerfConfig({ ...perfConfig, dynamicRamCacheGb: Number(e.target.value) })
+                    }
+                    className="w-full accent-emerald-400"
+                  />
+                </div>
+              </div>
+
+              {/* Dispatch Render Button + NLE XML / EDL Interchange Export */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={handleQueueRenderJob}
+                  className="sm:col-span-2 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Server className="w-4 h-4 shrink-0" />
+                  <span className="truncate">
+                    Dispatch {projectSpec.codec} ({projectSpec.renderFarmNodes} Nodes)
+                  </span>
+                </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      exportNleTimelineXml(projectSpec.title, projectSpec.frameRate, projectSpec.width, projectSpec.height);
+                      notifyAction('NLE XML Exported', 'Downloaded Final Cut / Premiere XML v5');
+                    }}
+                    className="py-2 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-cyan-300 font-mono font-bold text-[11px]"
+                    title="Export NLE XML (.xml)"
+                  >
+                    XML
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      exportCmx3600Edl(projectSpec.title);
+                      notifyAction('CMX 3600 EDL Exported', 'Downloaded Broadcast EDL');
+                    }}
+                    className="py-2 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-amber-300 font-mono font-bold text-[11px]"
+                    title="Export CMX 3600 EDL (.edl)"
+                  >
+                    EDL
+                  </button>
+                </div>
+              </div>
+
 
               <div className="space-y-1.5 max-h-32 overflow-y-auto font-mono text-[11px] tabular-nums">
                 {renderQueue.map((job) => (

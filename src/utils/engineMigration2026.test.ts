@@ -7,8 +7,9 @@ import {
   simulateMagicHourJob,
 } from './engineMigration2026.js';
 
-test('VIDEO_ENGINES_2026: contains all late-2026 post-Sora alternative models', () => {
+test('VIDEO_ENGINES_2026: contains all late-2026 post-Sora alternative models including Sora 2 Ultra', () => {
   const ids = VIDEO_ENGINES_2026.map((e) => e.id);
+  assert.ok(ids.includes('sora-2-ultra'), 'Includes Sora 2 Ultra (32K · 1000 FPS · 100h)');
   assert.ok(ids.includes('leo-8k'), 'Includes LEO 8K DiT Master');
   assert.ok(ids.includes('veo3'), 'Includes Veo3 AI');
   assert.ok(ids.includes('seedance'), 'Includes Seedance 1.0 (Hedra)');
@@ -16,7 +17,7 @@ test('VIDEO_ENGINES_2026: contains all late-2026 post-Sora alternative models', 
   assert.ok(ids.includes('oakgen'), 'Includes Oakgen');
   assert.ok(ids.includes('heygen'), 'Includes HeyGen');
   assert.ok(ids.includes('insmind'), 'Includes InsMind');
-  assert.equal(VIDEO_ENGINES_2026.length, 7);
+  assert.equal(VIDEO_ENGINES_2026.length, 8);
 });
 
 test('VIDEO_ENGINES_2026: categorizes models correctly by use case', () => {
@@ -24,7 +25,7 @@ test('VIDEO_ENGINES_2026: categorizes models correctly by use case', () => {
   const dev = VIDEO_ENGINES_2026.filter((e) => e.category === 'Developer & API Migration');
   const social = VIDEO_ENGINES_2026.filter((e) => e.category === 'Social Media & Marketing');
 
-  assert.equal(cinematic.length, 3); // LEO 8K, Veo3, Seedance
+  assert.equal(cinematic.length, 4); // Sora 2 Ultra, LEO 8K, Veo3, Seedance
   assert.equal(dev.length, 2); // Magic Hour, Oakgen
   assert.equal(social.length, 2); // HeyGen, InsMind
 });

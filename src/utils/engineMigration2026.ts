@@ -5,6 +5,7 @@
  */
 
 export type VideoEngineId =
+  | 'sora-2-ultra'
   | 'leo-8k'
   | 'veo3'
   | 'seedance'
@@ -39,6 +40,29 @@ export interface VideoEngineProfile {
 }
 
 export const VIDEO_ENGINES_2026: VideoEngineProfile[] = [
+  {
+    id: 'sora-2-ultra',
+    name: 'Sora 2 Ultra (32K · 1000 FPS · 100h)',
+    vendor: 'OpenAI / MemeForge Next-Gen Cluster',
+    category: 'Cinematic & 8K Video',
+    bestFor: '32K (32000×32000) Master Plates, 1000 FPS High-Speed Motion & 100-Hour Continuous Worlds',
+    keyAdvantageOverSora: 'Next-gen Sora 2 Ultra architecture with 8×8 tiled 32K Causal 3D VAE, 1000 FPS 1ms shutter synthesis, and 100-hour hierarchical episodic memory',
+    maxResolution: '32K Master (32000×32000)',
+    pricingSummary: 'Included in India Pro (₹999/mo) & Enterprise Cluster (₹99,999/mo)',
+    pricingModel: 'Seat Subscription',
+    highlightFeatures: [
+      '32K (32000×32000 · 1,024 MP/frame) 8×8 Zero-Seam Latent Tiling',
+      '1000 FPS High-Speed Temporal Attention (1ms shutter interval)',
+      '100-Hour Continuous Autoregressive Ring-Buffer Streaming (360M frames)',
+      'FP8-E4M3 Quantized DiT + BF16 Causal 3D VAE with GPUDirect NVMe',
+    ],
+    latencyRank: 'Interactive (~10s)',
+    recommendedUseCases: ['32K IMAX / Dome master plates', '1000 FPS scientific & action VFX', '100-hour autonomous world streams'],
+    cameraControl: '6-Axis Physics & Splines',
+    apiAvailable: true,
+    isOpenAccess: true,
+    badge: '32K · 1000FPS · 100H',
+  },
   {
     id: 'leo-8k',
     name: 'LEO 8K DiT Master',

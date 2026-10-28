@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  INITIAL_TIMESTAMPED_COMMENTS,
+  INITIAL_MERGE_CONFLICTS,
+  INITIAL_CLOUD_CONNECTORS,
+  INITIAL_E2EE_CONFIG,
+  exportNleTimelineXml,
+  exportCmx3600Edl,
+} from './enterpriseCollabEngine.ts';
+
+test('enterpriseCollabEngine: provides initial timestamped comments, CRDT conflicts, E2EE config, and cloud connectors', () => {
+  assert.ok(INITIAL_TIMESTAMPED_COMMENTS.length >= 3);
+  assert.ok(INITIAL_MERGE_CONFLICTS.length >= 2);
+  assert.equal(INITIAL_CLOUD_CONNECTORS.length, 2);
+  assert.equal(INITIAL_E2EE_CONFIG.enabled, true);
+  assert.ok(INITIAL_E2EE_CONFIG.cipherSuite.includes('AES-256-GCM'));
+});
+
+test('exportNleTimelineXml and exportCmx3600Edl: generate valid FCPXML and CMX 3600 EDL interchange strings', () => {
+  const xml = exportNleTimelineXml('Neon_Odyssey_32K_Master', 1000, 32000, 32000);
+  assert.ok(xml.includes('<xmeml version="5">'));
+  assert.ok(xml.includes('Neon_Odyssey_32K_Master'));
+  assert.ok(xml.includes('<width>32000</width>'));
+
+  const edl = exportCmx3600Edl('Neon_Odyssey_32K_Master');
+  assert.ok(edl.includes('TITLE: NEON_ODYSSEY_32K_MASTER'));
+  assert.ok(edl.includes('FCM: NON-DROP FRAME'));
+  assert.ok(edl.includes('ARRI_32K_OMNIMAX_PLATE_CAM_A_1000FPS.EXR'));
+});

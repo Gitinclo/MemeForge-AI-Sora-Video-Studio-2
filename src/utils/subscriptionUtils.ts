@@ -46,6 +46,7 @@ export function canAccessResolution(resolution: string, subscription?: UserSubsc
  */
 export function canAccessFrameRate(fps: number, subscription?: UserSubscription | null): boolean {
   const limits = getPlanLimits(subscription);
+  if (limits.videoMaxFps >= 120) return fps <= 1000;
   return fps <= limits.videoMaxFps;
 }
 

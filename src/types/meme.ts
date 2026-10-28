@@ -90,8 +90,14 @@ export interface VideoProjectSpec {
   title: string;
   prompt: string;
   negativePrompt: string;
-  resolution: '720p HD' | '1080p FHD' | '4K Ultra' | '8K Cinema Master';
-  frameRate: 24 | 30 | 60 | 120;
+  resolution:
+    | '720p HD'
+    | '1080p FHD'
+    | '4K Ultra'
+    | '8K Cinema Master'
+    | '16K IMAX'
+    | '32K Master (32000×32000)';
+  frameRate: 24 | 30 | 60 | 120 | 240 | 480 | 1000;
   aspectRatio: '16:9' | '9:16' | '1:1' | '21:9';
   cameraMotion: 'Static' | 'Dolly Zoom In' | 'Pan Right' | 'Tilt Up' | 'Orbit 360' | 'FPV Drone Dive';
   style: 'Photorealistic' | 'Cyberpunk Neon' | 'Cinematic Film 35mm' | 'Anime Ethereal' | 'Retro VHS';

@@ -80,6 +80,14 @@ import {
   applyMotionPresetToLayer,
 } from '../utils/leoKeyframeEngine';
 import { clampNumber, createPrefixedId, triggerBrowserDownload } from '../utils/sharedCoreEngine';
+import { AiVfxToolState, AiVfxFeatureId } from '../types/cinemaEngine';
+import { DEFAULT_AI_VFX_TOOLS } from '../utils/cinemaEngine';
+import {
+  Sora2UltraConfig,
+  DEFAULT_SORA2_ULTRA_CONFIG,
+  calculateSora2UltraMetrics,
+  buildSora2UltraChapterPlan,
+} from '../utils/sora2UltraEngine';
 
 interface LeoStudioTabProps {
   onMemeToVideoPrompt?: (promptText: string) => void;
@@ -97,16 +105,19 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   onOpenYouTubePublish,
 }) => {
   const [spec, setSpec] = useState<VideoProjectSpec>({
-    title: 'Neon Odyssey: Hyper-Reality',
-    prompt: 'A cyberpunk courier gliding on an anti-gravity hoverboard through rain-slicked Tokyo skyscrapers, neon reflections, anamorphic 35mm lens flare, 4K detail',
+    title: 'Neon Odyssey: Hyper-Reality (Sora 2 Ultra 32K)',
+    prompt: 'A cyberpunk courier gliding on an anti-gravity hoverboard through rain-slicked Tokyo skyscrapers, neon reflections, anamorphic 35mm lens flare, 32K 1000fps hyper-detail',
     negativePrompt: 'blurry, low quality, artifacts, glitching, cartoonish, distorted face',
-    resolution: '4K Ultra',
-    frameRate: 60,
+    resolution: '32K Master (32000×32000)',
+    frameRate: 1000,
     aspectRatio: '16:9',
     cameraMotion: 'Dolly Zoom In',
     style: 'Photorealistic',
     durationHours: 100, // 100 hours max duration
   });
+
+  const [sora2Config, setSora2Config] = useState<Sora2UltraConfig>(DEFAULT_SORA2_ULTRA_CONFIG);
+  const [selectedSora2Act, setSelectedSora2Act] = useState<number>(1);
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [isRendering, setIsRendering] = useState(false);
@@ -124,7 +135,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const [durationInputUnit, setDurationInputUnit] = useState<'hours' | 'minutes' | 'seconds'>('hours');
 
   // 2026 Multi-Model Engine Routing State
-  const [selectedEngineId, setSelectedEngineId] = useState<VideoEngineId>('leo-8k');
+  const [selectedEngineId, setSelectedEngineId] = useState<VideoEngineId>('sora-2-ultra');
   const [isEngineHubOpen, setIsEngineHubOpen] = useState(false);
   const [isVibeGuideOpen, setIsVibeGuideOpen] = useState(false);
   const [isLinuxDitHostOpen, setIsLinuxDitHostOpen] = useState(false);
@@ -157,6 +168,18 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const computeMetrics = calculateVideoComputeMetrics(spec.durationHours || 100, spec.frameRate, spec.resolution);
   const master8kMetrics = calculate8kMasterMetrics(spec.durationHours || 100, spec.frameRate);
   const cascadeStages = getCascadedPipelineStages();
+  const sora2Metrics = calculateSora2UltraMetrics({
+    ...sora2Config,
+    resolution: spec.resolution,
+    fps: spec.frameRate,
+    durationHours: spec.durationHours || 100,
+  });
+  const sora2Chapters = buildSora2UltraChapterPlan(
+    spec.durationHours || 100,
+    spec.frameRate,
+    spec.resolution,
+    spec.prompt
+  );
 
   // Timeline Keyframe Animation State for Text Layers (Position, Scale, Rotation)
   const [animatedTextLayers, setAnimatedTextLayers] = useState<LeoAnimatedTextLayer[]>(
@@ -168,6 +191,24 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const [selectedEasing, setSelectedEasing] = useState<KeyframeEasingType>('easeInOut');
   const [isExportingKeyframedVideo, setIsExportingKeyframedVideo] = useState(false);
   const [keyframeExportProgress, setKeyframeExportProgress] = useState<number | null>(null);
+
+  // MODULE 2: LEO AI Toolset Panel State (11 Neural Passes)
+  const [leoAiTools, setLeoAiTools] = useState<AiVfxToolState[]>(DEFAULT_AI_VFX_TOOLS);
+  const [aiToolStatusBanner, setAiToolStatusBanner] = useState<string>('');
+  const enabledLeoAiToolsCount = leoAiTools.filter((t) => t.enabled).length;
+
+  const handleToggleLeoAiTool = (toolId: AiVfxFeatureId) => {
+    setLeoAiTools((prev) =>
+      prev.map((t) => {
+        if (t.id !== toolId) return t;
+        const nextEnabled = !t.enabled;
+        setAiToolStatusBanner(
+          `${t.name}: ${nextEnabled ? `Enabled (${t.intensity}% intensity · ${t.gpuComputeMs}ms)` : 'Bypassed'}`
+        );
+        return { ...t, enabled: nextEnabled };
+      })
+    );
+  };
 
   const timelineProgressRatio =
     totalDurationSec > 0 ? clampNumber(currentTimecode / totalDurationSec, 0, 1) : 0;
@@ -418,7 +459,30 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
 
     let stages: Array<{ p: number; msg: string }> = [];
 
-    if (selectedEngineId === 'seedance') {
+    if (selectedEngineId === 'sora-2-ultra') {
+      stages = [
+        {
+          p: 15,
+          msg: `Sora 2 Ultra: Encoding T5-XXL prompt & ${sora2Config.episodicMemoryAnchors} episodic memory anchors across ${sora2Config.ringAttentionGpuCount} GPUs...`,
+        },
+        {
+          p: 40,
+          msg: `Causal 3D VAE Tiling (${sora2Config.spatialTilingGrid}): Synthesizing ${spec.resolution} (${sora2Metrics.megapixelsPerFrame} MP/frame) in ${sora2Config.precisionMode}...`,
+        },
+        {
+          p: 70,
+          msg: `1000 FPS Temporal Ring-Attention: Solving ${spec.frameRate} FPS (${sora2Metrics.shutterIntervalMs}ms shutter) across ${totalFrames.toLocaleString()} total frames...`,
+        },
+        {
+          p: 90,
+          msg: `GPUDirect NVMe Streaming (${sora2Metrics.nvmeGpuDirectThroughputGbps} GB/s): Flushing 100h sliding-window chunks (${sora2Metrics.activeVramPerGpuGb} GB VRAM/GPU)...`,
+        },
+        {
+          p: 100,
+          msg: `Sora 2 Ultra Render Complete: ${hoursStr} @ ${spec.resolution} (${spec.frameRate} FPS) master stream ready!`,
+        },
+      ];
+    } else if (selectedEngineId === 'seedance') {
       stages = [
         { p: 15, msg: `Seedance 1.0 (Hedra): Solving 6-axis camera physics (Pan: ${seedancePan}°, Tilt: ${seedanceTilt}°, Roll: ${seedanceRoll}°)...` },
         { p: 40, msg: `Trajectory Splines: Synthesizing ${seedanceTrajectory} vectors with zero subject coordinate drift...` },
@@ -661,13 +725,13 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
             <div>
               <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
                 <span>LEO Video Studio</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-amber-500 text-white uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 text-white uppercase tracking-wider flex items-center gap-1 shadow-sm">
                   <Flame className="w-3 h-3 text-amber-300" />
-                  Veo 3.1 • 100h Max
+                  Sora 2 Ultra • 32K • 1000 FPS • 100h Max
                 </span>
               </h3>
               <p className="text-xs text-slate-400">
-                Text-to-Video generation with professional multi-resolution, up to 100 hours max duration &amp; distributed GPU cluster rendering
+                Sora 2 Ultra Text-to-Video generator supporting 32K (32000×32000) resolution, 1000 FPS high-speed synthesis &amp; 100-hour continuous streaming
               </p>
             </div>
           </div>
@@ -783,7 +847,9 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
             <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-1 rounded-lg bg-black/75 border border-purple-500/40 text-purple-300 text-xs font-mono font-bold flex items-center gap-1.5 backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                {selectedEngineId === 'leo-8k'
+                {selectedEngineId === 'sora-2-ultra'
+                  ? 'Sora 2 Ultra (32K · 1000 FPS · 100h)'
+                  : selectedEngineId === 'leo-8k'
                   ? 'LEO DiT 8K Cascaded'
                   : selectedEngineId === 'veo3'
                   ? 'Veo3 AI (Unrestricted)'
@@ -799,6 +865,9 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
               </span>
               <span className="px-2 py-1 rounded-lg bg-black/75 border border-slate-700 text-slate-300 text-xs font-mono backdrop-blur-md">
                 {spec.aspectRatio}
+              </span>
+              <span className="px-2 py-1 rounded-lg bg-black/75 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-bold backdrop-blur-md">
+                AI Suite: {enabledLeoAiToolsCount}/11 Active
               </span>
             </div>
 
@@ -1365,8 +1434,9 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                 {[
+                  { id: 'sora-2-ultra', label: 'Sora 2 Ultra', tag: '32K · 1000FPS · 100h', color: 'border-amber-400 text-amber-300' },
                   { id: 'leo-8k', label: 'LEO 8K DiT', tag: '8K Master', color: 'border-purple-500 text-purple-300' },
                   { id: 'veo3', label: 'Veo3 AI', tag: 'Creative Free', color: 'border-blue-500 text-blue-300' },
                   { id: 'seedance', label: 'Seedance 1.0', tag: '6-Axis Physics', color: 'border-amber-500 text-amber-300' },
@@ -1403,24 +1473,35 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
               />
             </div>
 
-            {/* Resolution Buttons */}
+            {/* Resolution Buttons (720p -> 32K Master 32000x32000) */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Resolution Output Control
+                  Resolution Output Control (Up to 32K Sora 2 Ultra)
                 </label>
-                {spec.resolution === '8K Cinema Master' && (
-                  <span className="text-[10px] font-mono text-cyan-400 font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                    33.18 Megapixels / Frame
-                  </span>
-                )}
+                <span className="text-[10px] font-mono text-cyan-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                  {sora2Metrics.width}×{sora2Metrics.height} ({sora2Metrics.megapixelsPerFrame} MP/Frame)
+                </span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {(['720p HD', '1080p FHD', '4K Ultra', '8K Cinema Master'] as const).map((res) => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {(
+                  [
+                    '720p HD',
+                    '1080p FHD',
+                    '4K Ultra',
+                    '8K Cinema Master',
+                    '16K IMAX',
+                    '32K Master (32000×32000)',
+                  ] as const
+                ).map((res) => {
                   const isSel = spec.resolution === res;
                   const isProRes = res !== '720p HD';
                   const isAllowed = canAccessResolution(res, subscription);
+                  const shortLabel =
+                    res === '32K Master (32000×32000)'
+                      ? '32K (32000×32000)'
+                      : res.replace(' Cinema Master', '');
                   return (
                     <button
                       key={res}
@@ -1430,26 +1511,172 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
                       }}
                       className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all relative flex flex-col items-center justify-center ${
                         isSel
-                          ? 'bg-purple-500/20 border-purple-500 text-purple-300 shadow-md shadow-purple-500/10'
+                          ? res === '32K Master (32000×32000)'
+                            ? 'bg-gradient-to-r from-amber-500/25 via-purple-500/25 to-cyan-500/25 border-amber-400 text-amber-200 shadow-md shadow-amber-500/10'
+                            : 'bg-purple-500/20 border-purple-500 text-purple-300 shadow-md shadow-purple-500/10'
                           : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                       }`}
                     >
                       <span className="flex items-center gap-1">
-                        <span className="truncate">{res.replace(' Cinema Master', '')}</span>
+                        <span className="truncate">{shortLabel}</span>
                         {isProRes && !isProUser && (
                           <span className="text-[8px] font-black px-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
                             PRO
                           </span>
                         )}
                       </span>
-                      {res === '8K Cinema Master' && (
-                        <span className="text-[8px] font-mono text-cyan-400 font-bold mt-0.5">8K DiT</span>
-                      )}
+                      {res === '32K Master (32000×32000)' ? (
+                        <span className="text-[8px] font-mono text-amber-300 font-bold mt-0.5">
+                          1,024 MP • SORA 2 ULTRA
+                        </span>
+                      ) : res === '16K IMAX' ? (
+                        <span className="text-[8px] font-mono text-purple-300 font-bold mt-0.5">
+                          132.7 MP • IMAX
+                        </span>
+                      ) : res === '8K Cinema Master' ? (
+                        <span className="text-[8px] font-mono text-cyan-400 font-bold mt-0.5">
+                          33.18 MP • 8K DiT
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })}
               </div>
             </div>
+
+            {/* SORA 2 ULTRA (32K · 1000 FPS · 100 HOURS) HIERARCHICAL ENGINE INSPECTOR */}
+            {selectedEngineId === 'sora-2-ultra' && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/35 via-slate-950 to-purple-950/40 border border-amber-500/40 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-amber-400" />
+                    Sora 2 Ultra: 32K · 1000 FPS · 100h Ring-Attention Engine
+                  </span>
+                  <span className="text-[10px] font-mono text-cyan-300 font-bold px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 shrink-0">
+                    {sora2Metrics.shutterIntervalMs}ms Shutter
+                  </span>
+                </div>
+
+                {/* Spatial Tiling & Precision Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+                  <div className="p-2 rounded-xl bg-slate-950/90 border border-slate-800 space-y-1">
+                    <span className="text-slate-400 block">Causal 3D VAE Spatial Tiling</span>
+                    <select
+                      value={sora2Config.spatialTilingGrid}
+                      onChange={(e) =>
+                        setSora2Config((prev) => ({
+                          ...prev,
+                          spatialTilingGrid: e.target.value as Sora2UltraConfig['spatialTilingGrid'],
+                        }))
+                      }
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-amber-300 font-mono text-[10px]"
+                    >
+                      <option value="8x8 Ultra-Tile (32K)">8×8 Ultra-Tile (32K Zero-Seam)</option>
+                      <option value="4x4 Zero-Seam Tile">4×4 Zero-Seam Tile (16K)</option>
+                      <option value="2x2 Tiled Latent">2×2 Tiled Latent (8K)</option>
+                      <option value="1x1 Native">1×1 Single Latent Grid</option>
+                    </select>
+                  </div>
+
+                  <div className="p-2 rounded-xl bg-slate-950/90 border border-slate-800 space-y-1">
+                    <span className="text-slate-400 block">DiT Quantization &amp; VAE Precision</span>
+                    <select
+                      value={sora2Config.precisionMode}
+                      onChange={(e) =>
+                        setSora2Config((prev) => ({
+                          ...prev,
+                          precisionMode: e.target.value as Sora2UltraConfig['precisionMode'],
+                        }))
+                      }
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-cyan-300 font-mono text-[10px]"
+                    >
+                      <option value="FP8-E4M3 + BF16 VAE">FP8-E4M3 Linear + BF16 VAE</option>
+                      <option value="BF16 Dense Master">BF16 Dense Reference Master</option>
+                      <option value="INT4-AWQ Fast Stream">INT4-AWQ Realtime Stream</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Live 32K / 1000 FPS / 100h Telemetry Strip */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] font-mono">
+                  <div className="p-2 rounded-xl bg-slate-950/90 border border-slate-800">
+                    <div className="text-slate-400 text-[9px]">3D Latent Shape</div>
+                    <div className="text-purple-300 font-bold truncate">
+                      {sora2Metrics.latentWidth}×{sora2Metrics.latentHeight}
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-950/90 border border-slate-800">
+                    <div className="text-slate-400 text-[9px]">Active HBM / GPU</div>
+                    <div className="text-emerald-300 font-bold">{sora2Metrics.activeVramPerGpuGb} GB</div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-950/90 border border-slate-800">
+                    <div className="text-slate-400 text-[9px]">GPUDirect NVMe</div>
+                    <div className="text-cyan-300 font-bold">
+                      {sora2Metrics.nvmeGpuDirectThroughputGbps} GB/s
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-950/90 border border-slate-800">
+                    <div className="text-slate-400 text-[9px]">100h Master Est.</div>
+                    <div className="text-amber-300 font-bold">
+                      {sora2Metrics.estimatedCompressedMasterTb} TB
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5-Act Hierarchical Episodic Storyboard & Memory Checkpoints */}
+                <div className="space-y-1.5 pt-1 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-bold text-slate-300">
+                      100-Hour Episodic Memory Checkpoints (5-Act Horizon)
+                    </span>
+                    <span className="font-mono text-emerald-400">Zero Drift Anchor Lock</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1">
+                    {sora2Chapters.map((ch) => (
+                      <button
+                        key={ch.actNumber}
+                        type="button"
+                        onClick={() => setSelectedSora2Act(ch.actNumber)}
+                        className={`p-1.5 rounded-lg border text-center transition-all ${
+                          selectedSora2Act === ch.actNumber
+                            ? 'bg-amber-500/20 border-amber-400 text-white'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="text-[9px] font-mono font-bold text-amber-300">
+                          Act {ch.actNumber}
+                        </div>
+                        <div className="text-[8px] font-mono text-slate-400 truncate">
+                          {ch.endTimecode}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {(() => {
+                    const activeAct =
+                      sora2Chapters.find((c) => c.actNumber === selectedSora2Act) ||
+                      sora2Chapters[0];
+                    return (
+                      <div className="p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 text-[10px] space-y-1">
+                        <div className="flex items-center justify-between font-bold">
+                          <span className="text-white">{activeAct.title}</span>
+                          <span className="font-mono text-emerald-400">
+                            Retention: {activeAct.memoryRetentionScore}%
+                          </span>
+                        </div>
+                        <p className="text-slate-400 leading-relaxed">{activeAct.description}</p>
+                        <div className="flex items-center justify-between font-mono text-[9px] text-slate-500 pt-1">
+                          <span>
+                            Span: {activeAct.startTimecode} → {activeAct.endTimecode}
+                          </span>
+                          <span className="text-cyan-400">Anchor: {activeAct.anchorLatentHash}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
 
             {/* Specialized Dynamic Inspector per Selected 2026 Engine */}
             {selectedEngineId === 'leo-8k' && (
@@ -1911,13 +2138,18 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
               </div>
             )}
 
-            {/* Frame Rate Buttons */}
+            {/* Frame Rate Buttons (24 -> 1000 FPS High-Speed Temporal Synthesis) */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Frame Rate (Temporal Cadence)
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {([24, 30, 60, 120] as const).map((fps) => {
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Frame Rate (Temporal Cadence · Up to 1000 FPS)
+                </label>
+                <span className="text-[10px] font-mono text-amber-300 font-bold">
+                  {spec.frameRate} FPS ({sora2Metrics.shutterIntervalMs}ms/frame)
+                </span>
+              </div>
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                {([24, 30, 60, 120, 240, 480, 1000] as const).map((fps) => {
                   const isSel = spec.frameRate === fps;
                   const isProFps = fps > 30;
                   const isAllowed = canAccessFrameRate(fps, subscription);
@@ -1928,18 +2160,22 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
                         setSpec({ ...spec, frameRate: fps });
                         if (!isAllowed) onOpenSubscriptionModal?.();
                       }}
-                      className={`py-2 rounded-xl text-xs font-bold border transition-all relative flex items-center justify-center gap-1 ${
+                      className={`py-2 px-1 rounded-xl text-[11px] font-bold border transition-all relative flex flex-col items-center justify-center ${
                         isSel
-                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-md shadow-cyan-500/10'
+                          ? fps === 1000
+                            ? 'bg-gradient-to-r from-amber-500/25 to-cyan-500/25 border-amber-400 text-amber-200 shadow-md shadow-amber-500/10'
+                            : 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-md shadow-cyan-500/10'
                           : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                       }`}
                     >
                       <span>{fps} fps</span>
-                      {isProFps && !isProUser && (
-                        <span className="text-[8px] font-black px-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      {fps === 1000 ? (
+                        <span className="text-[7px] font-mono text-amber-300 font-black">1ms ULTRA</span>
+                      ) : isProFps && !isProUser ? (
+                        <span className="text-[7px] font-black px-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
                           PRO
                         </span>
-                      )}
+                      ) : null}
                     </button>
                   );
                 })}
@@ -2252,8 +2488,93 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
               </button>
             )}
           </div>
+
+          {/* MODULE 2: LEO AI Toolset Panel (11 Neural Video & Audio Passes) */}
+          <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-3.5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Wand2 className="w-4 h-4 text-cyan-400" />
+                  <span>AI Toolset Panel (11 Neural Passes)</span>
+                </h4>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Object removal, masking, rotoscoping, interpolation, upscaling, denoise, stabilization, subtitles, speech &amp; color match
+                </p>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono font-bold shrink-0">
+                {enabledLeoAiToolsCount} / 11 Active
+              </span>
+            </div>
+
+            {aiToolStatusBanner && (
+              <div className="px-3 py-1.5 rounded-xl bg-cyan-950/50 border border-cyan-500/40 text-[11px] font-mono text-cyan-200 flex items-center justify-between">
+                <span>{aiToolStatusBanner}</span>
+                <button
+                  type="button"
+                  onClick={() => setAiToolStatusBanner('')}
+                  className="text-slate-400 hover:text-white ml-2"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {leoAiTools.map((tool) => (
+                <div
+                  key={tool.id}
+                  className={`p-2.5 rounded-xl border transition-colors flex items-center justify-between gap-2.5 ${
+                    tool.enabled
+                      ? 'bg-slate-950 border-cyan-500/40'
+                      : 'bg-slate-950/60 border-slate-800'
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-bold text-white truncate">{tool.name}</span>
+                      <span className="text-[10px] font-mono text-cyan-400 shrink-0">
+                        · {tool.gpuComputeMs}ms
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">{tool.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={tool.intensity}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setLeoAiTools((prev) =>
+                          prev.map((t) => (t.id === tool.id ? { ...t, intensity: val } : t))
+                        );
+                      }}
+                      className="w-14 accent-cyan-400"
+                      title={`Intensity: ${tool.intensity}%`}
+                    />
+                    <span className="w-7 text-right font-mono text-[10px] text-slate-300">
+                      {tool.intensity}%
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleLeoAiTool(tool.id)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-colors ${
+                        tool.enabled
+                          ? 'bg-cyan-500 text-slate-950'
+                          : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {tool.enabled ? 'Active' : 'Enable'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
 
       {/* 8K Cascaded DiT Technical Architecture Blueprint Modal */}
       {isBlueprintModalOpen && (
