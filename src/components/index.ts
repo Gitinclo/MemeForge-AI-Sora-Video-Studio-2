@@ -26,4 +26,5 @@ export { OriginalAppletBridgeModal } from './OriginalAppletBridgeModal';
 export { PWAInstallButton } from './PWAInstallButton';
 export { SubscriptionModal } from './SubscriptionModal';
 export { TeamWorkspaceTab } from './TeamWorkspaceTab';
+export { VibeCoderGuideModal } from './VibeCoderGuideModal';
 export { YouTubePublishTab } from './YouTubePublishTab';

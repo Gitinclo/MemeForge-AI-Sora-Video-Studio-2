@@ -61,6 +61,7 @@ import {
   getInfrastructureStackConfig,
 } from '../utils/leo8kEngine';
 import { EngineHub2026Modal } from './EngineHub2026Modal';
+import { VibeCoderGuideModal } from './VibeCoderGuideModal';
 import {
   VideoEngineId,
   VIDEO_ENGINES_2026,
@@ -112,6 +113,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   // 2026 Multi-Model Engine Routing State
   const [selectedEngineId, setSelectedEngineId] = useState<VideoEngineId>('leo-8k');
   const [isEngineHubOpen, setIsEngineHubOpen] = useState(false);
+  const [isVibeGuideOpen, setIsVibeGuideOpen] = useState(false);
 
   // Seedance 1.0 (Hedra) 6-Axis Physics & Trajectory Spline State
   const [seedancePan, setSeedancePan] = useState(15); // degrees
@@ -454,6 +456,40 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
           >
             <BookOpen className="w-3.5 h-3.5 text-amber-400" />
             <span>8K DiT Blueprint</span>
+          </button>
+
+          <button
+            onClick={() => setIsVibeGuideOpen(true)}
+            className="px-3 py-1.5 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+            title="Running a Sora-Style Video App: A Vibe Coder's Guide (Single GPU Docker, VRAM, S3/R2 & FastAPI)"
+          >
+            <Server className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Vibe Coder&apos;s GPU Guide</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Vibe Coder's Sora-Style Video App Quick-Start Strip */}
+      <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-cyan-400 font-semibold">
+            <span>Running a Sora-Style Video App: A Vibe Coder&apos;s Guide</span>
+            <span className="text-slate-600">·</span>
+            <span className="text-slate-300 font-normal">
+              Start small (Runway / Luma / Veo API or Wan / CogVideoX on 1 rented GPU) · Single Docker container on Ubuntu CUDA · Store MP4s on S3 / Cloudflare R2 + CDN
+            </span>
+          </div>
+          <p className="text-xs text-slate-400">
+            Check model card VRAM (24 GB with CPU model offloading vs. 40–80 GB cards), skip InfiniBand/RDMA &amp; Kubernetes/Slurm for single-GPU apps, and generate a ready-to-run Dockerfile + FastAPI <code className="text-cyan-300 font-mono">/generate</code> (5m timeout) &amp; <code className="text-emerald-300 font-mono">/health</code> service.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsVibeGuideOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <Terminal className="w-3.5 h-3.5" />
+            <span>Open Vibe Coder Guide &amp; FastAPI Builder</span>
           </button>
         </div>
       </div>
@@ -1926,6 +1962,13 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
         activeEngineId={selectedEngineId}
         onSelectEngine={(newEngine) => setSelectedEngineId(newEngine)}
         currentPrompt={spec.prompt}
+      />
+
+      {/* Running a Sora-Style Video App: A Vibe Coder's Guide Modal */}
+      <VibeCoderGuideModal
+        isOpen={isVibeGuideOpen}
+        onClose={() => setIsVibeGuideOpen(false)}
+        initialPrompt={spec.prompt}
       />
     </div>
   );

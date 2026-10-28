@@ -169,6 +169,20 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 - **Progressive Web App (PWA) & Offline Support**:
   - Full Web App Manifest (`public/manifest.webmanifest`), offline service worker (`public/sw.js`), `beforeinstallprompt` hook (`src/hooks/usePWAInstall.ts`), and an in-app installation guide modal (`src/components/PWAInstallButton.tsx`) for iOS Safari, Android Chrome, and Desktop browsers.
 
+### 9. 🖥️ Running a Sora-Style Video App: A Vibe Coder's Guide (`VibeCoderGuideModal.tsx` & `vibeCoderGuideEngine.ts`)
+- **Start Small (Hosted API vs. Single-GPU Open Source)**:
+  - Side-by-side planner comparing pay-per-clip Hosted Video APIs (**Google Veo**, **Runway**, **Luma**) against open-source models (**Wan 2.1**, **CogVideoX**) running on a single rented GPU.
+- **Hourly GPU Rental & Single-Container Docker**:
+  - Curated hourly GPU catalog across **RunPod**, **Lambda**, **AWS**, **Google Cloud**, and **Azure** built on a lean **Ubuntu 22.04 CUDA** server image (skipping Kubernetes/Slurm, InfiniBand/RDMA, desktop environments, Bottlerocket, and enterprise NVIDIA DGX OS).
+- **GPU Memory (VRAM) Watchdog & Model Offloading**:
+  - Checks model card VRAM requirements (`24 GB` vs. `40–80 GB` cards) and automatically recommends quantized weights (`INT8` / `FP8`) or `pipe.enable_model_cpu_offload()` before upgrading hardware.
+- **External Object Storage & CDN Calculator**:
+  - Calculates monthly storage and bandwidth savings when offloading generated MP4 clips from expensive ephemeral GPU disks to **Amazon S3 + CloudFront** or **Cloudflare R2 ($0 egress) + CDN**.
+- **Prompt-to-Dockerfile & FastAPI Generator + Live Sandbox**:
+  - Interactive generator for the exact plain-English prompts:
+    1. `Dockerfile` based on `nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04` with Python 3.11, PyTorch CUDA, Diffusers, FastAPI, and Boto3.
+    2. `app.py` exposing `POST /generate` (5-minute timeout, MP4 export, S3/R2 upload & CDN link) and the follow-up `GET /health` endpoint + per-job GPU VRAM memory logging (`torch.cuda.max_memory_allocated()`).
+
 ---
 
 ## 🛠️ Getting Started (Local Development)
@@ -207,8 +221,9 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **73-test suite across 12 test suites** covering:
+Runs the full **78-test suite across 13 test suites** covering:
 - **Shared Core Engine (`sharedCoreEngine.test.ts`)**: Numeric clamping, UTF-8 SVG data URI encoding, byte size formatting, prefixed ID generation, `localStorage` JSON adapters, and Original AI Studio Applet (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) URL resolution.
+- **Vibe Coder Sora-Style App Guide Engine (`vibeCoderGuideEngine.test.ts`)**: 24 GB vs. 40–80 GB GPU VRAM evaluation, `enable_model_cpu_offload()` compatibility, Amazon S3 vs. Cloudflare R2 CDN cost calculation, and Ubuntu CUDA `Dockerfile` + FastAPI `/generate` (5m timeout) & `/health` code generation.
 - **Enterprise B2B LoRA & Model Sandbox Engine (`b2bEnterpriseEngine.test.ts`)**: 5-stage LoRA training progression, ETA formatting, H100/B200 GPU telemetry perturbation, `{{token}}` prompt injection, and physical invariant consistency scoring.
 - **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
 - **2026 Multi-Model Engine Migration (`engineMigration2026.test.ts`)**: Sora-2 to Magic Hour / Veo 3.1 / Kling 2.5 / Runway Gen-4.5 / Luma Ray 3 payload adapters and pricing calculators.
@@ -277,6 +292,8 @@ All AI model and publishing operations are handled server-side via Express route
 | `/api/youtube/generate-metadata` | `POST` | `gemini-4-argon` | High-CTR YouTube Title, Description, Tags & Virality Score generator |
 | `/api/youtube/upload` | `POST` | YouTube Data API v3 | Resumable binary video upload with OAuth 2.0 Bearer token |
 | `/api/magic-hour/generate` | `POST` | Magic Hour / 2026 Hub | Sora-compatible drop-in video generation & migration dispatcher |
+| `/api/vibe-coder/health` | `GET` | Single-GPU FastAPI Health | Returns CUDA availability, device name, and allocated/reserved VRAM |
+| `/api/vibe-coder/generate` | `POST` | Single-GPU Video Worker | Runs `/generate` with 5m timeout, logs per-job VRAM, and returns S3/R2 MP4 link |
 
 ---
 
@@ -321,6 +338,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── PWAInstallButton.tsx
 │   │   ├── SubscriptionModal.tsx    # India UPI & 4-Tier Global PPP subscription manager
 │   │   ├── TeamWorkspaceTab.tsx
+│   │   ├── VibeCoderGuideModal.tsx  # Vibe Coder's Sora-Style App Guide, VRAM Advisor & FastAPI Builder
 │   │   ├── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
 │   │   └── index.ts                 # Centralized component barrel export
 │   ├── data/
@@ -343,6 +361,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── memeAudioEngine.ts
 │   │   ├── pppPricingUtils.ts
 │   │   ├── subscriptionUtils.ts
+│   │   ├── vibeCoderGuideEngine.ts  # Single-GPU VRAM calculator, S3/R2 estimator & Dockerfile/FastAPI generator
 │   │   ├── videoDurationUtils.ts
 │   │   ├── youtubeUploadUtils.ts
 │   │   └── index.ts                 # Centralized engine & utility barrel export

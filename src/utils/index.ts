@@ -12,5 +12,6 @@ export * from './leo8kEngine';
 export * from './memeAudioEngine';
 export * from './pppPricingUtils';
 export * from './subscriptionUtils';
+export * from './vibeCoderGuideEngine';
 export * from './videoDurationUtils';
 export * from './youtubeUploadUtils';

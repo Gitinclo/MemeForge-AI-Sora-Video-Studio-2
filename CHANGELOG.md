@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.0] - 2026-10-28
 
 ### Added & Improved
+- **Running a Sora-Style Video App: A Vibe Coder's Guide (`VibeCoderGuideModal.tsx`, `vibeCoderGuideEngine.ts`)**:
+  - Interactive architecture planner comparing **Hosted Video APIs** (`Google Veo`, `Runway`, `Luma`) vs. **Single-GPU Open-Source Models** (`Wan 2.1`, `CogVideoX`) rented hourly on **RunPod**, **Lambda**, **AWS**, **Google Cloud**, or **Azure**.
+  - **GPU Memory (VRAM) Watchdog & Model Offloading**: Evaluates model card VRAM (`24 GB` vs. `40–80 GB` cards) and prescribes `pipe.enable_model_cpu_offload()` or quantized `INT8`/`FP8` weights before upgrading hardware.
+  - **External Video Storage Calculator**: Compares **Amazon S3 + CloudFront** and **Cloudflare R2 ($0 egress) + CDN** against expensive ephemeral GPU disks.
+  - **Prompt-to-Docker & FastAPI Generator + Live Sandbox**: Generates a lean `nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04` `Dockerfile` (Python 3.11 + PyTorch CUDA) and FastAPI `app.py` exposing `POST /generate` (5-minute timeout, MP4 export, S3/R2 upload) and `GET /health` with per-job GPU VRAM logging (`torch.cuda.max_memory_allocated()`), backed by `/api/vibe-coder/health` and `/api/vibe-coder/generate` routes and unit tests (**78 passing tests across 13 suites**).
 - **Mobile-First Responsive Header & Overflow Navigation (`src/App.tsx`, `src/index.css`)**:
   - Eliminated horizontal page overflow on mobile viewports (`< 640px`) by splitting the studio header into a top brand/action row and a horizontally scrollable studio switcher bar (`.nav` with `overflow-x: auto; white-space: nowrap; scrollbar-width: none`).
   - Added a compact mobile `"⋯"` (`MoreHorizontal`) overflow menu housing `Plans: Rs. 999 / Global PPP`, `Export APK & AAB`, `Share & Original Studio Bridge`, and `Install App`, while keeping `AI Co-Director` and `Magic Caption` immediately accessible.
