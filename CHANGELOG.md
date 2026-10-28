@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-10-28
+
+### Added & Improved
+- **Mobile-First Responsive Header & Overflow Navigation (`src/App.tsx`, `src/index.css`)**:
+  - Eliminated horizontal page overflow on mobile viewports (`< 640px`) by splitting the studio header into a top brand/action row and a horizontally scrollable studio switcher bar (`.nav` with `overflow-x: auto; white-space: nowrap; scrollbar-width: none`).
+  - Added a compact mobile `"⋯"` (`MoreHorizontal`) overflow menu housing `Plans: Rs. 999 / Global PPP`, `Export APK & AAB`, `Share & Original Studio Bridge`, and `Install App`, while keeping `AI Co-Director` and `Magic Caption` immediately accessible.
+- **Adaptive Template Grid & Multi-Line Labels (`src/components/MemeTemplateSelector.tsx`)**:
+  - Refactored the template gallery grid to `repeat(auto-fill, minmax(135px, 1fr))` (`.template-grid`) with `line-clamp-2` label rendering so template titles never truncate mid-word on narrow phone screens.
+- **Wrapping Typography & Color Swatch Controls (`src/components/MemeToolbar.tsx`)**:
+  - Updated `Text Color`, `Stroke Color`, and `Alignment & Pill Box` controls with `flex-wrap` and `shrink-0` circular swatches so palettes wrap evenly on narrow viewports.
+- **Touchscreen Ergonomics & Bottom Bar Clearance (`src/index.css`, `src/App.tsx`)**:
+  - Added `@media (hover: none), (pointer: coarse) { .paste-hint { display: none !important; } }` to hide desktop-only `Paste image with Ctrl+V` hints on smartphones and tablets.
+  - Added `pb-24 sm:pb-28` footer clearance so legal links and the Original Applet bridge link (`4d0cb3f2`) remain fully scrollable above floating bottom bars.
+- **In-App PWA Installation Guide Modal (`src/components/PWAInstallButton.tsx`)**:
+  - Replaced browser alert fallback with a dedicated in-app installation guide modal covering iOS Safari, Android Chrome, and Desktop Chrome/Edge.
+
+---
+
 ## [1.4.0] - 2026-10-27
 
 ### Added
@@ -24,8 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - World Bank GNI per-capita 4-tier global pricing model across 90+ countries with Card BIN + MaxMind GeoIP anti-exploitation validation.
 - **30-Second Automatic Layout Persistence (`src/App.tsx`)**:
   - Automatic `localStorage` auto-save (`memeforge_autosave_layout`) every 30 seconds preserving active meme text layers, stickers, and filters across browser refreshes.
-- **Expanded Automated Test Suite (73 Passing Tests across 11 Suites)**:
-  - Added `src/utils/b2bEnterpriseEngine.test.ts` and `src/utils/pppPricingUtils.test.ts`.
+- **Expanded Automated Test Suite (73 Passing Tests across 12 Suites)**:
+  - Added `src/utils/sharedCoreEngine.test.ts`, `src/utils/b2bEnterpriseEngine.test.ts`, and `src/utils/pppPricingUtils.test.ts`.
 
 ---
 

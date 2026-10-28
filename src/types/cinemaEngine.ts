@@ -1,5 +1,3 @@
-import { VideoProjectSpec } from './meme';
-
 export type ResolutionPreset =
   | '720p HD'
   | '1080p FHD'
@@ -49,6 +47,7 @@ export type ColorBitDepth =
   | '10-bit Rec.2020'
   | '12-bit Cinema'
   | '16-bit Half-Float'
+  | '24-bit Studio RGB'
   | '32-bit Float'
   | '64-bit Float Master';
 
@@ -94,26 +93,34 @@ export type AudioChannelLayout =
   | 'Ambisonics (3rd Order 16-Ch)';
 
 export type ProCodec =
+  | 'H.264 Broadcast'
+  | 'HEVC / H.265 (10-bit 4:2:2)'
+  | 'AOMedia AV1 (12-bit)'
   | 'Apple ProRes 422 HQ'
   | 'Apple ProRes 4444 XQ'
   | 'Avid DNxHR HQX'
   | 'GoPro CineForm RAW'
-  | 'AOMedia AV1 (12-bit)'
-  | 'HEVC / H.265 (10-bit 4:2:2)'
-  | 'H.264 Broadcast'
-  | 'OpenEXR 32-bit Float Sequence'
+  | 'EXR Sequence (Linear)'
   | 'TIFF 16-bit Sequence'
   | 'PNG 16-bit Sequence'
-  | 'JPEG XL (JXL HDR)';
+  | 'JPEG XL (JXL HDR)'
+  | 'OpenEXR 16-bit Half-Float Sequence'
+  | 'OpenEXR 32-bit Float Sequence';
 
 export type RenderEngineBackend =
   | 'WebGPU Compute Graph'
   | 'Vulkan Hardware Acceleration'
+  | 'OpenGL ES 3.2 Compute'
   | 'Apple Metal 3'
   | 'DirectX 12 Agility'
   | 'Distributed Render Farm';
 
-export type ProxyQuality = '1:1 Full Master' | '1/2 Proxy' | '1/4 Proxy' | '1/8 Proxy' | '1/16 Super Proxy';
+export type ProxyQuality =
+  | '1:1 Full Master'
+  | '1/2 Proxy'
+  | '1/4 Proxy'
+  | '1/8 Proxy'
+  | '1/16 Super Proxy';
 
 export type TimelineTool =
   | 'select'
@@ -128,9 +135,10 @@ export type TimelineTool =
 export interface TimelineTrack {
   id: string;
   name: string;
-  type: 'video' | 'audio' | 'adjustment' | 'subtitle';
+  type: 'video' | 'audio' | 'adjustment' | 'subtitle' | 'fusion' | 'multicam';
   isMuted: boolean;
   isLocked: boolean;
+  isSolo?: boolean;
   color: string;
   clips: TimelineClip[];
 }
@@ -145,6 +153,21 @@ export interface TimelineClip {
   color: string;
   thumbnail?: string;
   speedMultiplier: number;
+  isCompoundClip?: boolean;
+  nestedClips?: TimelineClip[];
+  multicamAngleId?: string;
+  fusionCompId?: string;
+}
+
+export interface MulticamAngle {
+  id: string;
+  label: string;
+  cameraModel: string;
+  resolution: string;
+  fps: FrameRatePreset;
+  lens: string;
+  colorAccent: string;
+  timecodeOffsetTicks: bigint;
 }
 
 export interface ScopeMode {
@@ -166,6 +189,191 @@ export interface ColorGradeControls {
   temperature: number; // 2000K to 12000K
   tint: number; // -100 to +100
   activeLut?: string;
+}
+
+export interface CubeRgbTriplet {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export interface ParsedCubeLut {
+  id: string;
+  fileName: string;
+  title: string;
+  size: number;
+  domainMin: CubeRgbTriplet;
+  domainMax: CubeRgbTriplet;
+  sampleCount: number;
+  averageTint: CubeRgbTriplet;
+  contrastBoost: number;
+  saturationBoost: number;
+  hueShiftDeg: number;
+  cssFilterApproximation: string;
+}
+
+export type VfxNodeCategory =
+  | 'io'
+  | 'ai_neural'
+  | 'color_ocio'
+  | 'composite'
+  | 'optical_flow'
+  | 'deep_exr';
+
+export interface VfxNodeParameter {
+  key: string;
+  label: string;
+  value: number | string | boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+}
+
+export interface VfxNode {
+  id: string;
+  label: string;
+  category: VfxNodeCategory;
+  bypassed: boolean;
+  computeTimeMs: number;
+  vramMb: number;
+  x: number;
+  y: number;
+  inputs: string[];
+  outputs: string[];
+  parameters: VfxNodeParameter[];
+}
+
+export interface VfxNodeConnection {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+  channel: 'RGBA 32f' | 'Alpha Matte' | 'Motion Vectors' | 'Deep Z';
+}
+
+export type AiVfxFeatureId =
+  | 'object_removal'
+  | 'ai_masking'
+  | 'ai_rotoscoping'
+  | 'frame_interpolation'
+  | 'ai_upscaling'
+  | 'ai_denoise'
+  | 'ai_stabilization'
+  | 'ai_subtitles'
+  | 'speech_enhancement'
+  | 'background_replacement'
+  | 'color_matching';
+
+export interface AiVfxToolState {
+  id: AiVfxFeatureId;
+  name: string;
+  category: 'Spatial VFX' | 'Temporal Motion' | 'Audio & Dialogue' | 'Color Science';
+  description: string;
+  enabled: boolean;
+  intensity: number; // 0 to 100
+  gpuComputeMs: number;
+  modelArchitecture: string;
+}
+
+export interface Vst3PluginSlot {
+  id: string;
+  name: string;
+  vendor: string;
+  category: 'EQ' | 'Dynamics' | 'Spatial Atmos' | 'Neural Denoise' | 'Limiter';
+  bypassed: boolean;
+  wetMixPct: number;
+  latencySamples: number;
+}
+
+export interface SpatialAudio3DPosition {
+  azimuthDeg: number; // -180 to +180
+  elevationDeg: number; // -45 to +90
+  distance: number; // 0.0 to 1.0
+  heightCeilingPct: number; // 0 to 100
+  lfeSendDb: number; // -60 to +6
+}
+
+export interface AudioBusConfig {
+  id: string;
+  name: string;
+  layout: AudioChannelLayout;
+  faderDb: number;
+  peakDbfs: number;
+  lufsIntegrated: number;
+  sideChainSourceTrackId?: string;
+  sideChainThresholdDb: number;
+  sideChainReductionDb: number;
+}
+
+export interface AudioTrackChannelStrip {
+  trackId: string;
+  name: string;
+  busId: string;
+  faderDb: number; // -60 to +12
+  panX: number; // -1.0 (L) to +1.0 (R)
+  panY: number; // -1.0 (Rear) to +1.0 (Front)
+  heightZ: number; // 0.0 (Floor) to 1.0 (Ceiling Atmos)
+  isMuted: boolean;
+  isSolo: boolean;
+  recordArmed: boolean;
+  vst3Chain: Vst3PluginSlot[];
+  sideChainSendActive: boolean;
+}
+
+export interface RenderGraphStage {
+  id: string;
+  name: string;
+  shaderType: 'Compute Shader' | 'Raster Tile' | 'Tensor Core FP16/FP32' | 'DMA Zero-Copy';
+  executionTimeMs: number;
+  vramAllocatedGb: number;
+  status: 'active' | 'cached' | 'streaming';
+}
+
+export interface RenderTileCell {
+  id: string;
+  row: number;
+  col: number;
+  tileResolution: string;
+  state: 'cached_ram' | 'vram_resident' | 'compute_active' | 'dirty_pending';
+  renderTimeMs: number;
+  gpuIndex: number;
+}
+
+export interface PerformanceFoundationConfig {
+  multiThreadedEngine: boolean;
+  workerThreadCount: number;
+  simdOptimization: boolean;
+  gpuMemoryStreaming: boolean;
+  dynamicRamCacheGb: number;
+  incrementalRendering: boolean;
+  backgroundDecoding: boolean;
+  hardwareEncodingDecoding: boolean;
+  zeroCopyGpuPipeline: boolean;
+  tileRenderingSize: 512 | 1024 | 2048;
+  multiGpuCount: number;
+  backgroundConformActive: boolean;
+}
+
+export interface RenderQueueJob {
+  id: string;
+  title: string;
+  codec: ProCodec;
+  resolutionLabel: string;
+  fps: FrameRatePreset;
+  colorSpace: ColorSpaceStandard;
+  hdrStandard: HdrStandard;
+  status: 'queued' | 'rendering' | 'completed';
+  progressPct: number;
+  assignedNodes: number;
+  estimatedSizeGb: number;
+}
+
+export interface TimebaseBenchmarkRow {
+  fps: FrameRatePreset;
+  ticksPerFrame: bigint;
+  exactDivision: boolean;
+  driftAfter24HoursMicroseconds: number;
+  sampleTimecodeAtFrame1000: string;
 }
 
 export interface CinemaProjectSpec {

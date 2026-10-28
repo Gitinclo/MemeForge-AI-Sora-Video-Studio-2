@@ -296,22 +296,22 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
           </div>
 
           {/* Color Palettes & Stroke Width */}
-          <div className="space-y-2 pt-2 border-t border-slate-800/80">
+          <div className="space-y-3 pt-2 border-t border-slate-800/80">
             {/* Text Color */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 shrink-0">
                 <Palette className="w-3 h-3 text-amber-400" />
                 Text Color
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                 {POPULAR_COLORS.map((c) => (
                   <button
                     key={c}
                     onClick={() => onUpdateLayer(activeLayer.id, { textColor: c })}
                     style={{ backgroundColor: c }}
-                    className={`w-5 h-5 rounded-full border transition-transform ${
+                    className={`w-5 h-5 shrink-0 rounded-full border transition-transform ${
                       activeLayer.textColor === c
-                        ? 'scale-125 border-white ring-2 ring-amber-400'
+                        ? 'scale-115 border-white ring-2 ring-amber-400'
                         : 'border-slate-700 hover:scale-110'
                     }`}
                   />
@@ -320,25 +320,25 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
                   type="color"
                   value={activeLayer.textColor}
                   onChange={(e) => onUpdateLayer(activeLayer.id, { textColor: e.target.value })}
-                  className="w-5 h-5 rounded cursor-pointer bg-transparent border-0 p-0"
+                  className="w-5 h-5 shrink-0 rounded cursor-pointer bg-transparent border-0 p-0"
                 />
               </div>
             </div>
 
             {/* Outline / Stroke Color */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
                 Stroke Color
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                 {['#000000', '#ffffff', '#dc2626', '#eab308', '#2563eb', 'transparent'].map((c) => (
                   <button
                     key={c}
                     onClick={() => onUpdateLayer(activeLayer.id, { outlineColor: c })}
                     style={{ backgroundColor: c === 'transparent' ? '#1e293b' : c }}
-                    className={`w-5 h-5 rounded-full border transition-transform ${
+                    className={`w-5 h-5 shrink-0 rounded-full border transition-transform ${
                       activeLayer.outlineColor === c
-                        ? 'scale-125 border-white ring-2 ring-amber-400'
+                        ? 'scale-115 border-white ring-2 ring-amber-400'
                         : 'border-slate-700 hover:scale-110'
                     }`}
                     title={c === 'transparent' ? 'No Outline' : c}
@@ -348,7 +348,7 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
                   type="color"
                   value={activeLayer.outlineColor === 'transparent' ? '#000000' : activeLayer.outlineColor}
                   onChange={(e) => onUpdateLayer(activeLayer.id, { outlineColor: e.target.value })}
-                  className="w-5 h-5 rounded cursor-pointer bg-transparent border-0 p-0"
+                  className="w-5 h-5 shrink-0 rounded cursor-pointer bg-transparent border-0 p-0"
                 />
               </div>
             </div>
@@ -366,13 +366,13 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
                 onChange={(e) =>
                   onUpdateLayer(activeLayer.id, { outlineWidth: Number(e.target.value) })
                 }
-                className="flex-1 accent-amber-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                className="flex-1 min-w-0 accent-amber-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
               />
             </div>
 
             {/* Alignment & Highlight */}
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => onUpdateLayer(activeLayer.id, { textAlign: 'left' })}
                   className={`p-1.5 rounded-lg ${
@@ -400,7 +400,7 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
               </div>
 
               {/* Background Highlight Box */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                 <span className="text-[10px] text-slate-400 font-bold uppercase">Pill Box:</span>
                 {[
                   { label: 'None', color: 'transparent' },

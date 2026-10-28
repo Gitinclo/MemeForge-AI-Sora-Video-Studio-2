@@ -351,7 +351,7 @@ export const MemeTemplateSelector: React.FC<MemeTemplateSelectorProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[340px] overflow-y-auto pr-1">
+            <div className="template-grid grid grid-cols-[repeat(auto-fill,minmax(135px,1fr))] gap-2.5 sm:gap-3 max-h-[380px] overflow-y-auto pr-1">
               {filteredTemplates.map((tpl) => {
                 const isSelected = activeTemplateId === tpl.id;
                 const isPremiumLocked =
@@ -369,7 +369,7 @@ export const MemeTemplateSelector: React.FC<MemeTemplateSelectorProps> = ({
                         onSelectTemplate(tpl);
                       }
                     }}
-                    className={`group relative rounded-2xl overflow-hidden border text-left transition-all bg-slate-950 ${
+                    className={`group relative rounded-2xl overflow-hidden border text-left transition-all bg-slate-950 flex flex-col ${
                       isSelected
                         ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-lg shadow-amber-500/10'
                         : isPremiumLocked
@@ -418,8 +418,11 @@ export const MemeTemplateSelector: React.FC<MemeTemplateSelectorProps> = ({
                       </div>
                     </div>
 
-                    <div className="p-2 border-t border-slate-800/80">
-                      <p className="text-[11px] font-bold text-slate-200 truncate group-hover:text-amber-400">
+                    <div className="p-2 border-t border-slate-800/80 flex-1 flex flex-col justify-between gap-1">
+                      <p
+                        className="text-[11px] font-bold text-slate-200 line-clamp-2 leading-snug group-hover:text-amber-400"
+                        title={tpl.name}
+                      >
                         {tpl.name}
                       </p>
                       <div className="flex items-center justify-between mt-0.5">
@@ -466,7 +469,10 @@ export const MemeTemplateSelector: React.FC<MemeTemplateSelectorProps> = ({
               Drag &amp; drop any image here, or click to browse
             </h4>
             <p className="text-xs text-slate-400 max-w-sm">
-              Supports PNG, JPG, GIF, WebP. You can also paste directly into the page with <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 font-mono">Ctrl+V</kbd>
+              Supports PNG, JPG, GIF, WebP.
+              <span className="paste-hint">
+                {' '}You can also paste directly into the page with <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 font-mono">Ctrl+V</kbd>
+              </span>
             </p>
           </div>
 

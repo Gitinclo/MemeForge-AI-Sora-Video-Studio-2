@@ -74,6 +74,8 @@ import {
   Building2,
   Boxes,
   Youtube,
+  MoreHorizontal,
+  X,
 } from 'lucide-react';
 
 export default function App() {
@@ -85,6 +87,7 @@ export default function App() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [subscriptionModalCategory, setSubscriptionModalCategory] = useState<'individual' | 'company'>('individual');
   const [legalDocModal, setLegalDocModal] = useState<'terms' | 'privacy' | 'security' | 'notice' | 'license' | null>(null);
+  const [isMobileHeaderMenuOpen, setIsMobileHeaderMenuOpen] = useState(false);
 
   // User Subscription State (persisted in localStorage, default Free)
   const [subscription, setSubscription] = useState<UserSubscription>(() =>
@@ -882,34 +885,37 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen w-full max-w-full bg-slate-950 text-slate-100 flex flex-col">
       {/* Top Main Navigation Header */}
-      <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 sm:px-6 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full max-w-full bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-3 sm:px-6 py-2.5 flex flex-wrap xl:flex-nowrap items-center justify-between gap-2 min-w-0">
         {/* Logo lockup */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-purple-600 to-indigo-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20">
-            <span className="text-xl">🔥</span>
+        <div className="order-1 flex items-center gap-2.5 min-w-0 shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-2xl bg-gradient-to-tr from-amber-500 via-purple-600 to-indigo-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20">
+            <span className="text-lg sm:text-xl">🔥</span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black tracking-tight bg-gradient-to-r from-amber-400 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-sm sm:text-lg font-black tracking-tight bg-gradient-to-r from-amber-400 via-purple-300 to-cyan-300 bg-clip-text text-transparent truncate">
                 MemeForge AI
               </h1>
-              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-widest hidden sm:inline-block">
+              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-widest hidden sm:inline-block shrink-0">
                 Studio
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 hidden sm:block">
+            <p className="text-[11px] text-slate-400 hidden md:block truncate">
               Magic Caption • Live Editor • Crypto &amp; UPI Marketplace • LEO Video
             </p>
           </div>
         </div>
 
-        {/* Studio Navigation Tabs */}
-        <div className="flex items-center p-1 bg-slate-900 rounded-2xl border border-slate-800">
+        {/* Studio Navigation Tabs (Horizontally scrollable on mobile/tablet, never overflows page) */}
+        <nav
+          aria-label="Studio Navigation"
+          className="nav order-3 xl:order-2 w-full xl:w-auto max-w-full overflow-x-auto whitespace-nowrap no-scrollbar flex items-center gap-1 p-1 bg-slate-900 rounded-2xl border border-slate-800 min-w-0"
+        >
           <button
             onClick={() => setActiveTab('meme')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'meme'
                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -921,7 +927,7 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('market')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'market'
                 ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -933,7 +939,7 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('leo')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'leo'
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                 : 'text-slate-400 hover:text-white'
@@ -945,7 +951,7 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('cinema')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'cinema'
                 ? 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 text-white shadow-md shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -960,7 +966,7 @@ export default function App() {
             onClick={() => {
               handleOpenYouTubePublishFromMeme();
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'youtube'
                 ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
                 : 'text-slate-400 hover:text-white'
@@ -973,7 +979,7 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('team')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'team'
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -986,7 +992,7 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('enterprise')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'enterprise'
                 ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -996,89 +1002,92 @@ export default function App() {
             <span className="hidden sm:inline">Enterprise B2B</span>
             <span className="sm:hidden">B2B</span>
           </button>
-        </div>
+        </nav>
 
-        {/* Top Right Quick Actions */}
-        <div className="flex items-center gap-2">
-          {/* PWA Install Button */}
-          <PWAInstallButton />
+        {/* Top Right Quick Actions (wraps cleanly; secondary actions move into '⋯' menu on small phones) */}
+        <div className="header-actions order-2 xl:order-3 flex flex-wrap items-center justify-end gap-1.5 min-w-0 relative">
+          {/* Desktop / Tablet inline secondary actions */}
+          <div className="hidden sm:flex flex-wrap items-center gap-1.5 min-w-0">
+            {/* PWA Install Button */}
+            <PWAInstallButton />
 
-          {/* Subscription Plan button (Individual ₹999/mo or Team ₹99,999/mo) */}
-          <button
-            onClick={() => {
-              setSubscriptionModalCategory(subscription.plan === 'company_team' ? 'company' : 'individual');
-              setIsSubscriptionModalOpen(true);
-            }}
-            className={`p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-sm ${
-              subscription.isActive && subscription.plan === 'company_team'
-                ? 'bg-gradient-to-r from-purple-600/30 via-indigo-600/30 to-cyan-500/30 hover:from-purple-600/40 text-cyan-300 border border-cyan-500/50'
-                : subscription.isActive && subscription.plan === 'india_pro'
-                ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 text-emerald-300 border border-emerald-500/40'
-                : 'bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-indigo-500/20 hover:from-amber-500/30 text-amber-300 hover:text-white border border-amber-500/40 animate-pulse'
-            }`}
-            title="Manage Subscriptions: India (₹999 / ₹99,999) or Global PPP Fair Pricing ($3.80–$19/mo)"
-          >
-            {subscription.isActive && subscription.plan === 'company_team' ? (
-              <Building2 className="w-4 h-4 text-cyan-400" />
-            ) : (
-              <Crown className="w-4 h-4 text-amber-400" />
-            )}
-            {subscription.isActive && subscription.country && subscription.country !== 'IN' ? (
-              <span className="px-1 py-0.2 rounded bg-cyan-500/20 border border-cyan-400/40 text-[9px] font-black text-cyan-200 uppercase shrink-0">
-                {subscription.country}
-              </span>
-            ) : (
-              <span className="w-3.5 h-2.5 rounded-xs overflow-hidden flex flex-col border border-white/20 shrink-0">
-                <span className="h-1/3 bg-[#FF9933] w-full" />
-                <span className="h-1/3 bg-white w-full flex items-center justify-center">
-                  <span className="w-0.5 h-0.5 rounded-full bg-[#000080]" />
+            {/* Subscription Plan button (Individual ₹999/mo or Team ₹99,999/mo) */}
+            <button
+              onClick={() => {
+                setSubscriptionModalCategory(subscription.plan === 'company_team' ? 'company' : 'individual');
+                setIsSubscriptionModalOpen(true);
+              }}
+              className={`shrink-0 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-sm ${
+                subscription.isActive && subscription.plan === 'company_team'
+                  ? 'bg-gradient-to-r from-purple-600/30 via-indigo-600/30 to-cyan-500/30 hover:from-purple-600/40 text-cyan-300 border border-cyan-500/50'
+                  : subscription.isActive && subscription.plan === 'india_pro'
+                  ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-indigo-500/20 hover:from-amber-500/30 text-amber-300 hover:text-white border border-amber-500/40 animate-pulse'
+              }`}
+              title="Manage Subscriptions: India (₹999 / ₹99,999) or Global PPP Fair Pricing ($3.80–$19/mo)"
+            >
+              {subscription.isActive && subscription.plan === 'company_team' ? (
+                <Building2 className="w-4 h-4 text-cyan-400" />
+              ) : (
+                <Crown className="w-4 h-4 text-amber-400" />
+              )}
+              {subscription.isActive && subscription.country && subscription.country !== 'IN' ? (
+                <span className="px-1 py-0.2 rounded bg-cyan-500/20 border border-cyan-400/40 text-[9px] font-black text-cyan-200 uppercase shrink-0">
+                  {subscription.country}
                 </span>
-                <span className="h-1/3 bg-[#138808] w-full" />
+              ) : (
+                <span className="w-3.5 h-2.5 rounded-xs overflow-hidden flex flex-col border border-white/20 shrink-0">
+                  <span className="h-1/3 bg-[#FF9933] w-full" />
+                  <span className="h-1/3 bg-white w-full flex items-center justify-center">
+                    <span className="w-0.5 h-0.5 rounded-full bg-[#000080]" />
+                  </span>
+                  <span className="h-1/3 bg-[#138808] w-full" />
+                </span>
+              )}
+              <span className="hidden md:inline">
+                {subscription.isActive && subscription.country && subscription.country !== 'IN'
+                  ? `${subscription.plan === 'company_team' ? 'Team' : 'Pro'} (${subscription.localPriceFormatted || `$${subscription.priceUsd}/mo`})`
+                  : subscription.isActive && subscription.plan === 'company_team'
+                  ? 'Team Active (Rs. 99,999)'
+                  : subscription.isActive && subscription.plan === 'india_pro'
+                  ? 'Pro Active (Rs. 999)'
+                  : 'Plans: Rs. 999 / Global PPP'}
               </span>
-            )}
-            <span className="hidden sm:inline">
-              {subscription.isActive && subscription.country && subscription.country !== 'IN'
-                ? `${subscription.plan === 'company_team' ? 'Team' : 'Pro'} (${subscription.localPriceFormatted || `$${subscription.priceUsd}/mo`})`
-                : subscription.isActive && subscription.plan === 'company_team'
-                ? 'Team Active (Rs. 99,999)'
-                : subscription.isActive && subscription.plan === 'india_pro'
-                ? 'Pro Active (Rs. 999)'
-                : 'Plans: Rs. 999 / Global PPP'}
-            </span>
-            <span className="sm:hidden">
-              {subscription.isActive && subscription.plan === 'company_team'
-                ? 'Team'
-                : subscription.isActive && subscription.plan === 'india_pro'
-                ? 'Pro'
-                : 'Plans'}
-            </span>
-          </button>
+              <span className="md:hidden">
+                {subscription.isActive && subscription.plan === 'company_team'
+                  ? 'Team'
+                  : subscription.isActive && subscription.plan === 'india_pro'
+                  ? 'Pro'
+                  : 'Plans'}
+              </span>
+            </button>
 
-          {/* Android APK & AAB Packaging Modal Button */}
-          <button
-            onClick={() => setIsAndroidModalOpen(true)}
-            className="p-2 sm:px-3 sm:py-2 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 text-emerald-300 hover:text-emerald-200 rounded-xl border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
-            title="Build and export Android APK & AAB packages"
-          >
-            <Smartphone className="w-4 h-4 text-emerald-400" />
-            <span className="hidden md:inline">Export APK &amp; AAB</span>
-            <span className="md:hidden">APK / AAB</span>
-          </button>
+            {/* Android APK & AAB Packaging Modal Button */}
+            <button
+              onClick={() => setIsAndroidModalOpen(true)}
+              className="shrink-0 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 text-emerald-300 hover:text-emerald-200 rounded-xl border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+              title="Build and export Android APK & AAB packages"
+            >
+              <Smartphone className="w-4 h-4 text-emerald-400" />
+              <span className="hidden lg:inline">Export APK &amp; AAB</span>
+              <span className="lg:hidden">APK</span>
+            </button>
 
-          {/* Original AI Studio Applet Bridge Button */}
-          <button
-            onClick={() => setIsOriginalBridgeOpen(true)}
-            className="p-2 sm:px-3 sm:py-2 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200 rounded-xl border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all"
-            title="Open Original AI Studio Applet Bridge (4d0cb3f2-610b-4819-909e-06de8300dcfb)"
-          >
-            <Share2 className="w-4 h-4 text-indigo-400" />
-            <span className="hidden xl:inline">Original Studio</span>
-          </button>
+            {/* Original AI Studio Applet Bridge Button */}
+            <button
+              onClick={() => setIsOriginalBridgeOpen(true)}
+              className="shrink-0 p-2 sm:px-2.5 sm:py-2 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200 rounded-xl border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all"
+              title="Open Original AI Studio Applet Bridge (4d0cb3f2-610b-4819-909e-06de8300dcfb)"
+            >
+              <Share2 className="w-4 h-4 text-indigo-400" />
+              <span className="hidden 2xl:inline">Original Studio</span>
+            </button>
+          </div>
 
           {/* AI Co-Director / Comedy writer button */}
           <button
             onClick={() => setIsDirectorChatOpen(true)}
-            className="p-2 sm:px-3 sm:py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-amber-300 rounded-xl border border-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            className="shrink-0 p-2 sm:px-3 sm:py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-amber-300 rounded-xl border border-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
             title="Ask AI Co-Director for joke ideas"
           >
             <MessageSquare className="w-4 h-4 text-purple-400" />
@@ -1089,11 +1098,76 @@ export default function App() {
           {activeTab === 'meme' && (
             <button
               onClick={() => setIsMagicCaptionOpen(true)}
-              className="px-3.5 py-2 bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95 animate-pulse"
+              className="shrink-0 px-2.5 sm:px-3.5 py-2 bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95"
             >
-              <Wand2 className="w-4 h-4 text-amber-300" />
+              <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
               <span>Magic Caption</span>
             </button>
+          )}
+
+          {/* Mobile '⋯' Overflow Menu Button for Plans, Export APK, Share & Install App */}
+          <button
+            type="button"
+            onClick={() => setIsMobileHeaderMenuOpen((prev) => !prev)}
+            className="sm:hidden shrink-0 p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 flex items-center justify-center transition-colors"
+            aria-label="More actions"
+            title="More actions (Plans, Export APK, Share, Install App)"
+          >
+            {isMobileHeaderMenuOpen ? (
+              <X className="w-4 h-4 text-amber-400" />
+            ) : (
+              <MoreHorizontal className="w-4 h-4 text-slate-300" />
+            )}
+          </button>
+
+          {/* Mobile '⋯' Dropdown Drawer */}
+          {isMobileHeaderMenuOpen && (
+            <div className="sm:hidden absolute right-0 top-full mt-2 w-64 rounded-2xl bg-slate-900/98 backdrop-blur-xl border border-slate-700/90 shadow-2xl p-2.5 z-50 space-y-2">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-0.5">
+                Quick Actions &amp; Tools
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsMobileHeaderMenuOpen(false);
+                  setSubscriptionModalCategory(subscription.plan === 'company_team' ? 'company' : 'individual');
+                  setIsSubscriptionModalOpen(true);
+                }}
+                className="w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all"
+              >
+                <span className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  <span>Plans: Rs. 999 / Global PPP</span>
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMobileHeaderMenuOpen(false);
+                  setIsAndroidModalOpen(true);
+                }}
+                className="w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all"
+              >
+                <Smartphone className="w-4 h-4 text-emerald-400" />
+                <span>Export APK &amp; AAB</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMobileHeaderMenuOpen(false);
+                  setIsOriginalBridgeOpen(true);
+                }}
+                className="w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all"
+              >
+                <Share2 className="w-4 h-4 text-indigo-400" />
+                <span>Share &amp; Original Studio Bridge</span>
+              </button>
+
+              <div className="pt-1 border-t border-slate-800 flex items-center justify-between px-1">
+                <span className="text-[11px] text-slate-400 font-medium">Web App</span>
+                <PWAInstallButton />
+              </div>
+            </div>
           )}
         </div>
       </header>
@@ -1190,7 +1264,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
                     {/* Quick Video Export Button when Audio is Attached */}
                     {(audioConfig.selectedEffectId || audioConfig.customAudioUrl) && (
                       <button
@@ -1445,10 +1519,10 @@ export default function App() {
         }}
       />
 
-      {/* Footer info bar */}
-      <footer className="mt-auto border-t border-slate-900 bg-slate-950 px-4 py-3 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+      {/* Footer info bar (extra bottom padding keeps content above floating component selector bar) */}
+      <footer className="mt-auto border-t border-slate-900 bg-slate-950 px-4 pt-4 pb-24 sm:pb-28 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
           <span>MemeForge AI Studio • 2026 Edition</span>
           <span className="text-slate-700">•</span>
           <a
@@ -1461,11 +1535,11 @@ export default function App() {
             Original Applet (4d0cb3f2)
           </a>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-slate-500">
-          <span className="hidden md:inline">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11px] text-slate-500">
+          <span className="paste-hint hidden lg:inline [@media(hover:none)]:hidden">
             Paste image with <kbd className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300 font-mono">Ctrl+V</kbd>
           </span>
-          <span className="hidden md:inline text-slate-700">•</span>
+          <span className="paste-hint hidden lg:inline [@media(hover:none)]:hidden text-slate-700">•</span>
           <button
             type="button"
             onClick={() => setLegalDocModal('terms')}

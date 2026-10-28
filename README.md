@@ -24,7 +24,7 @@
 4. **Enterprise B2B LoRA Studio & Model Sandbox**: Train custom product digital-twin LoRA weights from 10–20 calibration images, monitor live **LoRA Training Status & NVIDIA H100/B200 GPU Telemetry**, and verify physical invariants (Logo Integrity, Silhouette IoU, BRDF Material Purity) in the **Model Consistency Sandbox** before wide-scale deployment.
 5. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
 6. **Team Hub & Global PPP Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted 50 TB asset vaults, localized Indian plans (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise), and **4-Tier Global Purchasing Power Parity (PPP)** pricing across 90+ countries.
-7. **Mobile Packaging & Security**: Offline Android APK & AAB bundle generation with strict security policies protecting developer credentials.
+7. **Mobile-First Responsive UI, PWA & Android Packaging**: Zero-overflow responsive studio header with horizontal scrollable navigation (`.nav`), compact mobile `"⋯"` overflow drawer, adaptive `auto-fill` template grid, wrapping color swatches, touchscreen-aware shortcut hints (`@media (hover: none)`), installable Progressive Web App (PWA) with offline service worker, and local Android APK & AAB bundle generation.
 
 ---
 
@@ -155,6 +155,20 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
   - **Custom Optics & Prompt Controls**: Automatic `{{token}}` trigger injection, cinema lens rig selector (`50mm Macro Probe Lens`, `35mm Prime Arri Alexa`, `85mm Anamorphic Panavision`, `FPV Dynamic Drone Orbit`), aspect ratios (`16:9`, `9:16`, `1:1`, `21:9`), and diffusion sampling step tuning (`20–60 steps`).
   - **Physical Invariant Scorecards & Inspection Viewport**: Verifies **Logo & Kerning Integrity %** ($\ge 98.0\%$), **Geometry Silhouette IoU %** ($\ge 97.5\%$), and **BRDF Material Purity %** ($\ge 97.0\%$) with interactive viewport overlays (*Color Render*, *Logo Mask*, *Silhouette IoU*, *BRDF Materials*), downloadable SOC 2 JSON compliance reports, and one-click deployment to LEO Video Studio.
 
+### 8. 📲 Mobile-First Responsive Studio & Progressive Web App (PWA)
+- **Zero-Overflow Responsive Header & Navigation**:
+  - Top bar splits cleanly on small viewports (`< 640px`): brand logo and primary actions (`AI Co-Director`, `Magic Caption`, and a `"⋯"` quick-action menu) stay pinned at the top while the 7-studio workspace switcher (`.nav`) scrolls horizontally (`overflow-x: auto; white-space: nowrap; scrollbar-width: none`) without pushing the page or meme preview off-screen.
+  - Secondary studio actions (`Plans: Rs. 999 / Global PPP`, `Export APK & AAB`, `Share & Original Studio Bridge`, and `Install App`) automatically collapse into an accessible `"⋯"` overflow popover on phones.
+- **Adaptive Template Grid & Multi-Line Labels**:
+  - Uses CSS Grid `repeat(auto-fill, minmax(135px, 1fr))` (`.template-grid`) with `line-clamp-2` titles so template cards and long names (*"Disappointed Guy (Happy vs Sad)"*) remain legible across narrow mobile screens.
+- **Wrapping Typography & Color Swatch Toolbars**:
+  - `Text Color`, `Stroke Color`, and `Alignment & Pill Box` controls use `flex-wrap` with `shrink-0` circular swatches so palettes wrap cleanly onto a second row instead of overflowing or squashing.
+- **Touchscreen Media Query Ergonomics & Viewport Clearance**:
+  - Desktop-only keyboard hints (`Paste image with Ctrl+V`) are automatically hidden on touch devices via `@media (hover: none), (pointer: coarse) { .paste-hint { display: none !important; } }`.
+  - Extra bottom footer clearance (`pb-24 sm:pb-28`) keeps legal links, attribution notices, and the Original Applet link (`4d0cb3f2`) scrollable above floating bottom bars.
+- **Progressive Web App (PWA) & Offline Support**:
+  - Full Web App Manifest (`public/manifest.webmanifest`), offline service worker (`public/sw.js`), `beforeinstallprompt` hook (`src/hooks/usePWAInstall.ts`), and an in-app installation guide modal (`src/components/PWAInstallButton.tsx`) for iOS Safari, Android Chrome, and Desktop browsers.
+
 ---
 
 ## 🛠️ Getting Started (Local Development)
@@ -193,7 +207,7 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **72-test suite across 11 test suites** covering:
+Runs the full **73-test suite across 12 test suites** covering:
 - **Shared Core Engine (`sharedCoreEngine.test.ts`)**: Numeric clamping, UTF-8 SVG data URI encoding, byte size formatting, prefixed ID generation, `localStorage` JSON adapters, and Original AI Studio Applet (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) URL resolution.
 - **Enterprise B2B LoRA & Model Sandbox Engine (`b2bEnterpriseEngine.test.ts`)**: 5-stage LoRA training progression, ETA formatting, H100/B200 GPU telemetry perturbation, `{{token}}` prompt injection, and physical invariant consistency scoring.
 - **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
@@ -312,6 +326,8 @@ All AI model and publishing operations are handled server-side via Express route
 │   ├── data/
 │   │   ├── memeTemplates.ts
 │   │   └── memeStylePresets.ts
+│   ├── hooks/
+│   │   └── usePWAInstall.ts         # PWA beforeinstallprompt & standalone mode detection hook
 │   ├── types/
 │   │   ├── b2bEnterprise.ts
 │   │   ├── cinemaEngine.ts
@@ -330,7 +346,8 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── videoDurationUtils.ts
 │   │   ├── youtubeUploadUtils.ts
 │   │   └── index.ts                 # Centralized engine & utility barrel export
-│   ├── App.tsx                      # Main studio orchestrator + 30s localStorage auto-save
+│   ├── App.tsx                      # Main studio orchestrator + responsive header + 30s auto-save
+│   ├── index.css                    # Tailwind v4 + responsive layout & touchscreen media rules
 │   └── main.tsx
 ├── .env.example                     # Safe environment variable template (zero secrets)
 ├── .gitignore                       # Git ignore rules including keystores & local secrets
