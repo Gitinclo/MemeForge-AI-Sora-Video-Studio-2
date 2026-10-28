@@ -19,6 +19,8 @@ import {
   LINUX_HOST_DISTRO_CATALOG,
   GPU_HARDWARE_STACK_CATALOG,
   PARALLEL_FILESYSTEM_CATALOG,
+  POPULAR_OPERATING_SYSTEMS_CATALOG,
+  CENTOS_STATUS_NOTE,
   TECHNICAL_CLARIFICATION_NOTES,
   DEFAULT_LINUX_DIT_CLUSTER_CONFIG,
   LinuxDitClusterConfig,
@@ -30,6 +32,7 @@ import {
   HugePageSizeOption,
   calculateHugePagesSpec,
   evaluateLinuxDitCluster,
+  filterServerOsRankings,
   generateLinuxHostBootstrapScript,
   generateKubernetesDitManifest,
   generateMultiNodeSchedulerScript,
@@ -48,11 +51,15 @@ export const LinuxDitClusterHostModal: React.FC<LinuxDitClusterHostModalProps> =
     DEFAULT_LINUX_DIT_CLUSTER_CONFIG
   );
   const [activeTab, setActiveTab] = useState<
-    'architecture' | 'storage_memory' | 'manifests'
+    'architecture' | 'storage_memory' | 'manifests' | 'os_reference'
   >('architecture');
   const [activeArtifact, setActiveArtifact] = useState<
     'host_bootstrap' | 'k8s_sriov_gds' | 'slurm_ray_job'
   >('host_bootstrap');
+  const [serverOsQuery, setServerOsQuery] = useState('');
+  const [serverOsLicenseFilter, setServerOsLicenseFilter] = useState<
+    'all' | 'free' | 'commercial'
+  >('all');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -176,6 +183,18 @@ export const LinuxDitClusterHostModal: React.FC<LinuxDitClusterHostModalProps> =
             >
               <Terminal className="w-3.5 h-3.5" />
               <span>3. Linux Host Scripts, K8s SR-IOV &amp; Slurm/Ray</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('os_reference')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                activeTab === 'os_reference'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>4. OS &amp; Server Reference (Ranks 1–10)</span>
             </button>
           </div>
 
@@ -434,7 +453,7 @@ export const LinuxDitClusterHostModal: React.FC<LinuxDitClusterHostModalProps> =
                   <ShieldCheck className="w-4 h-4" />
                   <span>Architectural Clarifications &amp; Provenance</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {TECHNICAL_CLARIFICATION_NOTES.map((note) => (
                     <div
                       key={note.id}
@@ -735,6 +754,128 @@ export const LinuxDitClusterHostModal: React.FC<LinuxDitClusterHostModalProps> =
 
               <div className="rounded-xl bg-slate-900 border border-slate-800 p-4 font-mono text-xs text-slate-200 overflow-x-auto max-h-[52vh]">
                 <pre className="leading-relaxed">{currentCode}</pre>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'os_reference' && (
+            <div className="space-y-6">
+              {/* Section 2: Ranked Server Operating Systems (1-10) */}
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                      Server Operating Systems (Ranked 1–10 by Enterprise Footprint &amp; Web Presence)
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Merged enterprise &amp; web server ranking with verified licensing, CentOS status, and AI video cluster suitability.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={serverOsQuery}
+                      onChange={(e) => setServerOsQuery(e.target.value)}
+                      placeholder="Filter OS, family, Ksplice, container..."
+                      className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                    <select
+                      value={serverOsLicenseFilter}
+                      onChange={(e) =>
+                        setServerOsLicenseFilter(
+                          e.target.value as 'all' | 'free' | 'commercial'
+                        )
+                      }
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200"
+                    >
+                      <option value="all">All Licenses (10)</option>
+                      <option value="free">Free / Open Source</option>
+                      <option value="commercial">Commercial / Subscription</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-800">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-950 text-slate-400 border-b border-slate-800 text-[11px] uppercase">
+                        <th className="py-2.5 px-3 font-bold">Rank</th>
+                        <th className="py-2.5 px-3 font-bold">OS</th>
+                        <th className="py-2.5 px-3 font-bold">Family</th>
+                        <th className="py-2.5 px-3 font-bold">Best For</th>
+                        <th className="py-2.5 px-3 font-bold">License</th>
+                        <th className="py-2.5 px-3 font-bold">AI Role</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80 bg-slate-900/60">
+                      {filterServerOsRankings(
+                        serverOsQuery,
+                        serverOsLicenseFilter
+                      ).map((row) => (
+                        <tr key={row.rank} className="hover:bg-slate-800/40">
+                          <td className="py-2.5 px-3 font-mono font-bold text-emerald-400">
+                            #{row.rank}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-white">
+                            {row.os}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-300 font-mono text-[11px]">
+                            {row.family}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-300">
+                            {row.bestFor}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-400">
+                            {row.license}
+                          </td>
+                          <td className="py-2.5 px-3 font-mono text-[11px] text-cyan-300">
+                            {row.aiVideoSuitability}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Note on CentOS */}
+                <div className="p-3 rounded-lg bg-slate-950 border border-amber-500/30 text-[11px] text-amber-200/90 leading-relaxed">
+                  {CENTOS_STATUS_NOTE}
+                </div>
+              </div>
+
+              {/* Section 1: Popular Operating Systems Landscape */}
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400">
+                    Popular Operating Systems (Mobile, Desktop, Cloud &amp; Supercomputing)
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Market share figures are approximate and vary by source.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {POPULAR_OPERATING_SYSTEMS_CATALOG.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-white">{item.name}</span>
+                        <span className="text-[10px] font-mono text-cyan-300">
+                          {item.segment}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-mono text-emerald-400">
+                        {item.marketShareNote}
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        {item.summary}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

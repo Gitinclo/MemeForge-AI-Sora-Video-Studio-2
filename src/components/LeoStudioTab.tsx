@@ -63,11 +63,23 @@ import {
 import { EngineHub2026Modal } from './EngineHub2026Modal';
 import { VibeCoderGuideModal } from './VibeCoderGuideModal';
 import { LinuxDitClusterHostModal } from './LinuxDitClusterHostModal';
+import { PyTorchDitBuildSpecModal } from './PyTorchDitBuildSpecModal';
 import {
   VideoEngineId,
   VIDEO_ENGINES_2026,
   simulateMagicHourJob,
 } from '../utils/engineMigration2026';
+import {
+  DEFAULT_LEO_ANIMATED_TEXT_LAYERS,
+  LeoAnimatedTextLayer,
+  KeyframeEasingType,
+  KeyframeMotionPresetId,
+  interpolateLayerTransform,
+  upsertLayerKeyframe,
+  removeLayerKeyframe,
+  applyMotionPresetToLayer,
+} from '../utils/leoKeyframeEngine';
+import { clampNumber, createPrefixedId, triggerBrowserDownload } from '../utils/sharedCoreEngine';
 
 interface LeoStudioTabProps {
   onMemeToVideoPrompt?: (promptText: string) => void;
@@ -116,6 +128,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const [isEngineHubOpen, setIsEngineHubOpen] = useState(false);
   const [isVibeGuideOpen, setIsVibeGuideOpen] = useState(false);
   const [isLinuxDitHostOpen, setIsLinuxDitHostOpen] = useState(false);
+  const [isPyTorchSpecOpen, setIsPyTorchSpecOpen] = useState(false);
 
   // Seedance 1.0 (Hedra) 6-Axis Physics & Trajectory Spline State
   const [seedancePan, setSeedancePan] = useState(15); // degrees
@@ -145,8 +158,200 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const master8kMetrics = calculate8kMasterMetrics(spec.durationHours || 100, spec.frameRate);
   const cascadeStages = getCascadedPipelineStages();
 
+  // Timeline Keyframe Animation State for Text Layers (Position, Scale, Rotation)
+  const [animatedTextLayers, setAnimatedTextLayers] = useState<LeoAnimatedTextLayer[]>(
+    DEFAULT_LEO_ANIMATED_TEXT_LAYERS
+  );
+  const [selectedTextLayerId, setSelectedTextLayerId] = useState<string>(
+    DEFAULT_LEO_ANIMATED_TEXT_LAYERS[0].id
+  );
+  const [selectedEasing, setSelectedEasing] = useState<KeyframeEasingType>('easeInOut');
+  const [isExportingKeyframedVideo, setIsExportingKeyframedVideo] = useState(false);
+  const [keyframeExportProgress, setKeyframeExportProgress] = useState<number | null>(null);
+
+  const timelineProgressRatio =
+    totalDurationSec > 0 ? clampNumber(currentTimecode / totalDurationSec, 0, 1) : 0;
+
+  const activeAnimatedLayer =
+    animatedTextLayers.find((l) => l.id === selectedTextLayerId) || animatedTextLayers[0];
+
+  const activeLayerTransform = interpolateLayerTransform(
+    activeAnimatedLayer,
+    timelineProgressRatio
+  );
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const keyframeRenderStateRef = useRef({
+    layers: animatedTextLayers,
+    progressRatio: timelineProgressRatio,
+    selectedLayerId: selectedTextLayerId,
+    isExporting: isExportingKeyframedVideo,
+    totalDurationSec,
+  });
+
+  useEffect(() => {
+    keyframeRenderStateRef.current = {
+      layers: animatedTextLayers,
+      progressRatio: timelineProgressRatio,
+      selectedLayerId: selectedTextLayerId,
+      isExporting: isExportingKeyframedVideo,
+      totalDurationSec,
+    };
+  }, [
+    animatedTextLayers,
+    timelineProgressRatio,
+    selectedTextLayerId,
+    isExportingKeyframedVideo,
+    totalDurationSec,
+  ]);
+
+  const handleUpdateAnimatedProperty = (
+    updates: Partial<{
+      x: number;
+      y: number;
+      scale: number;
+      rotation: number;
+      easing: KeyframeEasingType;
+    }>
+  ) => {
+    if (!activeAnimatedLayer) return;
+    const nextEasing = updates.easing ?? selectedEasing;
+    if (updates.easing) {
+      setSelectedEasing(updates.easing);
+    }
+    const updatedLayer = upsertLayerKeyframe(activeAnimatedLayer, {
+      timeProgress: timelineProgressRatio,
+      x: updates.x ?? activeLayerTransform.x,
+      y: updates.y ?? activeLayerTransform.y,
+      scale: updates.scale ?? activeLayerTransform.scale,
+      rotation: updates.rotation ?? activeLayerTransform.rotation,
+      easing: nextEasing,
+    });
+    setAnimatedTextLayers((prev) =>
+      prev.map((l) => (l.id === updatedLayer.id ? updatedLayer : l))
+    );
+  };
+
+  const handleAddOrSnapKeyframeAtPlayhead = () => {
+    handleUpdateAnimatedProperty({});
+  };
+
+  const handleDeleteActiveKeyframe = () => {
+    if (!activeAnimatedLayer || !activeLayerTransform.activeKeyframeId) return;
+    const updatedLayer = removeLayerKeyframe(
+      activeAnimatedLayer,
+      activeLayerTransform.activeKeyframeId
+    );
+    setAnimatedTextLayers((prev) =>
+      prev.map((l) => (l.id === updatedLayer.id ? updatedLayer : l))
+    );
+  };
+
+  const handleApplyMotionPreset = (presetId: KeyframeMotionPresetId) => {
+    if (!activeAnimatedLayer) return;
+    const updatedLayer = applyMotionPresetToLayer(activeAnimatedLayer, presetId);
+    setAnimatedTextLayers((prev) =>
+      prev.map((l) => (l.id === updatedLayer.id ? updatedLayer : l))
+    );
+  };
+
+  const handleAddAnimatedTextLayer = () => {
+    const newId = createPrefixedId('leo_text');
+    const newLayer: LeoAnimatedTextLayer = {
+      id: newId,
+      text: `SCENE LAYER ${animatedTextLayers.length + 1}`,
+      color: '#fde047',
+      strokeColor: '#000000',
+      fontSize: 26,
+      visible: true,
+      keyframes: [
+        {
+          id: createPrefixedId('kf'),
+          timeProgress: 0,
+          x: 30,
+          y: 45,
+          scale: 0.85,
+          rotation: -8,
+          easing: 'easeOut',
+        },
+        {
+          id: createPrefixedId('kf'),
+          timeProgress: 1,
+          x: 70,
+          y: 45,
+          scale: 1.25,
+          rotation: 8,
+          easing: 'easeInOut',
+        },
+      ],
+    };
+    setAnimatedTextLayers((prev) => [...prev, newLayer]);
+    setSelectedTextLayerId(newId);
+  };
+
+  const handleExportKeyframedVideo = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas || isExportingKeyframedVideo) return;
+
+    setIsExportingKeyframedVideo(true);
+    setKeyframeExportProgress(5);
+    const wasPlaying = isPlaying;
+    setIsPlaying(false);
+
+    try {
+      const stream = (canvas as any).captureStream
+        ? (canvas as any).captureStream(30)
+        : null;
+
+      const mimeType =
+        typeof MediaRecorder !== 'undefined' &&
+        MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+          ? 'video/webm;codecs=vp9'
+          : typeof MediaRecorder !== 'undefined' &&
+            MediaRecorder.isTypeSupported('video/webm')
+          ? 'video/webm'
+          : '';
+
+      const chunks: BlobPart[] = [];
+      let recorder: MediaRecorder | null = null;
+
+      if (stream && mimeType) {
+        recorder = new MediaRecorder(stream, { mimeType });
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+        recorder.start(100);
+      }
+
+      const totalSteps = 60; // ~3 seconds @ 20fps sweep across 0% -> 100% timeline keyframes
+      for (let step = 0; step <= totalSteps; step++) {
+        const ratio = step / totalSteps;
+        setCurrentTimecode(ratio * totalDurationSec);
+        keyframeRenderStateRef.current.progressRatio = ratio;
+        setKeyframeExportProgress(Math.round((step / totalSteps) * 100));
+        await new Promise((r) => setTimeout(r, 45));
+      }
+
+      if (recorder) {
+        await new Promise<void>((resolve) => {
+          recorder!.onstop = () => resolve();
+          recorder!.stop();
+        });
+        const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
+        triggerBrowserDownload(blob, `leo_keyframed_scene_${Date.now()}.webm`, 2000);
+      } else {
+        const fallbackDataUrl = canvas.toDataURL('image/png', 0.95);
+        triggerBrowserDownload(fallbackDataUrl, `leo_keyframed_frame_${Date.now()}.png`);
+      }
+    } catch (err) {
+      console.warn('Keyframe video export error:', err);
+    } finally {
+      setIsExportingKeyframedVideo(false);
+      setKeyframeExportProgress(null);
+      setIsPlaying(wasPlaying);
+    }
+  };
 
   const isProUser = subscription?.isActive && subscription.plan === 'india_pro';
   const hasDurationAccess = canAccessVideoDuration(spec.durationHours, subscription);
@@ -385,10 +590,54 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
         ctx.stroke();
       }
 
-      if (isPlaying) {
+      // Render Keyframed Text Layers (Position X/Y, Scale, Rotation) over time
+      const kfState = keyframeRenderStateRef.current;
+      for (const layer of kfState.layers) {
+        if (!layer.visible || !layer.text.trim()) continue;
+        const transform = interpolateLayerTransform(layer, kfState.progressRatio);
+        const px = (transform.x / 100) * w;
+        const py = (transform.y / 100) * h;
+
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate((transform.rotation * Math.PI) / 180);
+        ctx.scale(transform.scale, transform.scale);
+
+        ctx.font = `900 ${layer.fontSize}px Impact, "Arial Black", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Crisp cinematic outline + glow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = Math.max(3, Math.round(layer.fontSize / 7));
+        ctx.strokeStyle = layer.strokeColor || '#000000';
+        ctx.lineJoin = 'round';
+        ctx.strokeText(layer.text, 0, 0);
+
+        ctx.fillStyle = layer.color || '#ffffff';
+        ctx.fillText(layer.text, 0, 0);
+
+        // Subtle selection guide when editing in preview (hidden during video export)
+        if (!kfState.isExporting && layer.id === kfState.selectedLayerId) {
+          const textMetrics = ctx.measureText(layer.text);
+          const boxW = textMetrics.width + 24;
+          const boxH = layer.fontSize + 16;
+          ctx.shadowBlur = 0;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = 'rgba(34, 211, 238, 0.85)';
+          ctx.strokeRect(-boxW / 2, -boxH / 2, boxW, boxH);
+        }
+
+        ctx.restore();
+      }
+
+      if (isPlaying && !kfState.isExporting) {
         // Advance time smoothly; loop back to 0 when reaching totalDurationSec
-        const stepSec = Math.max(0.1, totalDurationSec / 20000);
-        setCurrentTimecode((prev) => (prev >= totalDurationSec ? 0 : prev + stepSec));
+        const dur = Math.max(1, kfState.totalDurationSec);
+        const stepSec = Math.max(0.1, dur / 600);
+        setCurrentTimecode((prev) => (prev >= dur ? 0 : prev + stepSec));
       }
 
       animFrameRef.current = requestAnimationFrame(render);
@@ -509,6 +758,13 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
             <Server className="w-3.5 h-3.5" />
             <span>Linux DiT Cluster Host (H100/B200)</span>
           </button>
+          <button
+            onClick={() => setIsPyTorchSpecOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <Code className="w-3.5 h-3.5" />
+            <span>PyTorch DiT Build Spec (CLAUDE.md)</span>
+          </button>
         </div>
       </div>
 
@@ -598,7 +854,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
                 </div>
               </div>
 
-              {/* Clickable / Draggable Scrubber Bar */}
+              {/* Clickable / Draggable Scrubber Bar with Keyframe Diamond Markers */}
               <div
                 onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
@@ -606,13 +862,30 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
                   const ratio = Math.max(0, Math.min(1, clickX / rect.width));
                   setCurrentTimecode(ratio * totalDurationSec);
                 }}
-                className="w-full bg-slate-800/80 hover:bg-slate-700/80 h-2.5 rounded-full overflow-hidden cursor-pointer relative group/scrub transition-all"
-                title="Click anywhere to jump on the 100-hour timeline"
+                className="w-full bg-slate-800/80 hover:bg-slate-700/80 h-3 rounded-full cursor-pointer relative group/scrub transition-all"
+                title="Click anywhere to jump on the timeline or snap to keyframe diamonds"
               >
                 <div
                   className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400 rounded-full"
-                  style={{ width: `${Math.min(100, (currentTimecode / totalDurationSec) * 100)}%` }}
+                  style={{ width: `${Math.min(100, timelineProgressRatio * 100)}%` }}
                 />
+                {activeAnimatedLayer?.keyframes.map((kf) => (
+                  <button
+                    key={kf.id}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentTimecode(kf.timeProgress * totalDurationSec);
+                    }}
+                    style={{ left: `${kf.timeProgress * 100}%` }}
+                    className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45 border transition-transform hover:scale-125 ${
+                      activeLayerTransform.activeKeyframeId === kf.id
+                        ? 'bg-amber-400 border-white scale-125 shadow-md shadow-amber-400/50'
+                        : 'bg-cyan-300 border-slate-950'
+                    }`}
+                    title={`Keyframe @ ${Math.round(kf.timeProgress * 100)}% (X:${kf.x}% Y:${kf.y}% Scale:${kf.scale}x Rot:${kf.rotation}°)`}
+                  />
+                ))}
               </div>
 
               {/* Quick Scrub Timeline Jump Controls */}
@@ -680,6 +953,330 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
               </div>
             </div>
           )}
+
+          {/* Timeline Keyframe Animator (Text Layer Position, Scale & Rotation) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-400" />
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Timeline Keyframe Animator (Position · Scale · Rotation)
+                </h4>
+                <span className="text-[11px] font-mono text-cyan-300">
+                  Playhead: {Math.round(timelineProgressRatio * 100)}%
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleAddAnimatedTextLayer}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition-colors"
+                >
+                  + Add Text Layer
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddOrSnapKeyframeAtPlayhead}
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition-colors"
+                  title="Insert or update keyframe at current playhead position"
+                >
+                  ◆ {activeLayerTransform.activeKeyframeId ? 'Update Keyframe' : '+ Add Keyframe'}
+                </button>
+                {activeLayerTransform.activeKeyframeId &&
+                  activeAnimatedLayer.keyframes.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteActiveKeyframe}
+                      className="px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[11px] font-semibold transition-colors"
+                    >
+                      Delete Keyframe
+                    </button>
+                  )}
+              </div>
+            </div>
+
+            {/* Layer Selector Tabs + Text & Style Input */}
+            <div className="space-y-2.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {animatedTextLayers.map((layer, idx) => (
+                  <button
+                    key={layer.id}
+                    type="button"
+                    onClick={() => setSelectedTextLayerId(layer.id)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors flex items-center gap-1.5 ${
+                      layer.id === activeAnimatedLayer?.id
+                        ? 'bg-purple-600/30 border-purple-500 text-white'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <span>Layer {idx + 1}:</span>
+                    <span className="max-w-[130px] truncate">{layer.text || 'Untitled'}</span>
+                    <span className="text-[10px] font-mono text-amber-300">
+                      ({layer.keyframes.length}◆)
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {activeAnimatedLayer && (
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                  <input
+                    type="text"
+                    value={activeAnimatedLayer.text}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAnimatedTextLayers((prev) =>
+                        prev.map((l) =>
+                          l.id === activeAnimatedLayer.id ? { ...l, text: val } : l
+                        )
+                      );
+                    }}
+                    placeholder="Enter animated overlay text..."
+                    className="sm:col-span-7 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-purple-500"
+                  />
+                  <div className="sm:col-span-3 flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1">
+                    <span className="text-[10px] text-slate-400">Size</span>
+                    <input
+                      type="number"
+                      min={14}
+                      max={72}
+                      value={activeAnimatedLayer.fontSize}
+                      onChange={(e) => {
+                        const size = clampNumber(Number(e.target.value) || 28, 14, 72);
+                        setAnimatedTextLayers((prev) =>
+                          prev.map((l) =>
+                            l.id === activeAnimatedLayer.id ? { ...l, fontSize: size } : l
+                          )
+                        );
+                      }}
+                      className="w-full bg-transparent text-xs font-mono text-white focus:outline-none"
+                    />
+                    <input
+                      type="color"
+                      value={activeAnimatedLayer.color}
+                      onChange={(e) => {
+                        const color = e.target.value;
+                        setAnimatedTextLayers((prev) =>
+                          prev.map((l) =>
+                            l.id === activeAnimatedLayer.id ? { ...l, color } : l
+                          )
+                        );
+                      }}
+                      className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
+                      title="Text Fill Color"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAnimatedTextLayers((prev) =>
+                        prev.map((l) =>
+                          l.id === activeAnimatedLayer.id
+                            ? { ...l, visible: !l.visible }
+                            : l
+                        )
+                      )
+                    }
+                    className={`sm:col-span-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                      activeAnimatedLayer.visible
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                        : 'bg-slate-950 border-slate-800 text-slate-500'
+                    }`}
+                  >
+                    {activeAnimatedLayer.visible ? 'Visible' : 'Hidden'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Interactive Keyframe Timeline Track */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span>Keyframe Track (Click track or ◆ diamonds to scrub &amp; edit)</span>
+                <div className="flex flex-wrap items-center gap-1">
+                  {(
+                    [
+                      { id: 'cinematic_zoom_in', label: 'Zoom In' },
+                      { id: 'slide_across', label: 'Slide Across' },
+                      { id: 'spin_drop', label: 'Spin Drop' },
+                      { id: 'lower_third_rise', label: 'Lower-Third' },
+                      { id: 'static_center', label: 'Reset' },
+                    ] as const
+                  ).map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleApplyMotionPreset(preset.id)}
+                      className="px-2 py-0.5 rounded bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[10px] text-slate-300 transition-colors"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const ratio = clampNumber((e.clientX - rect.left) / rect.width, 0, 1);
+                  setCurrentTimecode(ratio * totalDurationSec);
+                }}
+                className="relative h-8 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer flex items-center px-2 select-none"
+              >
+                {/* Center guide line */}
+                <div className="w-full h-0.5 bg-slate-800 relative">
+                  {/* Playhead vertical bar */}
+                  <div
+                    style={{ left: `${timelineProgressRatio * 100}%` }}
+                    className="absolute -top-3.5 -bottom-3.5 w-0.5 bg-cyan-400 pointer-events-none"
+                  />
+                  {/* Keyframe Diamonds */}
+                  {activeAnimatedLayer?.keyframes.map((kf) => {
+                    const isCurrent = activeLayerTransform.activeKeyframeId === kf.id;
+                    return (
+                      <button
+                        key={kf.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentTimecode(kf.timeProgress * totalDurationSec);
+                          setSelectedEasing(kf.easing);
+                        }}
+                        style={{ left: `${kf.timeProgress * 100}%` }}
+                        className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rotate-45 border transition-all ${
+                          isCurrent
+                            ? 'bg-amber-400 border-white scale-125 shadow-lg shadow-amber-500/40'
+                            : 'bg-purple-400 border-slate-950 hover:scale-110'
+                        }`}
+                        title={`Keyframe @ ${Math.round(kf.timeProgress * 100)}% | Pos:(${kf.x}%, ${kf.y}%) | Scale:${kf.scale}x | Rot:${kf.rotation}°`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Keyframed Property Sliders: Position (X, Y), Scale, Rotation & Easing */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Pos X</span>
+                  <span className="font-mono text-cyan-300">{activeLayerTransform.x}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={5}
+                  max={95}
+                  step={1}
+                  value={activeLayerTransform.x}
+                  onChange={(e) =>
+                    handleUpdateAnimatedProperty({ x: parseFloat(e.target.value) })
+                  }
+                  className="w-full accent-cyan-400"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Pos Y</span>
+                  <span className="font-mono text-cyan-300">{activeLayerTransform.y}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={8}
+                  max={92}
+                  step={1}
+                  value={activeLayerTransform.y}
+                  onChange={(e) =>
+                    handleUpdateAnimatedProperty({ y: parseFloat(e.target.value) })
+                  }
+                  className="w-full accent-cyan-400"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Scale</span>
+                  <span className="font-mono text-amber-300">{activeLayerTransform.scale}×</span>
+                </div>
+                <input
+                  type="range"
+                  min={0.3}
+                  max={3.0}
+                  step={0.05}
+                  value={activeLayerTransform.scale}
+                  onChange={(e) =>
+                    handleUpdateAnimatedProperty({ scale: parseFloat(e.target.value) })
+                  }
+                  className="w-full accent-amber-400"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Rotation</span>
+                  <span className="font-mono text-purple-300">{activeLayerTransform.rotation}°</span>
+                </div>
+                <input
+                  type="range"
+                  min={-180}
+                  max={180}
+                  step={1}
+                  value={activeLayerTransform.rotation}
+                  onChange={(e) =>
+                    handleUpdateAnimatedProperty({ rotation: parseFloat(e.target.value) })
+                  }
+                  className="w-full accent-purple-400"
+                />
+              </div>
+
+              <div className="space-y-1 col-span-2 sm:col-span-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Easing</span>
+                </div>
+                <select
+                  value={selectedEasing}
+                  onChange={(e) =>
+                    handleUpdateAnimatedProperty({
+                      easing: e.target.value as KeyframeEasingType,
+                    })
+                  }
+                  className="w-full px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none"
+                >
+                  <option value="easeInOut">Ease In-Out</option>
+                  <option value="easeOut">Ease Out</option>
+                  <option value="easeIn">Ease In</option>
+                  <option value="linear">Linear</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Export Video with Animated Keyframes Button */}
+            <div className="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80">
+              <span className="text-[11px] text-slate-400">
+                Bakes all keyframed text layers (Position, Scale, Rotation) into the exported video stream.
+              </span>
+              <button
+                type="button"
+                onClick={handleExportKeyframedVideo}
+                disabled={isExportingKeyframedVideo}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-600 hover:from-amber-400 hover:to-cyan-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50"
+              >
+                {isExportingKeyframedVideo ? (
+                  <>
+                    <Activity className="w-3.5 h-3.5 animate-spin" />
+                    <span>Rendering Keyframe Video ({keyframeExportProgress ?? 0}%)...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Export Video with Keyframed Text (.webm)</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
 
           {/* Quick Distributed Render Clusters HUD */}
           <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
@@ -1993,6 +2590,12 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
       <LinuxDitClusterHostModal
         isOpen={isLinuxDitHostOpen}
         onClose={() => setIsLinuxDitHostOpen(false)}
+      />
+
+      {/* Build Spec: Text-to-Video Diffusion Transformer (Optimized Inference) Modal */}
+      <PyTorchDitBuildSpecModal
+        isOpen={isPyTorchSpecOpen}
+        onClose={() => setIsPyTorchSpecOpen(false)}
       />
     </div>
   );

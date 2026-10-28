@@ -4,16 +4,20 @@ import {
   LINUX_HOST_DISTRO_CATALOG,
   GPU_HARDWARE_STACK_CATALOG,
   PARALLEL_FILESYSTEM_CATALOG,
+  POPULAR_OPERATING_SYSTEMS_CATALOG,
+  SERVER_OS_RANKING_TABLE,
+  CENTOS_STATUS_NOTE,
   TECHNICAL_CLARIFICATION_NOTES,
   DEFAULT_LINUX_DIT_CLUSTER_CONFIG,
   calculateHugePagesSpec,
   evaluateLinuxDitCluster,
+  filterServerOsRankings,
   generateLinuxHostBootstrapScript,
   generateKubernetesDitManifest,
   generateMultiNodeSchedulerScript,
 } from './linuxDitClusterEngine';
 
-describe('linuxDitClusterEngine — Target Environment: Linux Host for Text-to-Video DiT Model', () => {
+describe('linuxDitClusterEngine — Target Environment & Reference: Operating Systems and AI Infrastructure', () => {
   it('catalogs HPC-tuned and minimal immutable Linux distributions without GUI or swap', () => {
     const distroIds = LINUX_HOST_DISTRO_CATALOG.map((d) => d.id);
     assert.ok(distroIds.includes('nvidia_base_command_os'));
@@ -27,6 +31,45 @@ describe('linuxDitClusterEngine — Target Environment: Linux Host for Text-to-V
       assert.strictEqual(distro.guiExcluded, true);
       assert.strictEqual(distro.defaultSwapDisabled, true);
     }
+  });
+
+  it('catalogs Popular Operating Systems (Android, Windows, iOS, macOS, Linux, ChromeOS, Ubuntu, RHEL, Debian, Other)', () => {
+    assert.strictEqual(POPULAR_OPERATING_SYSTEMS_CATALOG.length, 10);
+    const ids = POPULAR_OPERATING_SYSTEMS_CATALOG.map((o) => o.id);
+    assert.deepStrictEqual(ids, [
+      'android',
+      'windows',
+      'ios',
+      'macos',
+      'linux',
+      'chromeos',
+      'ubuntu',
+      'rhel',
+      'debian',
+      'other_os',
+    ]);
+    const android = POPULAR_OPERATING_SYSTEMS_CATALOG.find((o) => o.id === 'android');
+    assert.ok(android?.marketShareNote.includes('40% to 72%'));
+  });
+
+  it('catalogs Top 10 Ranked Server Operating Systems and filters by query and license', () => {
+    assert.strictEqual(SERVER_OS_RANKING_TABLE.length, 10);
+    assert.strictEqual(SERVER_OS_RANKING_TABLE[0].rank, 1);
+    assert.strictEqual(SERVER_OS_RANKING_TABLE[0].os, 'Ubuntu Server');
+    assert.strictEqual(SERVER_OS_RANKING_TABLE[1].rank, 2);
+    assert.strictEqual(SERVER_OS_RANKING_TABLE[1].os, 'Windows Server');
+    assert.strictEqual(SERVER_OS_RANKING_TABLE[8].os, 'Alpine Linux');
+    assert.strictEqual(SERVER_OS_RANKING_TABLE[9].os, 'FreeBSD');
+
+    const freeOnly = filterServerOsRankings('', 'free');
+    assert.strictEqual(freeOnly.length, 7);
+
+    const commercialOnly = filterServerOsRankings('', 'commercial');
+    assert.strictEqual(commercialOnly.length, 3);
+
+    const kspliceMatch = filterServerOsRankings('Ksplice', 'all');
+    assert.strictEqual(kspliceMatch.length, 1);
+    assert.strictEqual(kspliceMatch[0].os, 'Oracle Linux');
   });
 
   it('supports NVIDIA drivers (bare-metal & vGPU) and AMD ROCm compute stack', () => {
@@ -125,8 +168,10 @@ describe('linuxDitClusterEngine — Target Environment: Linux Host for Text-to-V
     assert.ok(rayScript.includes('CUFILE_ENV_PATH_JSON'));
   });
 
-  it('documents technical clarifications on monolithic minimal Linux, ROCm vs vGPU, and Sora provenance', () => {
-    assert.strictEqual(TECHNICAL_CLARIFICATION_NOTES.length, 3);
+  it('documents technical clarifications on monolithic minimal Linux, ROCm vs vGPU, CentOS 2021 discontinuation, and Sora caveat', () => {
+    assert.strictEqual(TECHNICAL_CLARIFICATION_NOTES.length, 4);
+    assert.ok(CENTOS_STATUS_NOTE.includes('discontinued in 2021'));
+    assert.ok(CENTOS_STATUS_NOTE.includes('Rocky Linux and AlmaLinux'));
     assert.ok(
       TECHNICAL_CLARIFICATION_NOTES.some((n) =>
         n.clarification.includes('monolithic kernel')
@@ -139,8 +184,9 @@ describe('linuxDitClusterEngine — Target Environment: Linux Host for Text-to-V
     );
     assert.ok(
       TECHNICAL_CLARIFICATION_NOTES.some((n) =>
-        n.clarification.includes('OpenAI has not publicly documented')
+        n.clarification.includes('overwhelmingly common choice')
       )
     );
   });
 });
+

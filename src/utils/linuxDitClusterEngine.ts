@@ -142,6 +142,25 @@ export interface TechnicalClarificationNote {
   clarification: string;
 }
 
+export interface PopularOperatingSystemItem {
+  id: string;
+  name: string;
+  vendorOrCommunity: string;
+  segment: 'Mobile' | 'Desktop & Laptop' | 'Server & Cloud' | 'Cross-Segment' | 'Specialized';
+  marketShareNote: string;
+  summary: string;
+}
+
+export interface ServerOperatingSystemRankItem {
+  rank: number;
+  os: string;
+  family: string;
+  bestFor: string;
+  license: string;
+  isFreeLicense: boolean;
+  aiVideoSuitability: 'Primary AI GPU Host' | 'Container Base' | 'Streaming / Edge Storage' | 'Corporate Infrastructure';
+}
+
 export const LINUX_HOST_DISTRO_CATALOG: LinuxHostDistroSpec[] = [
   {
     id: 'nvidia_base_command_os',
@@ -327,26 +346,231 @@ export const PARALLEL_FILESYSTEM_CATALOG: ParallelFilesystemSpec[] = [
   },
 ];
 
+export const POPULAR_OPERATING_SYSTEMS_CATALOG: PopularOperatingSystemItem[] = [
+  {
+    id: 'android',
+    name: 'Android (Google)',
+    vendorOrCommunity: 'Google / Open Handset Alliance',
+    segment: 'Mobile',
+    marketShareNote: '~40% to 72% global mobile share (varies by source)',
+    summary: 'The leading mobile operating system worldwide across smartphones and tablets.',
+  },
+  {
+    id: 'windows',
+    name: 'Windows (Microsoft)',
+    vendorOrCommunity: 'Microsoft',
+    segment: 'Desktop & Laptop',
+    marketShareNote: 'Majority of global desktop & laptop share (Windows 11 & Windows 10)',
+    summary: 'The dominant desktop and laptop operating system.',
+  },
+  {
+    id: 'ios',
+    name: 'iOS (Apple)',
+    vendorOrCommunity: 'Apple',
+    segment: 'Mobile',
+    marketShareNote: '~19% to 28% of global mobile traffic',
+    summary: "Apple's mobile operating system for iPhone.",
+  },
+  {
+    id: 'macos',
+    name: 'macOS (Apple)',
+    vendorOrCommunity: 'Apple',
+    segment: 'Desktop & Laptop',
+    marketShareNote: '~10% to 15% of global desktop share',
+    summary: "Apple's desktop operating system for Mac workstations and laptops.",
+  },
+  {
+    id: 'linux',
+    name: 'Linux',
+    vendorOrCommunity: 'Open-Source Community / Linux Foundation',
+    segment: 'Server & Cloud',
+    marketShareNote: 'Dominates servers, cloud infrastructure, and supercomputers',
+    summary: 'An open-source operating system family that dominates servers, cloud infrastructure, AI GPU clusters, and supercomputers, and is also used on desktops.',
+  },
+  {
+    id: 'chromeos',
+    name: 'ChromeOS (Google)',
+    vendorOrCommunity: 'Google',
+    segment: 'Desktop & Laptop',
+    marketShareNote: 'Strong footprint in education and budget laptops',
+    summary: 'A lightweight, cloud-first operating system common in schools and budget laptops.',
+  },
+  {
+    id: 'ubuntu',
+    name: 'Ubuntu',
+    vendorOrCommunity: 'Canonical',
+    segment: 'Cross-Segment',
+    marketShareNote: '#1 Linux distribution across cloud VMs and AI developer workstations',
+    summary: 'A beginner-friendly and widely supported Linux distribution for both desktops and servers.',
+  },
+  {
+    id: 'rhel',
+    name: 'Red Hat Enterprise Linux (RHEL)',
+    vendorOrCommunity: 'Red Hat (IBM)',
+    segment: 'Server & Cloud',
+    marketShareNote: 'Leading commercial enterprise Linux platform',
+    summary: 'A commercial Linux platform built for enterprises, hybrid clouds, and regulated industries.',
+  },
+  {
+    id: 'debian',
+    name: 'Debian',
+    vendorOrCommunity: 'Debian Project',
+    segment: 'Server & Cloud',
+    marketShareNote: 'Upstream foundation for Ubuntu and many container images',
+    summary: 'A stable, community-driven Linux distribution that serves as the base for Ubuntu and many container images.',
+  },
+  {
+    id: 'other_os',
+    name: 'Other (iPadOS, watchOS, HarmonyOS, FreeBSD)',
+    vendorOrCommunity: 'Apple / Huawei / FreeBSD Project',
+    segment: 'Specialized',
+    marketShareNote: 'Tablets, wearables, regional ecosystems, and high-throughput networking',
+    summary: 'Includes iPadOS (tablets), watchOS (Apple Watch), HarmonyOS (Huawei), and FreeBSD (a Unix-like OS used for high-performance server networking and video streaming).',
+  },
+];
+
+export const SERVER_OS_RANKING_TABLE: ServerOperatingSystemRankItem[] = [
+  {
+    rank: 1,
+    os: 'Ubuntu Server',
+    family: 'Linux (Debian-based)',
+    bestFor: 'Cloud VMs, containers, general web servers, AI/ML GPU nodes',
+    license: 'Free, open source',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Primary AI GPU Host',
+  },
+  {
+    rank: 2,
+    os: 'Windows Server',
+    family: 'Microsoft',
+    bestFor: 'Corporate data centers, Active Directory, SQL Server, Hyper-V',
+    license: 'Commercial (per-core)',
+    isFreeLicense: false,
+    aiVideoSuitability: 'Corporate Infrastructure',
+  },
+  {
+    rank: 3,
+    os: 'RHEL (Red Hat Enterprise Linux)',
+    family: 'Linux',
+    bestFor: 'Regulated enterprises, hybrid cloud, mission-critical systems',
+    license: 'Paid subscription',
+    isFreeLicense: false,
+    aiVideoSuitability: 'Primary AI GPU Host',
+  },
+  {
+    rank: 4,
+    os: 'Debian',
+    family: 'Linux',
+    bestFor: 'Stable web hosting, base container images',
+    license: 'Free, community-driven',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Container Base',
+  },
+  {
+    rank: 5,
+    os: 'Rocky Linux, AlmaLinux',
+    family: 'Linux (RHEL-compatible)',
+    bestFor: 'Free alternatives for RHEL-style workloads',
+    license: 'Free',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Primary AI GPU Host',
+  },
+  {
+    rank: 6,
+    os: 'Amazon Linux',
+    family: 'Linux',
+    bestFor: 'AWS EC2 workloads',
+    license: 'Free, optimized for AWS',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Primary AI GPU Host',
+  },
+  {
+    rank: 7,
+    os: 'Oracle Linux',
+    family: 'Linux (RHEL-compatible)',
+    bestFor: 'Databases and HPC, with live kernel patching (Ksplice)',
+    license: 'Free to use, paid support available',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Primary AI GPU Host',
+  },
+  {
+    rank: 8,
+    os: 'SUSE Linux Enterprise Server (SLES)',
+    family: 'Linux',
+    bestFor: 'SAP workloads, European enterprises',
+    license: 'Paid subscription',
+    isFreeLicense: false,
+    aiVideoSuitability: 'Corporate Infrastructure',
+  },
+  {
+    rank: 9,
+    os: 'Alpine Linux',
+    family: 'Linux',
+    bestFor: 'Minimal containers (base image under 10 MB)',
+    license: 'Free, open source',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Container Base',
+  },
+  {
+    rank: 10,
+    os: 'FreeBSD',
+    family: 'Unix-like (not Linux)',
+    bestFor: 'High-performance networking and storage, such as video streaming at scale',
+    license: 'Free, open source',
+    isFreeLicense: true,
+    aiVideoSuitability: 'Streaming / Edge Storage',
+  },
+];
+
+export const CENTOS_STATUS_NOTE =
+  'Note on CentOS: The classic CentOS Linux release (a downstream RHEL clone) was discontinued in 2021. CentOS Stream now serves as the upstream development branch of RHEL, while Rocky Linux and AlmaLinux are the main free RHEL-compatible production options.';
+
 export const TECHNICAL_CLARIFICATION_NOTES: TechnicalClarificationNote[] = [
   {
     id: 'linux_monolithic_minimal',
-    topic: 'Minimal Linux Footprint vs. Kernel Architecture',
+    topic: 'Minimal, Container-Optimized Linux vs. Kernel Architecture',
     clarification:
-      'Linux uses a monolithic kernel, so production DiT clusters use a minimal Linux distribution (such as Bottlerocket, RHEL CoreOS, or Alpine) with unused drivers, GUIs, and daemons stripped out—rather than a micro-kernel.',
+      'Linux uses a monolithic kernel. Immutable, stripped-down distributions such as Alpine Linux (base image under 10 MB), Red Hat Enterprise Linux CoreOS, or AWS Bottlerocket remove GUIs and unnecessary background services so resources go to the containers running AI pipelines.',
   },
   {
     id: 'rocm_vs_vgpu',
-    topic: 'NVIDIA vGPU vs. AMD ROCm Compute Stack',
+    topic: 'Kernel-Level GPU Drivers: NVIDIA vGPU & AMD ROCm',
     clarification:
-      'NVIDIA vGPU is a GPU virtualization driver layer for sharing or passing GPUs to VMs at low latency, whereas AMD ROCm is AMD’s complete GPU compute software stack (drivers, HIP runtime, RCCL collectives) for running AI workloads on AMD Instinct hardware.',
+      'Low-latency hardware access relies on kernel-level GPU drivers and stacks: NVIDIA Data Center / vGPU drivers (for bare-metal or virtualized GPUs) or AMD ROCm (AMD’s GPU compute stack and amdgpu kernel driver).',
   },
   {
-    id: 'sora_infrastructure_provenance',
-    topic: 'Industry-Standard Frontier DiT Cluster Practice',
+    id: 'common_os_choices_and_sora_caveat',
+    topic: 'Common OS Choices & Production Stack Caveat',
     clarification:
-      'OpenAI has not publicly documented Sora’s exact host OS or cluster configuration. The specifications and manifests generated here represent proven, industry-standard HPC and AI supercomputing practices for large-scale Diffusion Transformer (DiT) video models.',
+      'Linux (such as Ubuntu Server, RHEL with HPC-tuned kernels, or NVIDIA Base Command OS for DGX systems) is the overwhelmingly common choice for large GPU clusters—though calling it the "only viable option" is stronger than public evidence strictly proves. Caveat: These are general requirements of large GPU clusters and do not confirm OpenAI’s actual production stack for Sora.',
+  },
+  {
+    id: 'centos_stream_transition',
+    topic: 'CentOS Discontinuation & RHEL-Compatible Replacements',
+    clarification: CENTOS_STATUS_NOTE,
   },
 ];
+
+/**
+ * Filters the Ranked Server Operating Systems table by search query and license type.
+ */
+export function filterServerOsRankings(
+  query = '',
+  licenseFilter: 'all' | 'free' | 'commercial' = 'all'
+): ServerOperatingSystemRankItem[] {
+  const q = query.trim().toLowerCase();
+  return SERVER_OS_RANKING_TABLE.filter((item) => {
+    if (licenseFilter === 'free' && !item.isFreeLicense) return false;
+    if (licenseFilter === 'commercial' && item.isFreeLicense) return false;
+    if (!q) return true;
+    return (
+      item.os.toLowerCase().includes(q) ||
+      item.family.toLowerCase().includes(q) ||
+      item.bestFor.toLowerCase().includes(q) ||
+      item.license.toLowerCase().includes(q)
+    );
+  });
+}
 
 export const DEFAULT_LINUX_DIT_CLUSTER_CONFIG: LinuxDitClusterConfig = {
   clusterName: 'dit-video-prod-cluster',

@@ -20,7 +20,7 @@
 
 1. **Meme Studio, Transition FX & Auto-Save**: Multimodal Gemini Vision auto-captioning, live draggable typography canvas, **animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`)**, 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and **automatic 30-second `localStorage` layout persistence** (`memeforge_autosave_layout`).
 2. **Marketplace & Crypto/UPI**: Buy and sell viral templates using Web3 wallets (ETH, SOL, MEME, USDT) or Indian UPI AutoPay (GPay, PhonePe, Paytm, BHIM).
-3. **LEO / Veo 3 Video Studio & Linux DiT Cluster Host Architect**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra, backed by both a **Single-GPU Vibe Coder Guide** (Docker + FastAPI + S3/R2) and a **Multi-Thousand-GPU Linux DiT Cluster Host Workbench** (Kubernetes + Slurm/Ray, InfiniBand/RoCE RDMA + SR-IOV, Lustre/GPFS/WekaFS + GPUDirect Storage, 1GB/2MB HugePages, and zero-swap minimal Linux).
+3. **LEO / Veo 3 Video Studio, Timeline Keyframe Animator & Linux DiT Cluster Host Architect**: AI video generation scaling from 15 seconds up to **100 hours maximum duration** in 4K/8K Ultra with **Timeline Keyframe Text Animation (Position X/Y, Scale, Rotation & `.webm` Video Export)**, backed by both a **Single-GPU Vibe Coder Guide** (Docker + FastAPI + S3/R2) and a **Multi-Thousand-GPU Linux DiT Cluster Host Workbench & Server OS Reference (Ranks 1–10)**.
 4. **Enterprise B2B LoRA Studio & Model Sandbox**: Train custom product digital-twin LoRA weights from 10–20 calibration images, monitor live **LoRA Training Status & NVIDIA H100/B200 GPU Telemetry**, and verify physical invariants (Logo Integrity, Silhouette IoU, BRDF Material Purity) in the **Model Consistency Sandbox** before wide-scale deployment.
 5. **Cinema VFX Studio Master**: A hybrid workstation combining the best of **Adobe Premiere Pro** (multi-track precision editing & trimming), **DaVinci Resolve Studio** (ACES 2.0 color science, 3D LUTs & real-time scopes), and **Fusion / Fairlight** (AI node effects & 192 kHz 32-bit float audio).
 6. **Team Hub & Global PPP Subscriptions**: 50-seat team workspace with granular RBAC permissions, version rollback snapshots, encrypted 50 TB asset vaults, localized Indian plans (Rs. 999/mo Individual Pro & Rs. 99,999/mo Corporate Enterprise), and **4-Tier Global Purchasing Power Parity (PPP)** pricing across 90+ countries.
@@ -201,6 +201,28 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 - **5. Minimal Footprint & Recommended Linux Distributions**:
   - Profiles HPC-tuned **NVIDIA Base Command OS**, **Ubuntu Server 24.04 LTS (HPC Kernel)**, and **RHEL 9 HPC**, alongside immutable minimal Linux distributions (**Bottlerocket**, **RHEL CoreOS**, and **Alpine Minimal**) running a headless monolithic Linux kernel (`systemctl set-default multi-user.target`) with GUIs, unused drivers, and non-essential daemons stripped out.
   - Generates downloadable Linux-only artifacts: `provision-linux-dit-host.sh`, `k8s-dit-sriov-gds-cluster.yaml`, and multi-node Slurm/Ray job scripts.
+- **6. OS & Server Infrastructure Reference (Popular OS & Top 10 Ranked Server OS Matrix)**:
+  - **Popular Operating Systems Catalog**: Profiles **Android** (~40–72% mobile share depending on source), **Windows 11/10**, **iOS** (~19–28% mobile traffic), **macOS** (~10–15% desktop share), **Linux**, **ChromeOS**, **Ubuntu**, **RHEL**, **Debian**, and **Other** (**iPadOS**, **watchOS**, **HarmonyOS**, **FreeBSD**).
+  - **Server Operating Systems Ranked 1–10**: Interactive filterable table covering **1. Ubuntu Server**, **2. Windows Server**, **3. RHEL**, **4. Debian**, **5. Rocky Linux / AlmaLinux**, **6. Amazon Linux**, **7. Oracle Linux (Ksplice)**, **8. SUSE Linux Enterprise Server (SLES)**, **9. Alpine Linux (<10 MB)**, and **10. FreeBSD**, plus the **CentOS 2021 discontinuation → CentOS Stream / Rocky / AlmaLinux** status note and the **Sora production stack caveat**.
+
+### 11. 🎞️ LEO Video Studio Timeline Keyframe System (`LeoStudioTab.tsx` & `leoKeyframeEngine.ts`)
+- **Multi-Property Keyframe Interpolation (`Position X`, `Position Y`, `Scale`, `Rotation`)**:
+  - Animates text layers over normalized timeline progression (`0%` to `100%`) with selectable easing curves (**Ease In-Out**, **Ease Out**, **Ease In**, and **Linear**).
+- **Interactive Diamond Keyframe Scrubber & Motion Presets**:
+  - Clickable diamond markers (`◆`) on both the main video timeline scrubber and the dedicated **Timeline Keyframe Animator** track, plus 1-click presets (**Zoom In**, **Slide Across**, **Spin Drop**, **Lower-Third**, and **Reset**).
+- **Keyframed Video Export (`.webm`)**:
+  - Sweeps the playhead from `0%` to `100%` and records the live canvas stream (`MediaRecorder` / `video/webm`) with all keyframed text layers baked into the exported video file.
+
+### 12. 🧠 Build Spec: Text-to-Video Diffusion Transformer (`CLAUDE.md`, `AGENTS.md`, `PyTorchDitBuildSpecModal.tsx` & `pytorchDitBuildSpecEngine.ts`)
+- **Saved at Repo Root (`/CLAUDE.md` & `/AGENTS.md`)**:
+  - Automatically read by Claude Code, Cursor, and Codex as a software-only PyTorch 2.x + Triton specification (explicitly excluding custom silicon/ASIC design, Sora-scale scratch training, and hardware-level HBM tuning).
+- **7 Core PyTorch 2.x Modules + Acceptance Tests & Benchmark**:
+  - **`vae.py` (Causal 3D VAE)**: Compresses `[B, C, T, H, W]` → `[B, c, T/8, H/8, W/8]` (with optional `16x` spatial compression), enforces causal left-only time padding (`pad_t_left = k_t - 1, pad_t_right = 0`), and decodes in temporal chunks in `BF16` to cap peak GPU memory.
+  - **`patchify.py` (3D Patch Tokenizer)**: Splits latents into `1×2×2` patches, flattens them into a token sequence, and adds factorized `(T, H, W)` sinusoidal positional embeddings.
+  - **`dit.py` (Diffusion Transformer)**: Executes `RMSNorm → Self-Attention → Cross-Attention to Text → SwiGLU MLP` with `adaLN` timestep conditioning, alternating **Spatial Attention** (within frame) and **Temporal Attention** (same position across frames) while never running full $N \times N$ attention across all spacetime tokens at once.
+  - **`attention.py`**: Uses `torch.nn.functional.scaled_dot_product_attention` / FlashAttention without materializing the $N \times N$ matrix, alongside `naive_attention_reference` for `BF16` testing (`atol <= 1e-3`).
+  - **`text.py` & `sampler.py`**: Uses pretrained **T5-XXL (`google/t5-v1_1-xxl`)** embeddings for cross-attention and a configurable rectified-flow denoising loop with Classifier-Free Guidance (`cfg_scale`).
+  - **`pipeline.py`, `tests/thresholds.py` & `bench.py`**: Implements `generate(prompt, frames, height, width, steps, seed)`, per-channel **FP8 (E4M3) / INT8** quantization (keeping `input_embedding`, `timestep_embedding`, `final_output_projection`, and `vae.decode` in `BF16`), fused `RMSNorm`/`SwiGLU`, acceptance tests (`PSNR >= 32.0 dB`, `LPIPS <= 0.05`), and latency / `tokens/sec` / peak VRAM benchmarking.
 
 ---
 
@@ -240,10 +262,12 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **96-test suite across 15 test suites** covering:
+Runs the full **110-test suite across 17 test suites** covering:
 - **Shared Core Engine (`sharedCoreEngine.test.ts`)**: Numeric clamping, UTF-8 SVG data URI encoding, byte size formatting, prefixed ID generation, `localStorage` JSON adapters, and Original AI Studio Applet (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) URL resolution.
 - **Vibe Coder Sora-Style App Guide Engine (`vibeCoderGuideEngine.test.ts`)**: 24 GB vs. 40–80 GB GPU VRAM evaluation, `enable_model_cpu_offload()` compatibility, Amazon S3 vs. Cloudflare R2 CDN cost calculation, and Ubuntu CUDA `Dockerfile` + FastAPI `/generate` (5m timeout) & `/health` code generation.
-- **Linux Host for Text-to-Video DiT Cluster Engine (`linuxDitClusterEngine.test.ts`)**: HPC & minimal Linux OS catalog validation, NVIDIA vGPU / bare-metal & AMD ROCm stack checks, Lustre/GPFS/WekaFS + GPUDirect Storage evaluation, 1GB/2MB HugePages TLB calculation, 5-pillar readiness auditing, and Linux-only bootstrap / Kubernetes SR-IOV / Slurm & Ray script generation.
+- **Linux Host for Text-to-Video DiT Cluster & OS Reference Engine (`linuxDitClusterEngine.test.ts`)**: HPC & minimal Linux OS catalog validation, Popular OS & Ranked Top 10 Server OS filtering, CentOS 2021 discontinuation & Sora caveats, NVIDIA vGPU / bare-metal & AMD ROCm stack checks, Lustre/GPFS/WekaFS + GPUDirect Storage evaluation, 1GB/2MB HugePages TLB calculation, 5-pillar readiness auditing, and Linux-only bootstrap / Kubernetes SR-IOV / Slurm & Ray script generation.
+- **PyTorch DiT Software Build Spec Engine (`pytorchDitBuildSpecEngine.test.ts`)**: Step 1 Tiny Config (`8 frames @ 64×64`) & Production FP8 Config (`32 frames @ 512×512`) `[B, T, H, W, C]` latent/token shape math, factorized spatial+temporal vs full $N \times N$ attention complexity reduction, `8x`/`16x` spatial compression, `BF16` protected module rules, and all 5 Acceptance Tests (`vae_shape`, `vae_causality`, `attention_sdpa_vs_naive`, `quantized_quality`, `benchmark_report`).
+- **LEO Video Studio Timeline Keyframe Engine (`leoKeyframeEngine.test.ts`)**: Easing curve evaluation (`linear`, `easeIn`, `easeOut`, `easeInOut`), keyframe time sorting and bounds clamping, multi-property (`x`, `y`, `scale`, `rotation`) interpolation, keyframe upsert/snap and deletion guards, and motion preset application.
 - **MemeCanvas Transition FX Engine (`memeTransitionEngine.test.ts`)**: Cubic ease-out interpolation, `fade`, `slide`, `dissolve`, and `none` transition progress math, directional slide offsets, and deterministic 64-tile dissolve thresholds.
 - **Enterprise B2B LoRA & Model Sandbox Engine (`b2bEnterpriseEngine.test.ts`)**: 5-stage LoRA training progression, ETA formatting, H100/B200 GPU telemetry perturbation, `{{token}}` prompt injection, and physical invariant consistency scoring.
 - **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
@@ -358,6 +382,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── ModelSandbox.tsx         # Pre-deployment LoRA consistency sandbox & invariant verifier
 │   │   ├── OriginalAppletBridgeModal.tsx # Canonical AI Studio Applet (4d0cb3f2) launcher & state bridge
 │   │   ├── PWAInstallButton.tsx
+│   │   ├── PyTorchDitBuildSpecModal.tsx # PyTorch 2.x + Triton DiT Software Build Spec & Simulator
 │   │   ├── SubscriptionModal.tsx    # India UPI & 4-Tier Global PPP subscription manager
 │   │   ├── TeamWorkspaceTab.tsx
 │   │   ├── VibeCoderGuideModal.tsx  # Vibe Coder's Sora-Style App Guide, VRAM Advisor & FastAPI Builder
@@ -380,10 +405,12 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── cinemaEngine.ts
 │   │   ├── engineMigration2026.ts
 │   │   ├── leo8kEngine.ts
-│   │   ├── linuxDitClusterEngine.ts # Linux Host DiT Cluster configurator, HugePages & K8s/Slurm/Ray generator
+│   │   ├── leoKeyframeEngine.ts     # LEO Video Studio Timeline Keyframe interpolation engine (Position, Scale, Rotation)
+│   │   ├── linuxDitClusterEngine.ts # Linux Host DiT Cluster configurator, OS Reference (Ranks 1–10) & K8s/Slurm/Ray generator
 │   │   ├── memeAudioEngine.ts
 │   │   ├── memeTransitionEngine.ts  # Fade, Slide & Dissolve transition interpolation & Bayer tile engine
 │   │   ├── pppPricingUtils.ts
+│   │   ├── pytorchDitBuildSpecEngine.ts # PyTorch 2.x DiT Software Spec, [B,T,H,W,C] shape trace & acceptance tests
 │   │   ├── subscriptionUtils.ts
 │   │   ├── vibeCoderGuideEngine.ts  # Single-GPU VRAM calculator, S3/R2 estimator & Dockerfile/FastAPI generator
 │   │   ├── videoDurationUtils.ts
@@ -395,7 +422,9 @@ All AI model and publishing operations are handled server-side via Express route
 ├── .env.example                     # Safe environment variable template (zero secrets)
 ├── .gitignore                       # Git ignore rules including keystores & local secrets
 ├── .npmrc                           # npm configuration (legacy-peer-deps=true)
+├── AGENTS.md                        # Cursor / Codex automatic agent software build spec (PyTorch DiT)
 ├── CHANGELOG.md                     # Version history and release notes
+├── CLAUDE.md                        # Claude Code automatic agent software build spec (PyTorch DiT)
 ├── CODE_OF_CONDUCT.md               # Contributor Covenant v2.1
 ├── CONTRIBUTING.md                  # Contribution workflow & testing guidelines
 ├── LICENSE                          # Apache License, Version 2.0

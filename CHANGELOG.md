@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-10-28
+
+### Added & Improved
+- **Build Spec: Text-to-Video Diffusion Transformer (Optimized Inference) (`CLAUDE.md`, `AGENTS.md`, `pytorchDitBuildSpecEngine.ts`, `PyTorchDitBuildSpecModal.tsx`)**:
+  - Saved the software-focused PyTorch 2.x + Triton build specification at both `/CLAUDE.md` (Claude Code) and `/AGENTS.md` (Cursor, Codex) in the repository root for automatic agent ingestion.
+  - **7 Core Modules & Tests (`vae.py`, `patchify.py`, `dit.py`, `attention.py`, `text.py`, `sampler.py`, `pipeline.py`, `tests/thresholds.py`, `bench.py`)**:
+    1. **Causal 3D VAE (`vae.py`)**: `8x` temporal compression, `8x` (or optional `16x`) spatial compression, strictly left-only causal time padding (`(k_t - 1, 0)`), and temporal chunked decoding to bound peak VRAM.
+    2. **3D Patch Tokenizer (`patchify.py`)**: `(1×2×2)` 3D patch flattening with factorized sinusoidal `(T, H, W)` positional embeddings.
+    3. **Diffusion Transformer (`dit.py`)**: `RMSNorm -> Spatial/Temporal Self-Attention -> Cross-Attention to Text -> SwiGLU MLP` with `adaLN` timestep modulation, alternating Spatial Attention (within frame) and Temporal Attention (across frames at the same location) without ever running full $N \times N$ 3D attention.
+    4. **Attention (`attention.py`)**: `torch.nn.functional.scaled_dot_product_attention` / FlashAttention plus `naive_attention_reference` for `BF16` testing (`atol <= 1e-3`).
+    5. **Text Conditioning (`text.py`)**: Pretrained **T5-XXL (`google/t5-v1_1-xxl`, 4096-dim)** cross-attention conditioning with a deterministic tiny-config test stub.
+    6. **Sampler (`sampler.py`) & Pipeline (`pipeline.py`)**: Rectified-flow / Euler denoising loop with configurable steps and Classifier-Free Guidance (`cfg_scale`), `generate(prompt, frames, height, width, steps, seed) -> video tensor [B, T, H, W, C]`, and per-channel **FP8 (E4M3) / INT8** linear quantization that keeps `input_embedding`, `timestep_embedding`, `final_output_projection`, and `vae.decode` in `BF16`.
+  - **Interactive Simulator & 110 Passing Unit Tests across 17 Suites**: Added `src/utils/pytorchDitBuildSpecEngine.test.ts` and the **PyTorch DiT Build Spec (CLAUDE.md)** workbench modal in **LEO Video Studio**.
+
+---
+
+## [1.7.0] - 2026-10-28
+
+### Added & Improved
+- **LEO Video Studio Timeline Keyframe System (`leoKeyframeEngine.ts`, `leoKeyframeEngine.test.ts`, `LeoStudioTab.tsx`)**:
+  - Animates text layer properties (**Position X/Y**, **Scale**, and **Rotation**) over time (`0%` to `100%`) with configurable easing curves (`easeInOut`, `easeOut`, `easeIn`, `linear`).
+  - Added clickable diamond keyframe markers (`◆`) on both the main timeline scrubber and the dedicated **Timeline Keyframe Animator** track, 1-click motion presets (*Zoom In*, *Slide Across*, *Spin Drop*, *Lower-Third*, *Reset*), and **Export Video with Keyframed Text (`.webm`)** recording the animated canvas stream via `MediaRecorder`.
+- **Reference: Operating Systems & AI Infrastructure (`linuxDitClusterEngine.ts`, `linuxDitClusterEngine.test.ts`, `LinuxDitClusterHostModal.tsx`)**:
+  - **Popular Operating Systems Catalog**: Profiles **Android** (~40–72% mobile share depending on source), **Windows 11/10**, **iOS** (~19–28% mobile traffic), **macOS** (~10–15% desktop share), **Linux**, **ChromeOS**, **Ubuntu**, **RHEL**, **Debian**, and **Other** (**iPadOS**, **watchOS**, **HarmonyOS**, **FreeBSD**).
+  - **Top 10 Ranked Server Operating Systems Matrix**: Ranks 1–10 by enterprise footprint and web presence (**1. Ubuntu Server**, **2. Windows Server**, **3. RHEL**, **4. Debian**, **5. Rocky Linux / AlmaLinux**, **6. Amazon Linux**, **7. Oracle Linux** with Ksplice, **8. SUSE Linux Enterprise Server (SLES)**, **9. Alpine Linux** under 10 MB, and **10. FreeBSD** for high-performance networking & video streaming at scale) with interactive search and license filtering.
+  - **CentOS Status & Sora Caveats**: Documents the 2021 CentOS Linux discontinuation (**CentOS Stream** as RHEL upstream; **Rocky Linux** & **AlmaLinux** as free RHEL-compatible alternatives) and clarifies that Linux is the overwhelmingly common choice for large DiT GPU clusters without claiming to confirm OpenAI's proprietary Sora stack.
+- **Expanded Automated Test Suite (104 Passing Tests across 16 Suites)**:
+  - Added `src/utils/leoKeyframeEngine.test.ts` and expanded `src/utils/linuxDitClusterEngine.test.ts`.
+
+---
+
 ## [1.6.0] - 2026-10-28
 
 ### Added & Improved
