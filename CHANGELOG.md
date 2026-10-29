@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-10-29
+
+### Added & Improved
+- **AI Video Pilot: One Chapter to a 3-Minute Animated Episode (`config/pricing.yaml`, `style/style_guide.md`, `shots/shot_list.json`, `video_pilot/`, `aiVideoPilotEngine.ts`, `AiVideoPilotModal.tsx`)**:
+  - **Config-Driven Pricing (`config/pricing.yaml`)**: September 2026 Google Gemini API paid-tier pricing for **Veo 3.1** (`veo-3.1-lite-generate-preview`: `720p $0.05/s`, `1080p $0.08/s`, no 4K; `veo-3.1-fast-generate-preview`: `720p $0.10/s`, `1080p $0.12/s`, `4K $0.30/s`; `veo-3.1-generate-preview`: `720p $0.40/s`, `1080p $0.40/s`, `4K $0.60/s`) and **Gemini Omni Flash** (`gemini-omni-1.1-flash`: `720p $0.10/s`, 10s max). Rejects any unlisted provider/resolution/duration combination and permanently blocks OpenAI Sora (shut down Sept 24, 2026).
+  - **Atomic `$500` Budget Guard (`video_pilot/budget.py`)**: Enforces `spent_usd + reserved_usd + estimated_cost_usd <= cap_usd ($500.00)` with atomic in-flight reservation locking before any provider API call, zero-dependency YAML parsing, and live `costs.csv` audit ledger export.
+  - **23-Shot Rainy Bookstore & Wounded Night Hunter Episode (`shots/shot_list.json`, `style/style_guide.md`)**: Adapted the *"Nocturne in the Rainy Bookstore"* chapter into 23 schema-validated shots (`21 × 8s + 2 × 6s = 180s = 3.0 minutes`) with non-verbatim literary transformation, 3 locked character turnaround anchors (`char_shopkeeper`, `char_hunter`, `char_cane_relic`), and 2 environment anchors (`loc_rainy_bookstore`, `loc_storm_alley`).
+  - **Interactive 2.5D Anime Canvas Animatic Player & Chapter-to-23-Shot Compiler (`AiVideoPilotModal.tsx`)**: Real-time 60 FPS canvas animatic renderer visualizing the rainy bookstore interior, storm alley, bronze doorway bell, steaming porcelain tea cups, and silver-inlaid wooden cane alongside a live Chapter-to-23-Shot compiler (`POST /api/video-pilot/compile-chapter` with deterministic offline fallback), 10-shot provider bake-off, FFmpeg EBU R128 (`-14 LUFS`) + sidechain ducking command generator, and 5-Clause Book License Analyzer.
+- **Original AI Studio Applet (`4d0cb3f2`) vs. Current Build (`70d0f32a`) Evolution Matrix (`OriginalAppletBridgeModal.tsx`)**:
+  - Added a side-by-side 7-dimension architectural benchmark table comparing the original static-canvas prototype (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) against the current `v2.1.0` unified workstation.
+- **Resilient Dev Server Startup & Video Pilot API Endpoints (`server.ts`)**:
+  - Replaced top-level eager `new GoogleGenAI` instantiation with a lazy `getGenAiClient()` helper so the Express + Vite server always starts cleanly on port `3000` even before `GEMINI_API_KEY` is configured.
+  - Added `GET /api/health`, `GET /api/video-pilot/pricing`, and `POST /api/video-pilot/compile-chapter`.
+- **Expanded Automated Test Suite (21 Test Suites)**:
+  - Added `src/utils/aiVideoPilotEngine.test.ts` and `src/utils/userGuidesEngine.test.ts` using Node's native `node:test` runner (`npm test`).
+
+---
+
 ## [1.8.0] - 2026-10-28
 
 ### Added & Improved

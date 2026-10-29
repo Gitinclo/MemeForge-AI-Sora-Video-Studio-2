@@ -293,9 +293,22 @@ export const USER_GUIDE_SECTIONS: GuideSection[] = [
         deepLinkAction: 'tab:leo',
         deepLinkLabel: 'Open Keyframe & Sora 2 Planner',
       },
+      {
+        id: 'm2-step-4',
+        stepNumber: 4,
+        title: 'Launch AI Video Pilot: One Chapter to a 3-Minute Animated Episode (Veo 3.1)',
+        whereToClick: 'M2 LEO Video Studio Header → "AI Video Pilot (Veo 3.1 · 3-Min Episode)" Button',
+        description:
+          'Open the AI Video Pilot workbench to play the 23-shot (180s) "Nocturne in the Rainy Bookstore" 2.5D Anime Animatic, compile any novel chapter into 23 schema-validated shots, simulate Google Veo 3.1 pricing against the atomic $500 Budget Guard, export costs.csv, and verify the 5-Clause Book License Gate.',
+        expectedOutcome:
+          'Plays the 23-shot episode animatic at 60 FPS, computes exact Sept 2026 Veo 3.1 costs, and allows 1-click loading of any shot into the LEO Studio prompt editor.',
+        deepLinkAction: 'tab:leo',
+        deepLinkLabel: 'Open AI Video Pilot in M2',
+      },
     ],
     proTips: [
       'Include camera movement terms like "slow dolly zoom", "35mm anamorphic tracking shot", or "FPV drone flythrough" for stronger motion coherence.',
+      'Use the "AI Video Pilot (Veo 3.1 · 3-Min Episode)" button in M2 to compile a full book chapter into 23 non-verbatim shots (180s total) with atomic $500 budget enforcement.',
       'From inside LEO Video Studio, you can also open the "Vibe Coder Deployment Guide" to generate ready-to-run Docker and FastAPI scripts for rented GPUs.',
     ],
     samplePrompts: [

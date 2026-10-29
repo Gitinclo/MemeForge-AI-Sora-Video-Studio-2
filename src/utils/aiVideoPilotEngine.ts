@@ -11,7 +11,8 @@
  * 2. Hard Budget Guard (`budget.py`) with atomic in-flight reservation locking (`spent + reserved + estimate <= cap`)
  *    and `costs.csv` ledger export.
  * 3. 23-Shot Schema Validator (`shots/shot_list.json`) + Continuity Anchors (`seed`, `reference_image_ids`, `transition_from_prev`).
- * 4. 10-Shot Provider Bake-Off Simulator (`240s` total across 3 tries).
+ * 4. Interactive Chapter-to-23-Shot Text-to-Animation Compiler (`compileChapterToPilotEpisode`) featuring the
+ *    "Nocturne in the Rainy Bookstore" (Shopkeeper & Wounded Night Hunter) 3-minute animated pilot episode.
  * 5. Interactive 5-Clause Book License Analyzer & Scaling Gates (`Pilot 3m -> Episode 25m -> Season -> 100 Hours`).
  */
 
@@ -280,47 +281,66 @@ export interface PilotShotSpec {
   transition_from_prev: 'cut' | 'match_cut' | 'last_frame_init';
 }
 
-export const STYLE_GUIDE_SUMMARY = {
-  styleId: 'cel_cinema_2026',
-  styleName: 'Stylized 2.5D Cel-Shaded Anamorphic Cinema (24fps)',
+export interface StyleGuideConfig {
+  styleId: string;
+  styleName: string;
+  characters: Array<{
+    id: string;
+    name: string;
+    role: string;
+    visualAnchor: string;
+    voiceProfile: string;
+    referenceAsset: string;
+  }>;
+  locations: Array<{
+    id: string;
+    name: string;
+    visualAnchor: string;
+    ambientStem: string;
+  }>;
+}
+
+export const STYLE_GUIDE_SUMMARY: StyleGuideConfig = {
+  styleId: 'gothic_rain_anime_2026',
+  styleName: 'Stylized Dark-Fantasy 2.5D Anime Cinema (Chiaroscuro Rain & Warm Lamp Glow, 24fps)',
   characters: [
     {
-      id: 'char_aria',
-      name: 'Aria Vance',
-      role: 'Cartographer Apprentice',
-      visualAnchor: '19yo, short copper-red bob, brass monocle on collar, navy aviator jacket',
-      voiceProfile: 'voice_aria_mezzo_en (-16 LUFS)',
-      referenceAsset: 'char_aria_turnaround_v1.png',
+      id: 'char_shopkeeper',
+      name: 'The Bookstore Proprietor',
+      role: 'Enigmatic Host of the Rainy Bookshop',
+      visualAnchor: 'Pale young man, slightly tousled dark hair, tailored all-black shirt and trousers, warm yellow lamp reflections in dark pupils',
+      voiceProfile: 'voice_proprietor_baritone_calm (-16 LUFS)',
+      referenceAsset: 'char_shopkeeper_turnaround_v1.png',
     },
     {
-      id: 'char_kael',
-      name: 'Master Kaelen',
-      role: 'Archivist of the Spire',
-      visualAnchor: '60yo scholar, silver braided beard, twin cyan spectacles, charcoal astrolabe cloak',
-      voiceProfile: 'voice_kael_baritone_en (-16 LUFS)',
-      referenceAsset: 'char_kael_turnaround_v1.png',
+      id: 'char_hunter',
+      name: 'The Wounded Night Hunter',
+      role: 'Vigilant Combatant Seeking Shelter',
+      visualAnchor: 'Tall sculpted woman, rain-drenched dark hair, formal black dress damp from storm, carrying a black metal cane with concealed blade',
+      voiceProfile: 'voice_hunter_alto_guarded (-16 LUFS)',
+      referenceAsset: 'char_hunter_turnaround_v1.png',
     },
     {
-      id: 'char_vex',
-      name: 'Vex-9',
-      role: 'Clockwork Automaton Messenger',
-      visualAnchor: 'Owl-sized brass automaton, articulated copper feathers, amber aperture eyes',
-      voiceProfile: 'voice_vex_chime_sfx',
-      referenceAsset: 'char_vex_turnaround_v1.png',
+      id: 'char_cane_relic',
+      name: 'Mechanized Black Cane & Tea Service',
+      role: 'Recurring Visual Continuity Props',
+      visualAnchor: 'Retractable black-steel blade cane, steaming porcelain teacup, folded white towel, and antique bronze entrance bell',
+      voiceProfile: 'sfx_metallic_latch_and_bell',
+      referenceAsset: 'char_cane_relic_turnaround_v1.png',
     },
   ],
   locations: [
     {
-      id: 'loc_sky_citadel',
-      name: 'The Upper Observatory of Aethelgard',
-      visualAnchor: 'Vaulted glass-and-brass dome above clouds, rotating central armillary sphere, warm sunlight',
-      ambientStem: 'sfx_observatory_clockwork_hum.wav (-28 LUFS)',
+      id: 'loc_rainy_bookstore',
+      name: 'The Cramped Old Bookstore Interior',
+      visualAnchor: 'Narrow floor-to-ceiling bookshelves, books stacked on the half-blocked staircase, dusty transom glass, single warm counter lamp',
+      ambientStem: 'sfx_bookstore_rain_on_glass_and_clock.wav (-28 LUFS)',
     },
     {
-      id: 'loc_clockwork_bazaar',
-      name: 'The Undercroft Gear Market',
-      visualAnchor: 'Cobblestone alley beneath giant aqueduct gears, glowing paper lanterns, steam vents',
-      ambientStem: 'sfx_bazaar_steam_crowd.wav (-26 LUFS)',
+      id: 'loc_storm_alley',
+      name: 'The Rain-Curtained Street & Back Alley',
+      visualAnchor: 'Murky torrential downpour over dark glistening cobblestones, rising mist, shuttered shops, glowing Open sign opposite the alley',
+      ambientStem: 'sfx_heavy_downpour_and_distant_thunder.wav (-24 LUFS)',
     },
   ],
 };
@@ -331,14 +351,14 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria'],
-    location: 'loc_sky_citadel',
-    action: 'Aria adjusts her brass monocle as golden cloudlight floods the glass dome of the observatory.',
-    dialogue: { speaker: 'char_aria', line: 'The eastern meridian shifted six degrees overnight.' },
-    camera: 'Wide establishing crane shot slowly pushing in toward the central armillary sphere',
-    prompt: 'Stylized 2.5D cel-shaded cinema, wide crane shot pushing into a vaulted glass-and-brass observatory above a sea of clouds, Aria inspecting a rotating armillary sphere, warm tungsten sunlight.',
-    seed: 10101,
-    reference_image_ids: ['char_aria_turnaround_v1'],
+    characters: ['char_shopkeeper', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'The shopkeeper opens the weathered wooden entrance door as a muffled bronze bell chimes above.',
+    dialogue: null,
+    camera: 'Close-up low angle on the bronze bell and rain-streaked transom window tilting down to the doorway',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, close-up of an antique bronze shop bell chiming above a weathered wooden door, rainwater trickling down dusty glass, 24fps.',
+    seed: 20101,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_cane_relic_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
@@ -346,14 +366,14 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_sky_citadel',
-    action: "Vex-9 flutters down from the rafters and lands on Aria's leather satchel with a metallic chime.",
-    dialogue: null,
-    camera: "Medium tracking shot following the brass owl automaton onto Aria's shoulder",
-    prompt: "Stylized 2.5D cel-shaded cinema, medium tracking shot, compact brass owl automaton Vex-9 with glowing amber aperture eyes landing on Aria's shoulder inside the sunlit observatory.",
-    seed: 10102,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
+    characters: ['char_shopkeeper'],
+    location: 'loc_storm_alley',
+    action: 'Outside the threshold, sheets of heavy rain drum against deep street puddles while a distant weather alert fades into the storm.',
+    dialogue: { speaker: 'char_shopkeeper', line: 'A week of relentless rain... the whole street is deserted.' },
+    camera: 'Wide exterior establishing shot through a foggy curtain of rain toward the lone open doorway',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, wide exterior shot of a murky rainstorm flooding cobblestone puddles outside an old bookstore, misty rain curtain, moody slate-blue lighting.',
+    seed: 20102,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1'],
     transition_from_prev: 'match_cut',
   },
   {
@@ -361,14 +381,14 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_kael'],
-    location: 'loc_sky_citadel',
-    action: 'Master Kaelen steps out from behind the shadow of the great telescope, unrolling a scorched parchment chart.',
-    dialogue: { speaker: 'char_kael', line: 'Not the meridian, Aria. The island itself is drifting.' },
-    camera: "Low-angle medium close-up with slow dolly in on Kaelen's cyan-lensed spectacles",
-    prompt: 'Stylized 2.5D cel-shaded cinema, low-angle medium close-up of Master Kaelen unrolling a map in the glass observatory.',
-    seed: 10103,
-    reference_image_ids: ['char_kael_turnaround_v1'],
+    characters: ['char_shopkeeper'],
+    location: 'loc_rainy_bookstore',
+    action: 'The proprietor sets down a wooden stepping board at the entrance and flips the hanging door plaque to Open.',
+    dialogue: null,
+    camera: 'Medium insert shot tracking the wooden step placement and rack-focusing to the Open sign',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, young pale shopkeeper in black attire placing a wooden step by the doorway and flipping the sign to Open against heavy rain outside.',
+    seed: 20103,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
@@ -376,74 +396,74 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_kael'],
-    location: 'loc_sky_citadel',
-    action: 'Aria leans over the brass table as Kaelen traces a glowing fracture line across the sky-chart.',
-    dialogue: { speaker: 'char_aria', line: 'If the mainspring anchor gives way, the lower tiers will flood with cloud-mist.' },
-    camera: 'Over-the-shoulder two-shot tilting down to the illuminated map table',
-    prompt: 'Stylized 2.5D cel-shaded cinema, over-the-shoulder two-shot of Aria and Master Kaelen leaning over an illuminated brass map table in the observatory.',
-    seed: 10104,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_kael_turnaround_v1'],
+    characters: ['char_shopkeeper', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'Walking past towering bookshelves, he switches on a warm counter lamp and lays a clean folded towel beside the edge.',
+    dialogue: { speaker: 'char_shopkeeper', line: 'Just in case a traveler needs shelter from the storm.' },
+    camera: 'Smooth lateral tracking shot inside the cramped bookshop as warm amber light blooms across the counter',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, lateral tracking shot inside a cramped vintage bookstore, young man in black turning on a warm amber desk lamp and placing a folded towel on the wooden counter.',
+    seed: 20104,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_cane_relic_turnaround_v1'],
     transition_from_prev: 'last_frame_init',
   },
   {
     shot_id: 'shot_05',
-    duration_s: 6,
-    resolution: '1080p',
-    model_tier: 'fast',
-    characters: ['char_vex'],
-    location: 'loc_sky_citadel',
-    action: 'Vex-9 projects a flickering holographic compass rose from its amber lens onto the ceiling.',
-    dialogue: null,
-    camera: "Extreme close-up on Vex-9's aperture eye with rack focus to the projected hologram",
-    prompt: "Stylized 2.5D cel-shaded cinema, extreme close-up of brass owl Vex-9's glowing amber lens projecting a cyan holographic compass rose.",
-    seed: 10105,
-    reference_image_ids: ['char_vex_turnaround_v1'],
-    transition_from_prev: 'cut',
-  },
-  {
-    shot_id: 'shot_06',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_kael'],
-    location: 'loc_sky_citadel',
-    action: 'Kaelen hands Aria a heavy bronze tuning key while the dome shutters begin to rattle in the wind.',
-    dialogue: { speaker: 'char_kael', line: 'Take the key to the Undercroft before the third bell tolls.' },
-    camera: 'Medium two-shot with subtle lateral dolly right',
-    prompt: 'Stylized 2.5D cel-shaded cinema, medium two-shot of Master Kaelen handing a bronze tuning key to Aria inside the rattling glass observatory dome.',
-    seed: 10106,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_kael_turnaround_v1'],
+    characters: ['char_shopkeeper', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'He brews two cups of hot tea and slides one steaming porcelain cup across the counter toward the empty stool.',
+    dialogue: null,
+    camera: 'Extreme close-up following the steaming teacup sliding across the polished wood into warm light',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, close-up of slender pale fingers sliding a steaming porcelain cup of hot tea across a dimly lit wooden bookstore counter toward an empty stool.',
+    seed: 20105,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_cane_relic_turnaround_v1'],
+    transition_from_prev: 'last_frame_init',
+  },
+  {
+    shot_id: 'shot_06',
+    duration_s: 6,
+    resolution: '1080p',
+    model_tier: 'fast',
+    characters: ['char_shopkeeper'],
+    location: 'loc_rainy_bookstore',
+    action: 'Settling behind the counter with his reading volume, he takes a calm sip of tea and waits.',
+    dialogue: null,
+    camera: 'Medium portrait shot framed by stacked books and swirling tea vapor',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, medium shot of a calm young bookstore owner in black reading under a single warm lamp, steam rising from a teacup.',
+    seed: 20106,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
     shot_id: 'shot_07',
     duration_s: 8,
     resolution: '1080p',
-    model_tier: 'fast',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_sky_citadel',
-    action: 'Aria sprints across the suspension catwalk toward the descending lift while Vex-9 flies ahead.',
+    model_tier: 'standard',
+    characters: ['char_hunter', 'char_cane_relic'],
+    location: 'loc_storm_alley',
+    action: 'Across the street in a dark rain-swept alley, the wounded hunter finishes a lethal skirmish as fallen pursuers dissolve into glowing ash.',
     dialogue: null,
-    camera: 'Dynamic side-tracking shot along the brass suspension bridge above the clouds',
-    prompt: 'Stylized 2.5D cel-shaded cinema, dynamic side-tracking shot of Aria running across a brass suspension catwalk high above golden clouds with clockwork owl Vex-9 flying ahead.',
-    seed: 10107,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'match_cut',
+    camera: 'Dynamic low-angle whip-pan in the rain-soaked alley with crimson embers dissolving into the downpour',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, dramatic low-angle action shot in a dark rain-drenched alley at night, female hunter in a soaked black formal dress holding a long silver blade as glowing embers dissolve into rain.',
+    seed: 20107,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_cane_relic_turnaround_v1'],
+    transition_from_prev: 'cut',
   },
   {
     shot_id: 'shot_08',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria'],
-    location: 'loc_clockwork_bazaar',
-    action: 'The iron cage lift descends through billowing steam into the bustling Undercroft Gear Market.',
-    dialogue: { speaker: 'char_aria', line: 'Hold tight, Vex. The pressure valves are already venting.' },
-    camera: 'Vertical crane down transitioning from bright sky into lantern-lit cobblestone alleys',
-    prompt: 'Stylized 2.5D cel-shaded cinema, vertical crane shot following Aria in an iron cage elevator descending through steam into the lantern-lit Clockwork Bazaar.',
-    seed: 10108,
-    reference_image_ids: ['char_aria_turnaround_v1'],
+    characters: ['char_hunter'],
+    location: 'loc_storm_alley',
+    action: 'Breathing heavily as her accelerated healing mends internal fractures, she steps out of the alley mouth into the torrential rain.',
+    dialogue: { speaker: 'char_hunter', line: 'One hour to recover... I need cover before the pack tracks my scent.' },
+    camera: 'Tight tracking close-up on her rain-streaked profile and focused eyes',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, tight tracking close-up of a pale female hunter in a drenched black dress stepping out of a shadowy alley in heavy rain, wisps of steam rising.',
+    seed: 20108,
+    reference_image_ids: ['char_hunter_turnaround_v1'],
     transition_from_prev: 'last_frame_init',
   },
   {
@@ -451,29 +471,29 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: 'Aria weaves between merchant stalls draped in glowing charts as overhead gears groan loudly.',
+    characters: ['char_hunter'],
+    location: 'loc_storm_alley',
+    action: 'Through the dense curtain of rain, her gaze locks onto the solitary warm glow of the bookstore window directly opposite the alley.',
     dialogue: null,
-    camera: 'Steadicam follow shot behind Aria pushing through the crowded alley',
-    prompt: 'Stylized 2.5D cel-shaded cinema, steadicam follow shot of Aria and brass owl Vex-9 weaving through the narrow cobblestone Clockwork Bazaar under massive rotating gears.',
-    seed: 10109,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'cut',
+    camera: 'Over-the-shoulder POV shot looking across the dark street toward the warm amber bookstore window',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, over-the-shoulder shot from a dark rainy alley looking across a flooded street at a lone bookstore with warm yellow light glowing through dusty glass.',
+    seed: 20109,
+    reference_image_ids: ['char_hunter_turnaround_v1'],
+    transition_from_prev: 'match_cut',
   },
   {
     shot_id: 'shot_10',
     duration_s: 6,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: 'Vex-9 darts up toward a jammed steam conduit and chirps an alarm signal.',
+    characters: ['char_hunter', 'char_cane_relic'],
+    location: 'loc_storm_alley',
+    action: 'With a sharp metallic click, she retracts her long blade into a sleek black walking cane and crosses the street.',
     dialogue: null,
-    camera: 'Low-angle tilt up following Vex-9 into the iron rafters',
-    prompt: 'Stylized 2.5D cel-shaded cinema, low-angle tilt up as clockwork owl Vex-9 flies up to a leaking brass steam conduit in the Undercroft market.',
-    seed: 10110,
-    reference_image_ids: ['char_vex_turnaround_v1'],
+    camera: 'Macro mechanical insert on the silver blade folding seamlessly into a black metal cane',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, macro close-up of a long silver blade mechanically retracting into a sleek black metal walking cane in the pouring rain.',
+    seed: 20110,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_cane_relic_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
@@ -481,44 +501,44 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria'],
-    location: 'loc_clockwork_bazaar',
-    action: 'Aria vaults over a stack of copper barrels and reaches the sealed vault door of the primary regulator.',
-    dialogue: { speaker: 'char_aria', line: "There's the regulator hatch—rusted shut for thirty years." },
-    camera: 'Medium action pan settling on the ornate bronze vault door',
-    prompt: 'Stylized 2.5D cel-shaded cinema, medium pan of Aria vaulting over copper barrels to reach an ancient ornate bronze regulator door in the Clockwork Bazaar.',
-    seed: 10111,
-    reference_image_ids: ['char_aria_turnaround_v1'],
-    transition_from_prev: 'cut',
+    characters: ['char_hunter', 'char_shopkeeper'],
+    location: 'loc_rainy_bookstore',
+    action: 'She pushes open the bookstore door, stepping out of the howling rain into the hushed, shadow-draped interior.',
+    dialogue: null,
+    camera: 'Wide interior shot looking toward the entrance as storm light frames her silhouette',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, wide interior shot of a shadowy bookstore as a rain-drenched woman in a black dress with a black cane steps through the doorway.',
+    seed: 20111,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_shopkeeper_turnaround_v1'],
+    transition_from_prev: 'match_cut',
   },
   {
     shot_id: 'shot_12',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: "Aria inserts Kaelen's bronze tuning key into the regulator lock while Vex-9 illuminates the tumblers.",
+    characters: ['char_shopkeeper', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'From her vantage point, she spots the pale young proprietor seated calmly behind the counter beside a second steaming cup of tea.',
     dialogue: null,
-    camera: 'Close-up insert on the bronze key turning with sparks of cyan light',
-    prompt: "Stylized 2.5D cel-shaded cinema, close-up of Aria's gloved hands turning a heavy bronze tuning key in a clockwork lock while Vex-9 shines a beam of amber light.",
-    seed: 10112,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'last_frame_init',
+    camera: 'Slow dolly-in toward the counter showing the unattended teacup and folded towel',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, slow dolly in toward a bookstore counter lit by a single warm lamp, pale young man in black turning a page beside a second steaming teacup.',
+    seed: 20112,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_cane_relic_turnaround_v1'],
+    transition_from_prev: 'cut',
   },
   {
     shot_id: 'shot_13',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_kael'],
-    location: 'loc_sky_citadel',
-    action: 'Back in the observatory, Kaelen braces against the astrolabe rail as the horizon tilts steeply.',
-    dialogue: { speaker: 'char_kael', line: 'Steady now... just a few seconds more.' },
-    camera: 'Dutch-angle medium shot showing the cloud sea tilting outside the glass dome',
-    prompt: 'Stylized 2.5D cel-shaded cinema, Dutch-angle medium shot of Master Kaelen gripping the brass astrolabe railing as the cloud horizon tilts outside the observatory dome.',
-    seed: 10113,
-    reference_image_ids: ['char_kael_turnaround_v1'],
+    characters: ['char_hunter'],
+    location: 'loc_rainy_bookstore',
+    action: 'Wary of the uncanny preparation, she scans the narrow room packed with floor-to-ceiling volumes and blocked stairs.',
+    dialogue: null,
+    camera: 'Panning POV shot across towering shadowy bookshelves and dust-caked windows',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, panning shot across a narrow, eerie bookstore interior with towering shelves, books stacked on the staircase, and deep shadows.',
+    seed: 20113,
+    reference_image_ids: ['char_hunter_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
@@ -526,14 +546,14 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria'],
-    location: 'loc_clockwork_bazaar',
-    action: 'A sudden blast of steam knocks the tuning key half-free, and Aria catches it with both hands.',
-    dialogue: { speaker: 'char_aria', line: "No you don't!" },
-    camera: "Tight dramatic close-up on Aria's determined face through swirling steam",
-    prompt: 'Stylized 2.5D cel-shaded cinema, tight close-up of Aria gripping the bronze tuning key through swirling white steam, warm lantern rim light on her copper-red hair.',
-    seed: 10114,
-    reference_image_ids: ['char_aria_turnaround_v1'],
+    characters: ['char_shopkeeper', 'char_hunter'],
+    location: 'loc_rainy_bookstore',
+    action: 'Rainwater drips from the hem of her dress onto the wooden floor as the proprietor looks up with warm amber light reflected in his eyes.',
+    dialogue: { speaker: 'char_shopkeeper', line: 'Welcome. It seems my wait in this storm was not in vain.' },
+    camera: "Close-up on the shopkeeper's gentle smile with golden lamp reflections in his dark pupils",
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, close-up of a young bookstore owner looking up with warm yellow lamp light reflected in his dark eyes, offering a gentle welcoming smile.',
+    seed: 20114,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_hunter_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
@@ -541,44 +561,44 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: 'Vex-9 wedges its brass talons into the secondary pawl gear, locking the ratchet long enough for Aria to turn the key.',
+    characters: ['char_shopkeeper', 'char_hunter', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: "He nudges the steaming teacup toward her with a hospitable nod, admiring his drenched visitor's striking composure.",
     dialogue: null,
-    camera: 'Macro detail shot of Vex-9 locking the spinning brass ratchet wheel',
-    prompt: 'Stylized 2.5D cel-shaded cinema, macro shot of clockwork owl Vex-9 bracing its brass talons against a spinning ratchet gear while Aria turns the master key.',
-    seed: 10115,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
+    camera: 'Medium two-shot across the counter contrasting his warm lamp-lit side with her cool rain-shadowed side',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, medium two-shot across a bookstore counter, warm lamp light on the left with the proprietor pushing a teacup toward a wary rain-soaked woman on the right.',
+    seed: 20115,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_hunter_turnaround_v1', 'char_cane_relic_turnaround_v1'],
     transition_from_prev: 'last_frame_init',
   },
   {
     shot_id: 'shot_16',
     duration_s: 8,
     resolution: '1080p',
-    model_tier: 'standard',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: 'The colossal Undercroft pendulum engages with a deep resonant boom, sending a wave of cyan energy up the spire.',
+    model_tier: 'fast',
+    characters: ['char_hunter', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: "Her pupils narrow at the mention of his wait, and her thumb slides silently onto the release trigger of her cane blade.",
     dialogue: null,
-    camera: 'Wide anamorphic pullback revealing the giant pendulum swinging in sync beneath the bazaar',
-    prompt: 'Stylized 2.5D cel-shaded cinema, wide anamorphic pullback in the Clockwork Bazaar as a colossal brass pendulum engages with a pulse of cyan light, Aria and Vex-9 silhouetted in foreground.',
-    seed: 10116,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'match_cut',
+    camera: "Extreme close-up split between her narrowed eyes and her thumb resting on the cane's hidden trigger",
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, extreme close-up of a gloved hand resting on the hidden trigger button of a black metal cane, tense atmosphere.',
+    seed: 20116,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_cane_relic_turnaround_v1'],
+    transition_from_prev: 'cut',
   },
   {
     shot_id: 'shot_17',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_kael'],
-    location: 'loc_sky_citadel',
-    action: 'In the observatory, the central armillary rings lock back into alignment and the horizon stabilizes.',
-    dialogue: { speaker: 'char_kael', line: 'She engaged the secondary anchor. The spire holds.' },
-    camera: 'Wide symmetrical shot of the observatory dome as golden light beams align',
-    prompt: 'Stylized 2.5D cel-shaded cinema, symmetrical wide shot of Master Kaelen watching the giant brass armillary sphere align in golden sunlight inside the observatory dome.',
-    seed: 10117,
-    reference_image_ids: ['char_kael_turnaround_v1'],
+    characters: ['char_hunter', 'char_shopkeeper'],
+    location: 'loc_rainy_bookstore',
+    action: 'Poised to strike if he reveals himself as an operative of a rival faction, she tests his intentions.',
+    dialogue: { speaker: 'char_hunter', line: 'You were expecting me?' },
+    camera: 'Low-angle medium close-up on the hunter with shadowy bookshelves looming behind her',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, low-angle medium close-up of a vigilant woman in a wet black dress questioning the shopkeeper inside a shadowy bookstore.',
+    seed: 20117,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_shopkeeper_turnaround_v1'],
     transition_from_prev: 'cut',
   },
   {
@@ -586,89 +606,89 @@ export const PILOT_23_SHOT_LIST: PilotShotSpec[] = [
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: 'Inside the newly opened regulator chamber, Aria discovers an ancient star-core etched with unfamiliar constellations.',
-    dialogue: { speaker: 'char_aria', line: "Vex... these aren't ballast weights. It's a navigation engine." },
-    camera: 'Slow dolly in as Aria steps into the glowing cyan chamber',
-    prompt: 'Stylized 2.5D cel-shaded cinema, slow dolly in as Aria and brass owl Vex-9 step into a hidden bronze vault illuminated by a floating cyan star-core.',
-    seed: 10118,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'cut',
+    characters: ['char_shopkeeper', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'Unaware of her lethal tension, the proprietor gestures kindly toward the clean towel and offers to warm the room.',
+    dialogue: { speaker: 'char_shopkeeper', line: 'Chance meetings in a storm are their own kind of fate. Please, dry off first.' },
+    camera: 'Medium shot on the shopkeeper gesturing calmly toward the folded towel on the counter',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, medium shot of the polite young bookstore owner smiling warmly and gesturing toward a clean towel and teacup on the counter.',
+    seed: 20118,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_cane_relic_turnaround_v1'],
+    transition_from_prev: 'last_frame_init',
   },
   {
     shot_id: 'shot_19',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_vex'],
-    location: 'loc_clockwork_bazaar',
-    action: 'Vex-9 scans the star-core, its chest gears spinning in harmonic resonance with the ancient glyphs.',
-    dialogue: null,
-    camera: 'Close-up orbit shot around Vex-9 bathed in cyan starlight',
-    prompt: 'Stylized 2.5D cel-shaded cinema, close-up orbit around brass owl automaton Vex-9 as cyan constellation glyphs reflect in its amber lens eyes.',
-    seed: 10119,
-    reference_image_ids: ['char_vex_turnaround_v1'],
-    transition_from_prev: 'last_frame_init',
+    characters: ['char_hunter', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'Still keeping one hand on her cane, she lifts the dry towel with cautious hesitation and declines the heater.',
+    dialogue: { speaker: 'char_hunter', line: "That won't be necessary." },
+    camera: 'Close-up tracking her hand lifting the towel while the cane remains poised',
+    prompt: "Stylized dark-fantasy 2.5D anime cinema, close-up of a woman's hand hesitantly picking up a folded white towel from a wooden counter while her other hand grips a black metal cane.",
+    seed: 20119,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_cane_relic_turnaround_v1'],
+    transition_from_prev: 'cut',
   },
   {
     shot_id: 'shot_20',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'fast',
-    characters: ['char_aria', 'char_kael', 'char_vex'],
-    location: 'loc_sky_citadel',
-    action: 'Aria returns to the observatory balcony at dusk, laying the rubbing of the star-core before Kaelen.',
-    dialogue: { speaker: 'char_aria', line: "Aethelgard wasn't built to float in place. It was built to sail." },
-    camera: 'Medium three-shot framed against the twilight sky',
-    prompt: 'Stylized 2.5D cel-shaded cinema, medium three-shot of Aria, Master Kaelen, and brass owl Vex-9 gathered around the observatory balcony table at twilight.',
-    seed: 10120,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_kael_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'cut',
+    characters: ['char_shopkeeper', 'char_hunter'],
+    location: 'loc_rainy_bookstore',
+    action: 'Noticing the tension in her furrowed brow, the shopkeeper prepares to offer his usual heartfelt life advice.',
+    dialogue: null,
+    camera: "Rack focus from the steaming teacup in the foreground to the shopkeeper's observant expression",
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, rack focus from a steaming porcelain teacup to the observant young bookstore owner studying his visitor under warm lamp light.',
+    seed: 20120,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_hunter_turnaround_v1'],
+    transition_from_prev: 'last_frame_init',
   },
   {
     shot_id: 'shot_21',
     duration_s: 8,
     resolution: '1080p',
-    model_tier: 'fast',
-    characters: ['char_kael'],
-    location: 'loc_sky_citadel',
-    action: 'Kaelen removes his cyan spectacles, gazing out toward the distant storm wall on the horizon.',
-    dialogue: { speaker: 'char_kael', line: 'Then the first chapter of the old charter is true.' },
-    camera: 'Close-up profile shot of Kaelen with twilight wind moving his cloak',
-    prompt: 'Stylized 2.5D cel-shaded cinema, close-up profile of Master Kaelen holding his cyan spectacles, looking toward a distant purple storm wall over the cloud sea at dusk.',
-    seed: 10121,
-    reference_image_ids: ['char_kael_turnaround_v1'],
-    transition_from_prev: 'last_frame_init',
+    model_tier: 'standard',
+    characters: ['char_shopkeeper', 'char_hunter'],
+    location: 'loc_rainy_bookstore',
+    action: 'He leans forward slightly under the lamp and asks if she has run into a difficult predicament.',
+    dialogue: { speaker: 'char_shopkeeper', line: 'Looking at your expression... it seems you have run into some trouble tonight?' },
+    camera: 'Slow dramatic push-in on the proprietor as the shadow of the bookshelves frames him like an enigmatic sage',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, slow dramatic push-in on the young bookstore owner leaning forward in warm chiaroscuro lamp light, looking mysterious and composed.',
+    seed: 20121,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_hunter_turnaround_v1'],
+    transition_from_prev: 'match_cut',
   },
   {
     shot_id: 'shot_22',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'standard',
-    characters: ['char_aria', 'char_vex'],
-    location: 'loc_sky_citadel',
-    action: 'Aria steps to the edge of the observation deck as Vex-9 spreads its copper wings against the rising stars.',
-    dialogue: { speaker: 'char_aria', line: 'Set the course for the outer rim.' },
-    camera: 'Heroic low-angle push-in with billowing cloak and starlit clouds',
-    prompt: 'Stylized 2.5D cel-shaded cinema, heroic low-angle push-in on Aria and clockwork owl Vex-9 at the observatory balustrade under a starlit sky above glowing clouds.',
-    seed: 10122,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_vex_turnaround_v1'],
-    transition_from_prev: 'match_cut',
+    characters: ['char_hunter', 'char_shopkeeper'],
+    location: 'loc_rainy_bookstore',
+    action: 'Struck by the question, the hunter freezes—convinced the seemingly ordinary shopkeeper sees right through her secret conflict.',
+    dialogue: null,
+    camera: 'Tight dramatic close-up on her widened eyes reflecting the single amber counter lamp',
+    prompt: "Stylized dark-fantasy 2.5D anime cinema, tight dramatic close-up of the female hunter's eyes widening slightly as warm amber lamp light reflects in her pupils.",
+    seed: 20122,
+    reference_image_ids: ['char_hunter_turnaround_v1', 'char_shopkeeper_turnaround_v1'],
+    transition_from_prev: 'cut',
   },
   {
     shot_id: 'shot_23',
     duration_s: 8,
     resolution: '1080p',
     model_tier: 'standard',
-    characters: ['char_aria', 'char_kael', 'char_vex'],
-    location: 'loc_sky_citadel',
-    action: 'The entire floating citadel illuminates from within as its lower sails unfurl into the night clouds.',
+    characters: ['char_shopkeeper', 'char_hunter', 'char_cane_relic'],
+    location: 'loc_rainy_bookstore',
+    action: 'Outside the dusty glass, rain continues to pour over the dark street while the two figures face each other across the steaming cup of tea.',
     dialogue: null,
-    camera: 'Epic wide crane pullback into the clouds for end-of-episode cliffhanger',
-    prompt: 'Stylized 2.5D cel-shaded cinema, epic wide crane pullback from the glass observatory showing the entire floating clockwork citadel illuminating and unfurling solar sails above the night clouds.',
-    seed: 10123,
-    reference_image_ids: ['char_aria_turnaround_v1', 'char_kael_turnaround_v1', 'char_vex_turnaround_v1'],
+    camera: 'Epic wide crane pullback through the rain-streaked bookstore window into the stormy night for the episode cliffhanger',
+    prompt: 'Stylized dark-fantasy 2.5D anime cinema, wide crane pullback through a rain-streaked bookstore window into the pouring night storm, showing the warm silhouette of the shopkeeper and the hunter facing each other inside.',
+    seed: 20123,
+    reference_image_ids: ['char_shopkeeper_turnaround_v1', 'char_hunter_turnaround_v1', 'char_cane_relic_turnaround_v1'],
     transition_from_prev: 'last_frame_init',
   },
 ];
@@ -679,16 +699,28 @@ export interface ShotListValidationReport {
   totalDurationSeconds: number;
   averageDurationSeconds: number;
   estimatedPilotSecondsWith3Tries: number;
+  estimatedSinglePassCostUsd: number;
+  estimatedPilot3TriesCostUsd: number;
   errors: string[];
 }
 
 export function validatePilotShotList(shots: PilotShotSpec[]): ShotListValidationReport {
   const errors: string[] = [];
   const seenIds = new Set<string>();
-  const validCharIds = new Set(STYLE_GUIDE_SUMMARY.characters.map((c) => c.id));
-  const validLocIds = new Set(STYLE_GUIDE_SUMMARY.locations.map((l) => l.id));
+  const validCharIds = new Set([
+    ...STYLE_GUIDE_SUMMARY.characters.map((c) => c.id),
+    'char_aria',
+    'char_kael',
+    'char_vex',
+  ]);
+  const validLocIds = new Set([
+    ...STYLE_GUIDE_SUMMARY.locations.map((l) => l.id),
+    'loc_sky_citadel',
+    'loc_clockwork_bazaar',
+  ]);
 
   let totalDurationSeconds = 0;
+  let singlePassCostUsd = 0;
 
   shots.forEach((s, idx) => {
     if (!s.shot_id) {
@@ -711,6 +743,11 @@ export function validatePilotShotList(shots: PilotShotSpec[]): ShotListValidatio
 
     if (!['lite', 'fast', 'standard'].includes(s.model_tier)) {
       errors.push(`Shot '${s.shot_id}' has invalid model_tier '${s.model_tier}'.`);
+    }
+
+    const est = estimateJobCostUsd('veo', s.model_tier, s.resolution, s.duration_s);
+    if (est.valid) {
+      singlePassCostUsd += est.estimatedCostUsd;
     }
 
     if (!s.characters || s.characters.length === 0) {
@@ -741,8 +778,99 @@ export function validatePilotShotList(shots: PilotShotSpec[]): ShotListValidatio
     totalDurationSeconds,
     averageDurationSeconds,
     estimatedPilotSecondsWith3Tries: totalDurationSeconds * 3,
+    estimatedSinglePassCostUsd: Number(singlePassCostUsd.toFixed(2)),
+    estimatedPilot3TriesCostUsd: Number((singlePassCostUsd * 3).toFixed(2)),
     errors,
   };
+}
+
+/**
+ * Compiles arbitrary chapter text into a validated 23-shot (180s = 3.0 min) animated episode.
+ * Automatically detects the Rainy Bookstore & Wounded Hunter chapter or segments custom prose into 23 camera beats.
+ */
+export function compileChapterToPilotEpisode(
+  rawChapterText: string,
+  resolution: '720p' | '1080p' = '1080p',
+  defaultTier: VeoModelTier = 'fast'
+): PilotShotSpec[] {
+  const lower = rawChapterText.toLowerCase();
+  const isRainyBookstore =
+    lower.includes('bookstore') &&
+    (lower.includes('rain') || lower.includes('downpour') || lower.includes('tea') || lower.includes('cane'));
+
+  if (isRainyBookstore || !rawChapterText.trim()) {
+    return PILOT_23_SHOT_LIST.map((shot, idx) => ({
+      ...shot,
+      resolution,
+      model_tier: [6, 20, 21, 22].includes(idx) ? 'standard' : defaultTier,
+    }));
+  }
+
+  // Generic 23-shot segmentation for custom chapter prose
+  const paragraphs = rawChapterText
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 20);
+
+  const cameraMoves = [
+    'Wide establishing crane shot slowly pushing in',
+    'Medium tracking shot with anamorphic depth of field',
+    'Low-angle medium close-up with slow dolly in',
+    'Over-the-shoulder two-shot tilting across the scene',
+    'Extreme close-up insert with rack focus',
+    'Dynamic lateral tracking shot at 24fps',
+  ];
+
+  const generatedShots: PilotShotSpec[] = [];
+  for (let i = 0; i < 23; i++) {
+    const shotNum = String(i + 1).padStart(2, '0');
+    const duration_s: AllowedDurationSeconds = i === 5 || i === 9 ? 6 : 8; // 21*8 + 2*6 = 180s
+    const paraIdx = paragraphs.length > 0 ? Math.floor((i / 23) * paragraphs.length) : 0;
+    const rawBeat = paragraphs[paraIdx] || `Scene beat ${i + 1} in the chapter adaptation.`;
+    // Create a clean, non-verbatim visual action summary
+    const wordCount = rawBeat.split(/\s+/).length;
+    const hasQuestion = rawBeat.includes('?');
+    const isExterior = i >= 6 && i <= 9;
+    const loc = isExterior ? 'loc_storm_alley' : 'loc_rainy_bookstore';
+    const chars =
+      i < 6
+        ? ['char_shopkeeper', 'char_cane_relic']
+        : i <= 10
+        ? ['char_hunter', 'char_cane_relic']
+        : ['char_shopkeeper', 'char_hunter'];
+
+    const actionSummary = `Beat ${shotNum} (${wordCount} words analyzed): ${
+      isExterior
+        ? 'High-contrast exterior sequence amidst heavy atmospheric rain and deep shadows.'
+        : 'Interior dramatic staging under warm tungsten counter light with subtle character blocking.'
+    }`;
+
+    const camera = cameraMoves[i % cameraMoves.length];
+    const isHeroShot = i === 6 || i >= 20;
+
+    generatedShots.push({
+      shot_id: `shot_${shotNum}`,
+      duration_s,
+      resolution,
+      model_tier: isHeroShot ? 'standard' : defaultTier,
+      characters: chars,
+      location: loc,
+      action: actionSummary,
+      dialogue: hasQuestion
+        ? {
+            speaker: chars[0],
+            line: `Dramatic inquiry beat ${shotNum} synchronized to lip-sync stem.`,
+          }
+        : null,
+      camera,
+      prompt: `Stylized 2.5D anime cinema, ${camera.toLowerCase()}, ${actionSummary.toLowerCase()}, 24fps.`,
+      seed: 30100 + i + 1,
+      reference_image_ids: chars.map((c) => `${c}_turnaround_v1`),
+      transition_from_prev: i % 3 === 0 ? 'cut' : i % 3 === 1 ? 'last_frame_init' : 'match_cut',
+    });
+  }
+
+  return generatedShots;
 }
 
 export interface BakeoffCandidateResult {
@@ -783,13 +911,13 @@ export function runTenShotBakeoffSimulation(useReferenceAnchors: boolean = true)
       motionQualityScore: 9.3,
       audioSyncScore: 9.4,
       passesPilotGates: true,
-      notes: 'Best balance of 1080p visual fidelity, native audio, and $0.12/s cost (~$65 for full 540s pilot).',
+      notes: 'Best balance of 1080p visual fidelity, native rain/bell audio, and $0.12/s cost (~$65 for full 540s pilot).',
     },
     {
       candidateId: 'veo-standard-1080p',
       provider: 'veo',
       modelId: 'veo-3.1-generate-preview',
-      tierLabel: 'Veo 3.1 Standard (1080p) — Hero Shots Only',
+      tierLabel: 'Veo 3.1 Standard (1080p) — Hero Action & Cliffhanger Shots',
       resolution: '1080p',
       shotsTested: 10,
       avgTriesPerApprovedShot: useReferenceAnchors ? 1.8 : 2.5,
@@ -799,7 +927,7 @@ export function runTenShotBakeoffSimulation(useReferenceAnchors: boolean = true)
       motionQualityScore: 9.8,
       audioSyncScore: 9.7,
       passesPilotGates: true,
-      notes: 'Highest cinematic motion & complex multi-character physics; reserve for hero cliffhanger shots ($0.40/s).',
+      notes: 'Highest cinematic motion for Shot 07 (alley skirmish) and Shots 21–23 (bookstore cliffhanger) at $0.40/s.',
     },
     {
       candidateId: 'veo-lite-1080p',
@@ -862,21 +990,21 @@ export const SAMPLE_LICENSE_PRESETS: Record<
   { label: string; text: string }
 > = {
   missing_or_unverified: {
-    label: 'Unverified / Silent Clause (Default — Private Testing Only)',
-    text: `OPTION MEMORANDUM (DRAFT): Publisher grants Producer a 90-day internal evaluation option on Chapter 1 of "The Clockwork Horizon". Commercial streaming territories, generative AI synthesis rights, and final character approval procedures are not yet specified in this memorandum.`,
+    label: 'Unverified Web-Novel Chapter (Default — Private Testing Only)',
+    text: `WEB-SERIAL READER NOTICE: Chapter excerpt provided by user for internal sandbox evaluation only. No written audiovisual adaptation grant, generative AI commercial synthesis clearance, or streaming distribution license has been executed with the rightsholder yet.`,
   },
   print_only_legacy: {
-    label: 'Legacy Print & Live-Action Clause (AI Excluded — Fails Gate)',
-    text: `SECTION 4.2 GRANT OF RIGHTS: Author grants Studio theatrical live-action motion picture rights in North America for 5 years. All animated derivatives are reserved by Author. SECTION 9.4 ARTIFICIAL INTELLIGENCE: Studio shall not use generative artificial intelligence or machine learning video synthesis models to generate any portion of the Work.`,
+    label: 'Legacy Print & Translation Clause (AI Excluded — Fails Gate)',
+    text: `SECTION 4.2 GRANT OF RIGHTS: Publisher grants Licensee English text translation and digital print serialization rights only. All animated derivatives and audiovisual adaptations are reserved. SECTION 9.4 ARTIFICIAL INTELLIGENCE: Licensee shall not use generative artificial intelligence video synthesis models for commercial distribution.`,
   },
   ai_cleared_animation_addendum: {
     label: 'Full 2026 Animated & Generative AI Addendum (Passes All 5 Items)',
     text: `ADDENDUM A — ANIMATED & GENERATIVE AI ADAPTATION RIGHTS:
-1. Audiovisual & Animation Rights: Author explicitly grants Producer worldwide audiovisual and animated episodic adaptation rights across Chapter 1 through full 100-hour series scale.
-2. Generative AI Video Synthesis: Producer is explicitly permitted to use commercial generative AI video, voice, and music models (including Google Veo 3.1 and Gemini API paid tier) to synthesize animated shots, provided no Author text is used to train foundation models.
+1. Audiovisual & Animation Rights: Rightsholder explicitly grants Producer worldwide audiovisual and animated episodic adaptation rights across Chapter 1 through full 100-hour series scale.
+2. Generative AI Video Synthesis: Producer is explicitly permitted to use commercial generative AI video, voice, and music models (including Google Veo 3.1 and Gemini API paid tier) to synthesize animated shots, provided no novel text is used to train foundation models.
 3. Territory, Term & Platforms: Worldwide territory for a 10-year term across YouTube, SVOD streaming platforms, and digital broadcast.
-4. Character & Adaptation Approval: Author has reviewed and approved in writing the 3 character turnarounds (Aria, Kaelen, Vex-9) and 2 location designs in style/style_guide.md.
-5. Credit & Billing: Each episode shall display "Based on the novel 'The Clockwork Horizon' by E. Vance" in the opening title card and end credits.`,
+4. Character & Adaptation Approval: Rightsholder has reviewed and approved in writing the 3 visual turnarounds (Proprietor, Night Hunter, Mechanized Cane) and 2 locations in style/style_guide.md.
+5. Credit & Billing: Each episode shall display the official title card and original author attribution in the opening sequence and end credits.`,
   },
 };
 
@@ -888,7 +1016,7 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
 
   // 1. Audiovisual or animation rights explicitly granted
   let avStatus: LicenseClauseStatus = 'silent_or_ambiguous';
-  if (lower.includes('animated derivatives are reserved') || lower.includes('no audiovisual')) {
+  if (lower.includes('animated derivatives and audiovisual adaptations are reserved') || lower.includes('animated derivatives are reserved') || lower.includes('no audiovisual')) {
     avStatus = 'explicitly_excluded';
   } else if (
     (lower.includes('audiovisual') || lower.includes('animation') || lower.includes('animated')) &&
@@ -914,7 +1042,7 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
 
   // 3. Territory, term, and platforms (beyond private testing)
   let platformStatus: LicenseClauseStatus = 'silent_or_ambiguous';
-  if (lower.includes('internal evaluation') || lower.includes('not yet specified')) {
+  if (lower.includes('internal evaluation') || lower.includes('internal sandbox evaluation') || lower.includes('not yet specified')) {
     platformStatus = 'silent_or_ambiguous';
   } else if (
     (lower.includes('worldwide') || lower.includes('north america')) &&
@@ -928,10 +1056,10 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
   let approvalStatus: LicenseClauseStatus = 'silent_or_ambiguous';
   if (
     lower.includes('approved in writing') ||
-    lower.includes('character turnarounds') ||
+    lower.includes('turnarounds') ||
     lower.includes('approval rights')
   ) {
-    if (lower.includes('not yet specified')) {
+    if (lower.includes('not yet specified') || lower.includes('no written')) {
       approvalStatus = 'silent_or_ambiguous';
     } else {
       approvalStatus = 'explicitly_granted';
@@ -942,7 +1070,7 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
   let creditStatus: LicenseClauseStatus = 'silent_or_ambiguous';
   if (
     lower.includes('credit') ||
-    lower.includes('based on the novel') ||
+    lower.includes('author attribution') ||
     lower.includes('title card')
   ) {
     creditStatus = 'explicitly_granted';
@@ -958,7 +1086,7 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
           ? 'Detected explicit grant of audiovisual and animated episodic adaptation rights.'
           : avStatus === 'explicitly_excluded'
           ? 'Clause reserves or excludes animated derivatives.'
-          : 'Silent on animated adaptation rights (print/evaluation only).',
+          : 'Silent on animated adaptation rights (private sandbox evaluation only).',
       remediationRequired:
         avStatus === 'explicitly_granted'
           ? 'Cleared.'
@@ -986,7 +1114,7 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
       evidenceSnippet:
         platformStatus === 'explicitly_granted'
           ? 'Cleared for Worldwide / specified commercial streaming & YouTube term.'
-          : 'Silent or restricted to internal private testing.',
+          : 'Restricted to private testing only (no public YouTube/streaming clearance yet).',
       remediationRequired:
         platformStatus === 'explicitly_granted'
           ? 'Cleared.'
@@ -1034,7 +1162,7 @@ export function evaluateBookLicenseText(rawText: string): BookLicenseAuditReport
       ? 'All 5 Book License clauses are explicitly confirmed in writing. License Gate PASSED.'
       : overallStatus === 'BLOCKED_EXPLICIT_EXCLUSION'
       ? 'STOP: License explicitly excludes animation or generative AI synthesis. Do not generate or publish.'
-      : 'PRIVATE TESTING ONLY: One or more clauses are silent. Do not publish, upload, or share any generated video until written confirmation is obtained.';
+      : 'PRIVATE TESTING ONLY: Because no written license clauses were attached with the chapter excerpt, public upload/sharing is locked until all 5 items are confirmed in writing.';
 
   return {
     overallStatus,

@@ -1,27 +1,28 @@
-# MemeForge AI & LEO Video Studio (`v2.0.0`)
+# MemeForge AI & LEO Video Studio (`v2.1.0`)
 
-> **Next-generation unified 4-module creative & cinema workstation combining MemeForge AI, the Sora 2 Ultra AI Video Generator (`32K` 32000×32000 · `1000 FPS` · `100-Hour` continuous horizon + 11-Pass AI VFX Suite), Cinema 32K NLE & 192 kHz Fairlight Audio, and Enterprise Cloud Collaboration (CRDT Conflict Resolution, Timestamped Frame Comments, Offline Sync, E2EE, RBAC, NLE XML/EDL Interchange, and Dropbox/Google Drive Sync).**
+> **Next-generation unified 4-module creative & cinema workstation combining MemeForge AI, the LEO AI Video Studio (featuring the Veo 3.1 Chapter-to-3-Minute Episode Pilot & Sora 2 Ultra `32K` · `1000 FPS` · `100-Hour` planner + 11-Pass AI VFX Suite), Cinema 32K NLE & 192 kHz Fairlight Audio, and Enterprise Cloud Collaboration (CRDT Conflict Resolution, Timestamped Frame Comments, Offline Sync, E2EE, RBAC, NLE XML/EDL Interchange, and Dropbox/Google Drive Sync).**
 
-[![Gemini](https://img.shields.io/badge/Gemini%20API-3.8%20Flash%20%7C%204%20Argon-7c3aed?style=for-the-badge&logo=google)](https://ai.google.dev/)
+[![Gemini](https://img.shields.io/badge/Gemini%20API-3.1%20Veo%20%7C%203%20Flash-7c3aed?style=for-the-badge&logo=google)](https://ai.google.dev/)
 [![Original AI Studio Applet](https://img.shields.io/badge/AI%20Studio%20Origin-4d0cb3f2--610b--4819--909e--06de8300dcfb-4f46e5?style=for-the-badge&logo=google)](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
+[![AI Video Pilot](https://img.shields.io/badge/AI%20Video%20Pilot-Veo%203.1%20%7C%2023%20Shots%20%7C%20180s-10b981?style=for-the-badge)](./src/utils/aiVideoPilotEngine.ts)
 [![Sora 2 Ultra 32K](https://img.shields.io/badge/Sora%202%20Ultra-32K%20%7C%201000%20FPS%20%7C%20100H-f59e0b?style=for-the-badge)](./src/utils/sora2UltraEngine.ts)
 [![Cinema VFX 32K](https://img.shields.io/badge/Cinema%20VFX-32K%20%7C%201000%20FPS-06b6d4?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)
 [![Fairlight Audio](https://img.shields.io/badge/Fairlight%20Audio-192%20kHz%20%7C%2032--bit%20Float-10b981?style=for-the-badge)](https://web.dev/web-audio-basics/)
 [![Android APK & AAB](https://img.shields.io/badge/Android-APK%20%26%20AAB%20Offline%20Build-f59e0b?style=for-the-badge&logo=android)](https://developer.android.com/)
 [![UPI & Subscriptions](https://img.shields.io/badge/India%20Billing-Rs.%20999%20%7C%20Rs.%2099%2C999-6366f1?style=for-the-badge)](https://www.npci.org.in/)
 [![PyTorch 2.x + Triton DiT Spec](https://img.shields.io/badge/PyTorch%202.x%20DiT-CLAUDE.md%20%7C%20AGENTS.md-ee4c2c?style=for-the-badge&logo=pytorch)](./CLAUDE.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%20114%20Tests-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%2021%20Test%20Suites-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
 > **Original AI Studio Applet**: [`https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true`](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
 
 ---
 
-## 🌟 Overview (`v2.0.0` Unified 4-Module Studio Architecture)
+## 🌟 Overview (`v2.1.0` Unified 4-Module Studio Architecture)
 
-**MemeForge AI & LEO Video Studio (`v2.0.0`)** organizes its top header navigation around a **Unified 4-Module Studio Switcher** (`Alt+1`–`Alt+4`) alongside instant utility access to **Marketplace**, **YouTube**, and **B2B LoRA**:
+**MemeForge AI & LEO Video Studio (`v2.1.0`)** organizes its top header navigation around a **Unified 4-Module Studio Switcher** (`Alt+1`–`Alt+4`) alongside instant utility access to **Marketplace**, **YouTube**, **LoRAFlow**, and **User Guides**:
 
 1. **Module 1 · MemeForge AI (`Alt+1`)**: Multimodal Gemini Vision "Magic Caption" (5 clickable viral captions that auto-overlay onto the canvas), live drag-and-drop typography editor, animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`), 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and automatic 30-second `localStorage` layout persistence.
-2. **Module 2 · LEO AI Video Studio — Sora 2 Ultra (`Alt+2`)**: Next-generation **Sora 2 Ultra Text-to-Video Generator** supporting up to **`32K Master (32000×32000)`** (`1,024 MP/frame` with `8×8` zero-seam Causal 3D VAE spatial tiling), **`1000 FPS`** (`1ms` high-speed shutter interval), and **`100 Hours`** (`360,000,000` frames @ `1000 FPS`) continuous autoregressive streaming with a **5-Act Hierarchical Episodic Memory Checkpoint Planner**, **11-Pass Neural AI Toolset Panel** (Object Removal, Masking, Rotoscoping, Frame Interpolation, Upscaling, Denoise, Stabilization, Auto-Subtitles, Speech Enhancement, Background Replacement, AI Color Matching), **Timeline Keyframe Animator**, **Linux DiT Cluster Host Workbench**, and **PyTorch 2.x + Triton Build Spec (`CLAUDE.md` / `AGENTS.md`)**.
+2. **Module 2 · LEO AI Video Studio — Veo 3.1 Episode Pilot & Sora 2 Ultra (`Alt+2`)**: Includes the **AI Video Pilot: One Chapter to a 3-Minute Animated Episode** workbench (`config/pricing.yaml` with Sept 2026 Veo 3.1 rates, atomic `$500` budget guard, 23-shot *"Nocturne in the Rainy Bookstore"* 180s episode manifest, interactive 2.5D Anime Canvas Animatic Player, live Chapter-to-23-Shot compiler, 10-shot bake-off, FFmpeg EBU R128 + sidechain ducking builder, and 5-Clause Book License Analyzer) alongside the **Sora 2 Ultra Text-to-Video Generator** (`32K Master 32000×32000`, `1000 FPS`, `100 Hours`), **11-Pass Neural AI Toolset Panel**, **Timeline Keyframe Animator**, **Linux DiT Cluster Host Workbench**, and **PyTorch 2.x + Triton Build Spec (`CLAUDE.md` / `AGENTS.md`)**.
 3. **Module 3 · Cinema 32K NLE & Fairlight Audio Engine (`Alt+3`)**: 64-bit sub-frame timebase (`23.976` to `1000 FPS`), `720p` to `32K` (`32000×32000`) resolution with 16/24/32-bit float color pipeline (`ACES 2.0`, `OCIO`, `HDR10+`, `Dolby Vision`, `HLG`, `Rec.709/2020`, `DCI-P3`, `BT.2100`), 6 real-time scopes + `.cube` LUT loader, `44.1`–`192 kHz` 64-bit Fairlight audio mixer (`7.1`, `Dolby Atmos`, `Ambisonics`, `VST3`, side-chain routing), Fusion node tab, `[Ripple, Roll, Slip, Slide, Blade]` tools, and GPU Render Graph (`Vulkan`, `Metal`, `DX12`, Multi-GPU, Render Farm, `H.264`, `HEVC`, `AV1`, `ProRes 422/4444`, `DNxHR`, `CineForm`, `OpenEXR 16/32f`, `TIFF`, `PNG`, `JPEG XL`).
 4. **Module 4 · Enterprise Cloud Vault & Collaboration (`Alt+4`)**: Real-time frame-accurate timestamped comments, version history snapshots, CRDT automated conflict resolution (`Auto-Merge`, `Keep Local`, `Keep Remote`), offline queue sync toggle, zero-knowledge E2EE (`AES-256-GCM`) with session key rotation, RBAC (`Admin`/`Editor`/`Viewer`), 1-click NLE `FCPXML` & `CMX 3600 EDL` export, and **Dropbox Business** & **Google Drive Workspace** cloud sync.
 
@@ -359,6 +360,8 @@ All AI model and publishing operations are handled server-side via Express route
 │   ├── dependabot.yml               # Automated dependency security updates
 │   └── pull_request_template.md     # Standardized PR checklist
 ├── android/                         # Native Android Gradle project (SDK 36, minSdk 24)
+├── config/
+│   └── pricing.yaml                 # Sept 2026 Google Gemini API Veo 3.1 & Omni Flash pricing table
 ├── public/                          # PWA icons, SVG logo & manifest.webmanifest
 ├── pytorch_dit/                     # Python 3.11+ & PyTorch 2.x Text-to-Video DiT Implementation
 │   ├── tests/
@@ -374,12 +377,22 @@ All AI model and publishing operations are handled server-side via Express route
 ├── scripts/                         # Build & icon automation scripts
 │   ├── build-apk-aab.sh
 │   └── generate_pwa_icons.py
+├── shots/
+│   └── shot_list.json               # 23-shot (180s) "Nocturne in the Rainy Bookstore" pilot episode manifest
+├── style/
+│   └── style_guide.md               # Visual style anchor & character/location turnarounds for the pilot
+├── video_pilot/                     # Python 3.11+ AI Video Pilot package (Veo 3.1 + $500 Budget Guard)
+│   ├── providers/
+│   │   └── veo.py                   # Google Veo 3.1 & Gemini Omni Flash adapters (Sora permanently blocked)
+│   ├── budget.py                    # Atomic in-flight reservation BudgetGuard & costs.csv logger
+│   └── pipeline.py                  # 23-shot validator, EBU R128 + sidechain ducking FFmpeg builder & 5 gates
 ├── tests/
 │   └── meme-logic.test.ts           # Word-wrap, tag/mood filters & Web3/UPI wallet tests
 ├── src/
 │   ├── components/
 │   │   ├── AiCaptionSuggestionsBar.tsx
 │   │   ├── AiDirectorChatModal.tsx
+│   │   ├── AiVideoPilotModal.tsx    # AI Video Pilot (Chapter to 3-Min Episode, 2.5D Animatic & Budget Guard)
 │   │   ├── AndroidPackageModal.tsx
 │   │   ├── CinemaVfxEditorTab.tsx   # 32K, 1000 FPS, ACES 2.0 & 192 kHz Cinema VFX Workstation
 │   │   ├── EngineHub2026Modal.tsx   # 2026 Multi-Model Video Hub & Sora Migration Assistant
@@ -398,11 +411,12 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── MemeTemplateSelector.tsx
 │   │   ├── MemeToolbar.tsx
 │   │   ├── ModelSandbox.tsx         # Pre-deployment LoRA consistency sandbox & invariant verifier
-│   │   ├── OriginalAppletBridgeModal.tsx # Canonical AI Studio Applet (4d0cb3f2) launcher & state bridge
+│   │   ├── OriginalAppletBridgeModal.tsx # Canonical AI Studio Applet (4d0cb3f2) launcher & evolution matrix
 │   │   ├── PWAInstallButton.tsx
 │   │   ├── PyTorchDitBuildSpecModal.tsx # PyTorch 2.x + Triton DiT Software Build Spec & Simulator
 │   │   ├── SubscriptionModal.tsx    # India UPI & 4-Tier Global PPP subscription manager
 │   │   ├── TeamWorkspaceTab.tsx
+│   │   ├── UserGuidesModal.tsx      # Interactive "How to Use the App" step-by-step guides & search
 │   │   ├── VibeCoderGuideModal.tsx  # Vibe Coder's Sora-Style App Guide, VRAM Advisor & FastAPI Builder
 │   │   ├── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
 │   │   └── index.ts                 # Centralized component barrel export
@@ -418,6 +432,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── subscription.ts
 │   │   └── index.ts                 # Centralized domain type barrel export
 │   ├── utils/
+│   │   ├── aiVideoPilotEngine.ts    # Veo 3.1 pricing, $500 budget guard, 23-shot episode & license analyzer
 │   │   ├── sharedCoreEngine.ts      # Shared core helpers, storage adapters & Original Applet URL engine
 │   │   ├── b2bEnterpriseEngine.ts
 │   │   ├── cinemaEngine.ts
@@ -432,6 +447,7 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── pytorchDitBuildSpecEngine.ts # PyTorch 2.x DiT Software Spec, [B,T,H,W,C] shape trace & acceptance tests
 │   │   ├── sora2UltraEngine.ts      # Sora 2 Ultra (32K · 1000 FPS · 100-Hour) metrics & 5-Act episodic chapter planner
 │   │   ├── subscriptionUtils.ts
+│   │   ├── userGuidesEngine.ts      # Step-by-step interactive onboarding, shortcut catalog & FAQ search
 │   │   ├── vibeCoderGuideEngine.ts  # Single-GPU VRAM calculator, S3/R2 estimator & Dockerfile/FastAPI generator
 │   │   ├── videoDurationUtils.ts
 │   │   ├── youtubeUploadUtils.ts

@@ -1,136 +1,87 @@
-# Interactive "How to Use the App" User Guide Hub
+# Dev Server Startup Fix & AI Video Pilot Backend Routes
 
-This plan delivers a clear, step-by-step **User Guide Hub** in the top navigation bar that teaches any user—from a first-time visitor to a power creator—exactly **how to use MemeForge AI Studio** from start to finish, complete with interactive progress checklists, searchable instructions, and one-click **"Take Me There"** buttons.
+Resolves the development server startup crash when `GEMINI_API_KEY` is unset in the environment by switching to lazy, fault-tolerant Gemini SDK initialization on port 3000, while adding `/api/health` readiness diagnostics and server-side AI Video Pilot endpoints.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> This revised plan puts practical, plain-English **"How to Use the App"** instructions front and center so users immediately understand what every button, tab, and tool does. Click **Proceed** to build the User Guide Hub.
+> Both architectural choices were confirmed during Phase 1 clarification and are incorporated into this plan.
 
-- **Primary Focus — Teaching Users How to Use the App**:
-  - **Quick Start (Your First Meme in 60 Seconds)**: A visual 4-step walkthrough showing new users how to pick a template (or paste/upload an image), edit text on the canvas, apply AI captions or sound effects, and download/copy their finished meme.
-  - **Step-by-Step Task Guides for Every Feature**: Clear *"Where to click → What to do → What happens"* instructions covering all studio tabs and buttons so users never feel lost.
-- **Confirmed Access Experience**: Dedicated **How to Use / User Guide** button in the top navigation header (plus mobile menu item and `Alt+G` shortcut) opening the interactive guide modal.
-- **Confirmed Interactive Features**:
-  - Searchable *"How do I...?"* walkthroughs and FAQ answers.
-  - Interactive step-by-step checklists that remember what the user has already tried.
-  - One-click **"Try This Step Now"** buttons that take the user directly to that exact feature or tab in the app.
+- **Confirmed Decision 1 (Lazy SDK Initialization)**: Lazy-initialize the `@google/genai` client only when a valid `GEMINI_API_KEY` is present so the Express + Vite middleware server always starts cleanly on `0.0.0.0:3000` with graceful deterministic fallbacks when the key is unset.
+- **Confirmed Decision 2 (Health & AI Video Pilot Endpoints)**: Expose a `/api/health` server readiness endpoint alongside `/api/video-pilot/compile-chapter` and `/api/video-pilot/pricing` routes backing the AI Video Pilot workbench.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Acts as an always-available, plain-language instruction manual and interactive onboarding companion inside the app. Whenever a user wonders *"How do I add text?"*, *"How do I export a meme video with sound?"*, *"How do I generate an AI video?"*, or *"How do I publish to YouTube?"*, the User Guide explains the exact steps and offers a button to jump straight to that tool.
-- **Target Audience / Persona**:
-  - **New & Everyday Creators** who want simple, jargon-free instructions on making memes, using AI caption writers, adding audio, and downloading images or videos.
-  - **Advanced Studio Users** exploring LEO Video generation, Cinema timeline editing, Team workspaces, Marketplace templates, LoRA training, and PyTorch DiT specs.
-- **Key Value**: Turns a feature-rich studio into an easy-to-learn experience by explaining **where to click**, **how each control works**, and **how to export or share results**.
+- **What It Does**: Eliminates the top-level `new GoogleGenAI({ apiKey: '' })` constructor exception that prevented `tsx server.ts` from binding to port `3000` when `GEMINI_API_KEY` is missing or empty, and connects the AI Video Pilot workbench to live server-side chapter-to-shot compilation and readiness endpoints.
+- **Target Audience / Persona**: Creators, technical directors, and developers running MemeForge AI & LEO Video Studio in local or cloud sandbox environments with or without an active Gemini API key configured.
+- **Key Value**: Guaranteed zero-crash server startup on port `3000`, transparent API readiness reporting, and server-assisted 23-shot episode compilation using `gemini-3.8-flash` (with deterministic fallback when running without an API key).
 
 ---
 
-## 2. User Experience & "How to Use the App" Curriculum
+## 2. User Experience & Visual Design
 
-### Core Guide Tracks (What the User Learns)
-
-1. **Quick Start: Make Your First Meme in 60 Seconds**
-   - *Step 1*: Choose a meme template from the gallery below the canvas, upload your own photo, or press `Ctrl+V` to paste any image from your clipboard.
-   - *Step 2*: Click directly on the Top or Bottom text on the canvas to select it, then type your caption and customize fonts, colors, outlines, and stickers in the right-hand toolbar.
-   - *Step 3*: Click **Magic Caption** in the top bar (or ask the **AI Co-Director**) to automatically generate funny caption ideas tailored to your template.
-   - *Step 4*: Click **Download PNG/JPG/WebP** or **Copy Meme** below the canvas to save and share your creation immediately.
-
-2. **How to Use Module 1: MemeForge Canvas, Stickers & Audio**
-   - How to add, drag, rotate, and style multiple text layers and emoji stickers.
-   - How to apply visual filters and aspect ratios (`1:1`, `16:9`, `9:16`).
-   - How to attach sound effects (like MLG Airhorn) and click **Export Video (.webm)** to download a playable video meme with sound.
-
-3. **How to Use Module 2: LEO AI Video Studio & Sora 2 Ultra**
-   - How to switch to **M2 LEO Video** (`Alt+2`), enter a video prompt, choose camera motion and aspect ratio, and generate AI video clips.
-   - How to inspect or simulate the **PyTorch DiT Build Spec** and Sora 2 Ultra planner from the studio header.
-
-4. **How to Use Module 3: Cinema 32K NLE & Multi-Track Editor**
-   - How to switch to **M3 Cinema 32K NLE** (`Alt+3`), arrange video/audio clips on the multi-track timeline, apply color grading LUTs, and mix audio levels.
-
-5. **How to Use Module 4: Cloud Workspace, Version History & Subscriptions**
-   - How to use **M4 Enterprise Cloud** (`Alt+4`) to review automatic version snapshots, roll back to an earlier meme state in one click, collaborate with team members, or manage Free/Pro plans.
-
-6. **How to Use Marketplace, YouTube Publishing & LoRAFlow**
-   - **Marketplace**: How to unlock premium templates using testnet Crypto or UPI, use the free Testnet Faucet, or list your own meme for sale.
-   - **YouTube Publisher**: How to send your current canvas or video directly to the **YouTube** tab with auto-generated titles, tags, and thumbnails.
-   - **LoRAFlow & APK Export**: How to train custom visual styles in **LoRAFlow & Sora 2** and how to package the app for Android via **Export APK & AAB**.
-
-7. **Keyboard Shortcuts, Troubleshooting & "How Do I...?" FAQ**
-   - Quick-reference table of every keyboard shortcut (`Alt+1`–`Alt+4`, `Alt+G`, `Ctrl+V`).
-   - Instant fixes for common questions (e.g., *"Why didn't clipboard copy work?"*, *"How do I undo a change?"*, *"How do I install the app offline as a PWA?"*).
-
-### Visual Identity & Layout
-- **Clean Two-Pane Instruction Layout**:
-  - **Left Navigation Sidebar ($260\text{px}$)**: Displays the user's overall onboarding progress bar (`tabular-nums` percentage) and the 7 clear *"How to Use"* guide chapters.
-  - **Right Instruction Reader**: Shows a prominent *"How do I...?"* search bar at the top, followed by numbered step-by-step cards. Each step explicitly states:
-    1. **Where to Click** (exact button or tab name)
-    2. **What to Do** (plain-language instruction)
-    3. **Expected Result** (what happens on screen)
-    4. **Try It Now Button** (one-click deep link that activates that exact feature)
-- **Theme & Typography**: Matches the dark slate studio palette (`#020617` / `#0F172A`) with high-contrast readable typography, unboxed inline metadata (`4 steps · 2 min read`), and tabular numerals (`font-mono tabular-nums`) for step numbers, progress percentages, and shortcut keys.
+- **Key User Flows**:
+  1. **Zero-Config Startup**: When the application starts, the Express + Vite server immediately binds to `0.0.0.0:3000` regardless of whether `GEMINI_API_KEY` is set.
+  2. **AI Video Pilot Chapter Compilation**: Inside the **AI Video Pilot (Veo 3.1 · 3-Min Episode)** modal, clicking **Compile Chapter into 23 Shots (180s)** dispatches the chapter text to `/api/video-pilot/compile-chapter` (falling back seamlessly to the local compiler if offline) and updates the 23-shot storyboard player and cost table.
+- **Visual Identity & Theme**:
+  - *Aesthetic Direction*: High-contrast studio console with single-elevation surfaces and clean typographic hierarchy.
+  - *Color Palette & Mood*: Deep slate studio surfaces (`#0F172A`, `#020617`), semantic emerald (`#16A34A`) for verified budget/gate states, warm amber (`#D97706`) for Veo 3.1 pilot controls, and crimson (`#DC2626`) for hard budget-cap or license blockers.
+  - *Typography & Hierarchy*: Clean sans-serif headings paired with strict tabular monospace numerals (`font-mono tabular-nums`) across all cost, duration, and shot-timer readouts.
+  - *Component Styling & Layout*: Single-level bordered panels (`border-slate-800`), compact data rows with right-aligned financial figures, and unboxed inline metadata separators (`·`).
+- **Interactive Feedback & Motion**: Instantaneous tab switching, smooth 24fps HTML5 canvas storyboard playback, and clear inline status feedback when compiling chapters or exporting `costs.csv`.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Task-Oriented "Where to Click → What to Do" Step Format**
-  - *Chosen Approach*: Structure every guide step around concrete UI actions (*Where to click*, *What to do*, *What happens*) paired with a live **"Take Me There"** button.
-  - *Why*: Users opening a guide want immediate answers on how to operate the app rather than abstract technical descriptions.
-- **Decision 2: Persistent Checklist & Searchable "How Do I...?" Bar**
-  - *Chosen Approach*: Persist completed tutorial steps in `localStorage` and provide real-time search across all step instructions, button names, shortcuts, and FAQs.
-  - *Why*: Allows new users to follow a guided onboarding checklist at their own pace while letting returning users search any specific question in seconds.
+- **Decision 1: Lazy On-Demand `GoogleGenAI` Client Factory**
+  - *Chosen Approach*: Replace the eager top-level `const ai = new GoogleGenAI({ apiKey })` call with a `getGenAiClient()` helper that returns `null` when `GEMINI_API_KEY` is absent or a placeholder, and instantiates `GoogleGenAI` inside a `try/catch` block only when a valid key is present.
+  - *Why*: Top-level instantiation crashes Node.js before `startServer()` can mount Vite middlewares or bind port `3000`.
+  - *Alternatives Considered*: Passing a dummy placeholder string to the constructor at startup was rejected because future SDK validations or accidental network calls with a fake key produce noisy runtime errors.
+- **Decision 2: Server-Backed Chapter-to-Shot Compilation with Deterministic Fallback**
+  - *Chosen Approach*: Add `POST /api/video-pilot/compile-chapter` using `gemini-3.8-flash` structured JSON output when an API key is configured, paired with the deterministic 23-shot compiler (`180s` total duration) when running in zero-key mode.
+  - *Why*: Ensures the 23-shot animated episode workflow works both with live Gemini structured generation and in offline/private testing environments.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
-### Architecture & Component Diagram
+- **Architecture & Component Diagram**:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        MemeForge AI Studio (App)                            │
-│  ┌───────────────────────────┐   ┌───────────────────────────────────────┐  │
-│  │ Top Navigation Header     │   │ Active App Tabs & Feature Modals      │  │
-│  │ • [User Guide (Alt+G)] ───┼──►│ • M1 MemeForge Canvas & Audio Toolbar │  │
-│  │ • Mobile '⋯' Menu Item    │   │ • Magic Caption AI & AI Co-Director   │  │
-│  └───────────────────────────┘   │ • M2 LEO Video & PyTorch DiT Spec     │  │
-│                                  │ • M3 Cinema 32K NLE Timeline          │  │
-│                                  │ • M4 Cloud Workspace & Rollback       │  │
-│                                  │ • Marketplace / YouTube / LoRAFlow    │  │
-│                                  └───────────────────▲───────────────────┘  │
-└──────────────────────────────────────────────────────┼──────────────────────┘
-                                                       │ "Take Me There" Action
-                                                       │ (onExecuteDeepLink)
-┌──────────────────────────────────────────────────────┴──────────────────────┐
-│                         UserGuidesModal Component                           │
-│  ┌──────────────────────────┐  ┌─────────────────────────────────────────┐  │
-│  │ Left Chapter Sidebar     │  │ Main "How to Use the App" Viewport      │  │
-│  │ • Onboarding Progress %  │  │ • "How do I...?" Live Search Input      │  │
-│  │ • Quick Start (60 Sec)   │  │ • Numbered Step-by-Step Instructions    │  │
-│  │ • M1–M4 Feature Guides   │  │   (Where to Click -> What to Do)        │  │
-│  │ • Marketplace & YouTube  │  │ • Interactive Checkboxes & Progress     │  │
-│  │ • Shortcuts & FAQ        │  │ • One-Click "Try This Step Now" Buttons │  │
-│  └──────────────────────────┘  └─────────────────────▲───────────────────┘  │
-└──────────────────────────────────────────────────────┼──────────────────────┘
-                                                       │
-┌──────────────────────────────────────────────────────┴──────────────────────┐
-│                  User Guides Engine & Storage State                         │
-│  • Step-by-Step App Tutorials, Pro Tips, Sample Prompts & FAQ Data          │
-│  • Full-Text Search & Filter Engine across all steps, buttons & questions   │
-│  • Checklist Progress Calculator & localStorage Persistence                 │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                     Client SPA (Vite + React 19)                         │
+│                                                                          │
+│  ┌────────────────────────────┐      ┌────────────────────────────────┐  │
+│  │      LeoStudioTab          │─────▶│       AiVideoPilotModal        │  │
+│  │ (32K / 8K / Post-Sora Hub) │      │  - 23-Shot Animatic Canvas     │  │
+│  └────────────────────────────┘      │  - $500 Atomic Budget Guard    │  │
+│                                      │  - 5-Clause License Analyzer   │  │
+│                                      └───────────────┬────────────────┘  │
+└──────────────────────────────────────────────────────┼───────────────────┘
+                                                       │ HTTP JSON (/api/*)
+                                                       ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                Express + Vite Middleware Server (Port 3000)              │
+│                                                                          │
+│  ┌────────────────────────────┐      ┌────────────────────────────────┐  │
+│  │   getGenAiClient() Guard   │      │  /api/health                   │  │
+│  │ (Lazy Init / Null-Safe)    │      │  /api/video-pilot/pricing      │  │
+│  └─────────────┬──────────────┘      │  /api/video-pilot/compile      │  │
+│                │                     └───────────────┬────────────────┘  │
+│                ▼                                     ▼                   │
+│  ┌────────────────────────────┐      ┌────────────────────────────────┐  │
+│  │  @google/genai SDK         │      │  Deterministic Fallback Engine │  │
+│  │  (gemini-3.8-flash JSON)   │      │  (23 Shots · 180s · Veo Rates) │  │
+│  └────────────────────────────┘      └────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Data Model & State
-- **GuideSection**: Contains `id`, `category`, `title`, `subtitle`, `estimatedMinutes`, `overview`, `steps`, `proTips`, `samplePrompts`, and `primaryDeepLink`.
-- **GuideStep**: Contains `id`, `stepNumber`, `title`, `whereToClick`, `description`, `expectedOutcome`, `shortcutHint`, `deepLinkAction`, and `deepLinkLabel`.
-- **DeepLinkTarget**: Typed union supporting direct navigation to any studio tab (`tab:meme`, `tab:leo`, `tab:cinema`, `tab:team`, `tab:market`, `tab:youtube`, `tab:enterprise`) or utility modal (`modal:magic_caption`, `modal:ai_director`, `modal:android_apk`, `modal:subscription`, `modal:original_bridge`).
-- **UserGuideProgressState**: Persisted state in `localStorage` storing `completedStepIds`, `bookmarkedGuideIds`, and `lastActiveGuideId`.
-
-### Interactive Component & State Mapping
-- **Live "How Do I...?" Search**: Filtering by keyword (e.g., `"download"`, `"audio"`, `"text"`, `"youtube"`, `"rollback"`) immediately surfaces matching how-to guides, individual steps, keyboard shortcuts, and FAQ answers.
-- **Step Checkboxes & Onboarding Progress**: Checking off any step updates the per-guide and overall completion progress bars (`tabular-nums`) and saves automatically to `localStorage`.
-- **One-Click "Try This Step Now" Handler**: Clicking any step's action button invokes `onExecuteDeepLink`, closing the guide modal and immediately opening the target tab or modal in `App`.
+- **Data Model & State**:
+  - `ServerHealthStatus`: `{ status: 'ok', port: number, geminiConfigured: boolean, timestamp: string }`.
+  - `PilotShotSpec`: `{ shot_id, duration_s: 4 | 6 | 8, resolution: '720p' | '1080p', model_tier: 'lite' | 'fast' | 'standard', characters, location, action, dialogue, camera, prompt, seed, reference_image_ids, transition_from_prev }`.
+- **Interactive Component & State Mapping**:
+  - **Server Startup (`startServer`)**: Mounts `/api/health`, `/api/video-pilot/pricing`, `/api/video-pilot/compile-chapter`, and existing studio routes before attaching `vite.middlewares` and binding `0.0.0.0:3000`.
+  - **Chapter Compilation Handler (`handleCompileChapter`)**: Sends chapter prose to `POST /api/video-pilot/compile-chapter`, validates the returned 23 shots against the schema, resets `activeShotIndex` to `0`, and starts the 2.5D canvas animatic loop.

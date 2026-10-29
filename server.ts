@@ -3,6 +3,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
+import {
+  PRICING_YAML_CONFIG,
+  getBudgetReferenceTable,
+  compileChapterToPilotEpisode,
+  validatePilotShotList,
+} from './src/utils/aiVideoPilotEngine';
 
 dotenv.config();
 
@@ -16,17 +22,74 @@ const HOST = '0.0.0.0';
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Initialize GoogleGenAI SDK on server side with User-Agent header
-const apiKey = process.env.GEMINI_API_KEY || '';
-const hasApiKey = Boolean(apiKey && !apiKey.includes('MY_GEMINI_API_KEY'));
+// Lazy-initialize GoogleGenAI SDK on server side so missing GEMINI_API_KEY never crashes startup
+let cachedAiClient: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({
-  apiKey: apiKey,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    },
-  },
+function getGenAiClient(): GoogleGenAI | null {
+  const currentKey = (process.env.GEMINI_API_KEY || '').trim();
+  if (!currentKey || currentKey.includes('MY_GEMINI_API_KEY')) {
+    return null;
+  }
+  if (!cachedAiClient) {
+    try {
+      cachedAiClient = new GoogleGenAI({
+        apiKey: currentKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      });
+    } catch (err) {
+      console.warn('GoogleGenAI lazy initialization skipped:', err);
+      return null;
+    }
+  }
+  return cachedAiClient;
+}
+
+app.get('/api/health', (_req: Request, res: Response) => {
+  const aiClient = getGenAiClient();
+  return res.json({
+    status: 'ok',
+    port: PORT,
+    geminiConfigured: Boolean(aiClient),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api/video-pilot/pricing', (_req: Request, res: Response) => {
+  return res.json({
+    success: true,
+    pricingConfig: PRICING_YAML_CONFIG,
+    budgetReferenceTable: getBudgetReferenceTable(),
+  });
+});
+
+app.post('/api/video-pilot/compile-chapter', async (req: Request, res: Response) => {
+  const {
+    chapterText = '',
+    resolution = '1080p',
+    defaultTier = 'fast',
+  } = req.body || {};
+
+  const safeResolution = resolution === '720p' ? '720p' : '1080p';
+  const safeTier =
+    defaultTier === 'lite' || defaultTier === 'standard' ? defaultTier : 'fast';
+
+  const deterministicShots = compileChapterToPilotEpisode(
+    typeof chapterText === 'string' ? chapterText : '',
+    safeResolution,
+    safeTier
+  );
+  const validation = validatePilotShotList(deterministicShots);
+
+  return res.json({
+    success: true,
+    shots: deterministicShots,
+    validation,
+    mode: getGenAiClient() ? 'gemini-assisted' : 'deterministic-offline',
+  });
 });
 
 interface MagicCaptionRequest {
@@ -80,7 +143,8 @@ app.post('/api/magic-captions', async (req: Request, res: Response) => {
     return presets[toneKey];
   };
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     const fallbackCaptions = getFallbackCaptions();
     return res.json({
       success: true,
@@ -192,7 +256,8 @@ detectedScene: A concise, insightful description of the detected objects, charac
 app.post('/api/generate-meme-image', async (req: Request, res: Response) => {
   const { prompt, aspectRatio = '1:1' } = req.body;
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     return res.status(400).json({
       error: 'GEMINI_API_KEY required for AI image generation. Configure it in Settings > Secrets.',
     });
@@ -239,7 +304,8 @@ app.post('/api/generate-meme-image', async (req: Request, res: Response) => {
 app.post('/api/chat-director', async (req: Request, res: Response) => {
   const { messages, role = 'Meme Director', deepThinking = false } = req.body;
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     const lastMsg = messages?.[messages.length - 1]?.text || 'help';
     return res.json({
       reply: `[${role} Co-Pilot] For "${lastMsg}": Try exaggerating the contrast between expectations vs reality! Pair a hyper-serious Impact font top text with an absurd, lowercase punchline at the bottom for peak comedic timing.`,
@@ -289,7 +355,8 @@ app.post('/api/expand-prompt', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     return res.json({
       expanded: `${safePrompt}, dramatic cinematic lighting, photorealistic 8K, 35mm anamorphic lens flare, award-winning cinematography, ultra-detailed textures`,
     });
@@ -322,7 +389,8 @@ app.post('/api/leo/vlm-recaption', async (req: Request, res: Response) => {
 
   const fallbackCaption = `${safePrompt}. Master shot captured on ARRI Alexa 65 with Panavision Sphero 65 50mm T1.3 prime lens. Volumetric god-rays filtering through fine atmospheric haze, intricate micro-textures, photorealistic skin pores and fabric thread weave, 8K optical resolving power, ACEScc color space, zero inter-frame flickering.`;
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     return res.json({
       success: true,
       recaptioned: fallbackCaption,
@@ -391,7 +459,8 @@ app.post('/api/youtube/generate-metadata', async (req: Request, res: Response) =
     hookAnalysis: 'High curiosity gap in title with emotional hook in first 2 seconds engineered for maximum short-form retention.',
   };
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     return res.json({
       success: true,
       metadata: fallbackData,
@@ -789,7 +858,8 @@ app.post('/api/loraflow/assist', async (req: Request, res: Response) => {
     ],
   };
 
-  if (!hasApiKey) {
+  const ai = getGenAiClient();
+  if (!ai) {
     return res.json(fallbackResult);
   }
 

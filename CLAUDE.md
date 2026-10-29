@@ -81,10 +81,9 @@ Build a text-to-video generator in PyTorch. It takes a text prompt and outputs a
 
 ---
 
-## Repository Integration in MemeForge AI Studio (`v1.8.0` / `v2.0.0`)
+## Repository Integration in MemeForge AI Studio (`v1.8.0` / `v2.1.0`)
 - **On-Disk Python 3.11+ / PyTorch 2.x Package**: `pytorch_dit/` (`vae.py`, `patchify.py`, `dit.py`, `attention.py`, `text.py`, `sampler.py`, `pipeline.py`, `tests/thresholds.py`, `bench.py`)
+- **AI Video Pilot Package (Veo 3.1 · 23-Shot 3-Minute Episode)**: `config/pricing.yaml`, `style/style_guide.md`, `shots/shot_list.json`, `video_pilot/` (`budget.py`, `providers/veo.py`, `pipeline.py`), `src/utils/aiVideoPilotEngine.ts`, and `src/components/AiVideoPilotModal.tsx`
 - **Interactive Spec & Simulator Engine**: `src/utils/pytorchDitBuildSpecEngine.ts` + `src/utils/sora2UltraEngine.ts` (`32K` 32000×32000 · `1000 FPS` · `100-Hour` hierarchical ring-attention & episodic memory planner)
-- **Unit Test Suite**: `src/utils/pytorchDitBuildSpecEngine.test.ts`, `src/utils/sora2UltraEngine.test.ts`, `src/utils/enterpriseCollabEngine.test.ts`
-- **Interactive UI Workbench**: `src/components/PyTorchDitBuildSpecModal.tsx` (accessible from the **LEO Video Studio** header via the **PyTorch DiT Build Spec (CLAUDE.md)** button)
-
-
+- **Unit Test Suite**: `src/utils/aiVideoPilotEngine.test.ts`, `src/utils/pytorchDitBuildSpecEngine.test.ts`, `src/utils/sora2UltraEngine.test.ts`, `src/utils/enterpriseCollabEngine.test.ts`
+- **Interactive UI Workbench**: `src/components/PyTorchDitBuildSpecModal.tsx` & `src/components/AiVideoPilotModal.tsx` (accessible from the **LEO Video Studio** header)

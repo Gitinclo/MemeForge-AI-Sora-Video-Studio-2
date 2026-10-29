@@ -32,8 +32,20 @@ class BlockedProviderError(PermissionError):
     """Raised when attempting to use a deprecated/shut-down provider such as OpenAI Sora."""
 
 
-ALLOWED_CHARACTERS = {"char_aria", "char_kael", "char_vex"}
-ALLOWED_LOCATIONS = {"loc_sky_citadel", "loc_clockwork_bazaar"}
+ALLOWED_CHARACTERS = {
+    "char_shopkeeper",
+    "char_hunter",
+    "char_cane_relic",
+    "char_aria",
+    "char_kael",
+    "char_vex",
+}
+ALLOWED_LOCATIONS = {
+    "loc_rainy_bookstore",
+    "loc_storm_alley",
+    "loc_sky_citadel",
+    "loc_clockwork_bazaar",
+}
 ALLOWED_PILOT_RESOLUTIONS = {"720p", "1080p", "4k"}
 ALLOWED_TIERS = {"lite", "fast", "standard"}
 

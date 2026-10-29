@@ -2932,6 +2932,14 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
       <AiVideoPilotModal
         isOpen={isAiVideoPilotOpen}
         onClose={() => setIsAiVideoPilotOpen(false)}
+        onApplyShotToStudio={(shot) => {
+          setSpec((prev) => ({
+            ...prev,
+            title: `Nocturne in the Rainy Bookstore — ${shot.shot_id.toUpperCase()}`,
+            prompt: shot.prompt,
+            style: 'Anime Ethereal',
+          }));
+        }}
       />
     </div>
   );
