@@ -1023,14 +1023,15 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('enterprise')}
+            title="LoRAFlow Spatial MLOps & Sora 2 Text-to-Animation Studio"
             className={`shrink-0 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'enterprise'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">B2B LoRA</span>
+            <span>LoRAFlow &amp; Sora 2</span>
           </button>
         </nav>
 

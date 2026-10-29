@@ -1,36 +1,136 @@
-# MemeForge AI & LEO Video Studio (`v2.0.0`) — Sora 2 Ultra (32K · 1000 FPS · 100-Hour) Future-Proof Implementation Plan
+# Interactive "How to Use the App" User Guide Hub
 
-## 1. Executive Summary & Architectural Vision
-This release upgrades **MemeForge AI & LEO Video Studio** to **`v2.0.0`**, introducing a next-generation **Sora 2 Ultra AI Video Generator Engine** engineered for extreme-scale creative workflows alongside the **Unified 4-Module Studio Architecture**:
-1. **Sora 2 Ultra AI Video Generator (`32K` · `1000 FPS` · `100 Hours`)**:
-   - **Spatial Scale (`720p` → `32K` / `32000×32000`)**: Multi-scale tiled latent diffusion with progressive spatial super-resolution (`8x` / `16x` Causal 3D VAE + tiled latent stitching with zero-seam blending).
-   - **Temporal Precision (`23.976` → `1000 FPS`)**: 64-bit rational timebase (`1/1000s` temporal resolution) with flow-guided neural frame interpolation and temporal attention across high-speed motion trajectories.
-   - **Ultra-Long Horizon (`5s` → `100 Hours` / `360,000 Seconds` / `360,000,000 Frames @ 1000 FPS`)**: Hierarchical autoregressive latent ring-buffer streaming, episodic memory anchor keyframes, scene-graph storyboarding, and checkpointed disk/NVMe GPUDirect streaming so continuous 100-hour feature/simulation streams never exhaust GPU HBM.
-2. **Unified 4-Module Top Header Switcher**:
-   - **Module 1 · MemeForge AI**: Upload + trending meme templates, "Magic Caption" 5-caption AI generator, and live drag-and-drop canvas text/font/stroke editor.
-   - **Module 2 · LEO AI Video Studio (Sora 2 Ultra + 11-Pass AI Suite)**: Interactive Sora 2 Ultra generator (`32K`, `1000 FPS`, `100 Hours` horizon selector, Hierarchical Storyboard Timeline, Latent Ring-Buffer & Cluster Telemetry) + 11 Neural Post-Processing Passes.
-   - **Module 3 · Cinema 32K NLE & Fairlight Audio**: 64-bit timebase (`23.976`–`1000 FPS`), `32K` ACES 2.0 / 32-bit float color pipeline, 6 scopes + `.cube` LUT loader, `192 kHz` 64-bit Dolby Atmos / Ambisonics audio mixer, Fusion node graph, and GPU Render Graph (`Vulkan`/`Metal`/`DX12`, Multi-GPU, Render Farm, EXR/ProRes/AV1).
-   - **Module 4 · Enterprise Cloud Vault & Collaboration**: Real-time frame-accurate timestamped comments, CRDT automated conflict resolution, offline queue sync, E2EE (`AES-256-GCM`), RBAC (`Admin`/`Editor`/`Viewer`), NLE XML/CMX 3600 EDL interchange, and Dropbox Business / Google Drive sync.
+This plan delivers a clear, step-by-step **User Guide Hub** in the top navigation bar that teaches any user—from a first-time visitor to a power creator—exactly **how to use MemeForge AI Studio** from start to finish, complete with interactive progress checklists, searchable instructions, and one-click **"Take Me There"** buttons.
+
+## User Review & Critical Decisions
+
+> [!IMPORTANT]
+> This revised plan puts practical, plain-English **"How to Use the App"** instructions front and center so users immediately understand what every button, tab, and tool does. Click **Proceed** to build the User Guide Hub.
+
+- **Primary Focus — Teaching Users How to Use the App**:
+  - **Quick Start (Your First Meme in 60 Seconds)**: A visual 4-step walkthrough showing new users how to pick a template (or paste/upload an image), edit text on the canvas, apply AI captions or sound effects, and download/copy their finished meme.
+  - **Step-by-Step Task Guides for Every Feature**: Clear *"Where to click → What to do → What happens"* instructions covering all studio tabs and buttons so users never feel lost.
+- **Confirmed Access Experience**: Dedicated **How to Use / User Guide** button in the top navigation header (plus mobile menu item and `Alt+G` shortcut) opening the interactive guide modal.
+- **Confirmed Interactive Features**:
+  - Searchable *"How do I...?"* walkthroughs and FAQ answers.
+  - Interactive step-by-step checklists that remember what the user has already tried.
+  - One-click **"Try This Step Now"** buttons that take the user directly to that exact feature or tab in the app.
 
 ---
 
-## 2. Detailed Module Implementation Plan
+## 1. Overview & Core Concept
 
-### A. Sora 2 Ultra Engine & Simulator (`src/utils/sora2UltraEngine.ts` + `src/components/LeoStudioTab.tsx`)
-- **Sora 2 Ultra Generation Controls in `LeoStudioTab.tsx`**:
-  - **Model Engine Selector**: `Sora 2 Ultra (32K · 1000 FPS · 100h Horizon)`, `Sora 2 Pro (16K · 240 FPS)`, `LEO DiT-XL (8K · 120 FPS)`, and `Veo 3.1 Fast Preview`.
-  - **Spatial Resolution Selector**: `720p`, `1080p`, `4K UHD`, `8K DCI`, `16K IMAX`, and **`32K Master (32000×32000)`**.
-  - **Frame Rate (FPS) Selector**: `24`, `30`, `60`, `120`, `240`, `480`, and **`1000 FPS (1ms High-Speed Shutter)`**.
-  - **Duration / Horizon Selector**: Presets from `5s`, `30s`, `5 min`, `1 hour`, `24 hours`, up to **`100 Hours (360,000s Continuous Stream)`** with custom hour/minute/second slider.
-  - **100-Hour Hierarchical Chapter & Memory Planner**: Interactive multi-act chapter planner showing how Sora 2 Ultra partitions a 100-hour generation into **Anchor Keyframe Checkpoints**, **Sliding Window Causal 3D VAE Chunks**, and **Episodic Cross-Attention Memory Banks** to prevent drift over multi-hour spans.
-  - **Real-Time Compute & Storage Estimator**: Live calculation of total frames (up to `3.6 × 10^8` frames at `100h @ 1000 FPS`), compressed Causal 3D VAE latent token count, FP8/INT4 inference throughput, and GPUDirect NVMe streaming bandwidth.
+- **What It Does**: Acts as an always-available, plain-language instruction manual and interactive onboarding companion inside the app. Whenever a user wonders *"How do I add text?"*, *"How do I export a meme video with sound?"*, *"How do I generate an AI video?"*, or *"How do I publish to YouTube?"*, the User Guide explains the exact steps and offers a button to jump straight to that tool.
+- **Target Audience / Persona**:
+  - **New & Everyday Creators** who want simple, jargon-free instructions on making memes, using AI caption writers, adding audio, and downloading images or videos.
+  - **Advanced Studio Users** exploring LEO Video generation, Cinema timeline editing, Team workspaces, Marketplace templates, LoRA training, and PyTorch DiT specs.
+- **Key Value**: Turns a feature-rich studio into an easy-to-learn experience by explaining **where to click**, **how each control works**, and **how to export or share results**.
 
-### B. PyTorch 2.x + Triton DiT Spec Upgrade (`pytorch_dit/` & `src/utils/pytorchDitBuildSpecEngine.ts`)
-- Extend the PyTorch DiT Build Spec simulator and modal (`PyTorchDitBuildSpecModal.tsx`) with a **Sora 2 Ultra 32K / 1000 FPS / 100-Hour Ring-Attention & Latent Tiling Profile** while preserving all existing causal 3D VAE (`[B, C, T, H, W]` → `[B, c, T/8, H/8, W/8]`), 3D patchify (`1×2×2`), spatial/temporal alternating attention, and T5-XXL conditioning rules.
+---
 
-### C. Unified 4-Module Studio Navigation (`src/App.tsx`)
-- Reorganize the top studio header around the **4 Core Modules** (`Module 1: MemeForge AI`, `Module 2: LEO Video (Sora 2)`, `Module 3: Cinema 32K NLE`, `Module 4: Enterprise Cloud`) with `Alt+1`–`Alt+4` hotkeys and quick-access secondary pills for `Marketplace`, `YouTube`, and `B2B LoRA`.
+## 2. User Experience & "How to Use the App" Curriculum
 
-### D. Unit Tests & Documentation Synchronization (`v2.0.0`)
-- Create `src/utils/sora2UltraEngine.test.ts` and `src/utils/enterpriseCollabEngine.test.ts` to validate 32K/1000FPS/100h latent math, hierarchical chapter chunking, CRDT conflict resolution, and NLE XML/EDL exports.
-- Synchronize `README.md`, `CLAUDE.md`, `AGENTS.md`, and `package.json` to **`v2.0.0`** documenting the Sora 2 Ultra 32K / 1000 FPS / 100-Hour architecture and full 4-module suite.
+### Core Guide Tracks (What the User Learns)
+
+1. **Quick Start: Make Your First Meme in 60 Seconds**
+   - *Step 1*: Choose a meme template from the gallery below the canvas, upload your own photo, or press `Ctrl+V` to paste any image from your clipboard.
+   - *Step 2*: Click directly on the Top or Bottom text on the canvas to select it, then type your caption and customize fonts, colors, outlines, and stickers in the right-hand toolbar.
+   - *Step 3*: Click **Magic Caption** in the top bar (or ask the **AI Co-Director**) to automatically generate funny caption ideas tailored to your template.
+   - *Step 4*: Click **Download PNG/JPG/WebP** or **Copy Meme** below the canvas to save and share your creation immediately.
+
+2. **How to Use Module 1: MemeForge Canvas, Stickers & Audio**
+   - How to add, drag, rotate, and style multiple text layers and emoji stickers.
+   - How to apply visual filters and aspect ratios (`1:1`, `16:9`, `9:16`).
+   - How to attach sound effects (like MLG Airhorn) and click **Export Video (.webm)** to download a playable video meme with sound.
+
+3. **How to Use Module 2: LEO AI Video Studio & Sora 2 Ultra**
+   - How to switch to **M2 LEO Video** (`Alt+2`), enter a video prompt, choose camera motion and aspect ratio, and generate AI video clips.
+   - How to inspect or simulate the **PyTorch DiT Build Spec** and Sora 2 Ultra planner from the studio header.
+
+4. **How to Use Module 3: Cinema 32K NLE & Multi-Track Editor**
+   - How to switch to **M3 Cinema 32K NLE** (`Alt+3`), arrange video/audio clips on the multi-track timeline, apply color grading LUTs, and mix audio levels.
+
+5. **How to Use Module 4: Cloud Workspace, Version History & Subscriptions**
+   - How to use **M4 Enterprise Cloud** (`Alt+4`) to review automatic version snapshots, roll back to an earlier meme state in one click, collaborate with team members, or manage Free/Pro plans.
+
+6. **How to Use Marketplace, YouTube Publishing & LoRAFlow**
+   - **Marketplace**: How to unlock premium templates using testnet Crypto or UPI, use the free Testnet Faucet, or list your own meme for sale.
+   - **YouTube Publisher**: How to send your current canvas or video directly to the **YouTube** tab with auto-generated titles, tags, and thumbnails.
+   - **LoRAFlow & APK Export**: How to train custom visual styles in **LoRAFlow & Sora 2** and how to package the app for Android via **Export APK & AAB**.
+
+7. **Keyboard Shortcuts, Troubleshooting & "How Do I...?" FAQ**
+   - Quick-reference table of every keyboard shortcut (`Alt+1`–`Alt+4`, `Alt+G`, `Ctrl+V`).
+   - Instant fixes for common questions (e.g., *"Why didn't clipboard copy work?"*, *"How do I undo a change?"*, *"How do I install the app offline as a PWA?"*).
+
+### Visual Identity & Layout
+- **Clean Two-Pane Instruction Layout**:
+  - **Left Navigation Sidebar ($260\text{px}$)**: Displays the user's overall onboarding progress bar (`tabular-nums` percentage) and the 7 clear *"How to Use"* guide chapters.
+  - **Right Instruction Reader**: Shows a prominent *"How do I...?"* search bar at the top, followed by numbered step-by-step cards. Each step explicitly states:
+    1. **Where to Click** (exact button or tab name)
+    2. **What to Do** (plain-language instruction)
+    3. **Expected Result** (what happens on screen)
+    4. **Try It Now Button** (one-click deep link that activates that exact feature)
+- **Theme & Typography**: Matches the dark slate studio palette (`#020617` / `#0F172A`) with high-contrast readable typography, unboxed inline metadata (`4 steps · 2 min read`), and tabular numerals (`font-mono tabular-nums`) for step numbers, progress percentages, and shortcut keys.
+
+---
+
+## 3. Key Product Decisions & Trade-Offs
+
+- **Decision 1: Task-Oriented "Where to Click → What to Do" Step Format**
+  - *Chosen Approach*: Structure every guide step around concrete UI actions (*Where to click*, *What to do*, *What happens*) paired with a live **"Take Me There"** button.
+  - *Why*: Users opening a guide want immediate answers on how to operate the app rather than abstract technical descriptions.
+- **Decision 2: Persistent Checklist & Searchable "How Do I...?" Bar**
+  - *Chosen Approach*: Persist completed tutorial steps in `localStorage` and provide real-time search across all step instructions, button names, shortcuts, and FAQs.
+  - *Why*: Allows new users to follow a guided onboarding checklist at their own pace while letting returning users search any specific question in seconds.
+
+---
+
+## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+
+### Architecture & Component Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        MemeForge AI Studio (App)                            │
+│  ┌───────────────────────────┐   ┌───────────────────────────────────────┐  │
+│  │ Top Navigation Header     │   │ Active App Tabs & Feature Modals      │  │
+│  │ • [User Guide (Alt+G)] ───┼──►│ • M1 MemeForge Canvas & Audio Toolbar │  │
+│  │ • Mobile '⋯' Menu Item    │   │ • Magic Caption AI & AI Co-Director   │  │
+│  └───────────────────────────┘   │ • M2 LEO Video & PyTorch DiT Spec     │  │
+│                                  │ • M3 Cinema 32K NLE Timeline          │  │
+│                                  │ • M4 Cloud Workspace & Rollback       │  │
+│                                  │ • Marketplace / YouTube / LoRAFlow    │  │
+│                                  └───────────────────▲───────────────────┘  │
+└──────────────────────────────────────────────────────┼──────────────────────┘
+                                                       │ "Take Me There" Action
+                                                       │ (onExecuteDeepLink)
+┌──────────────────────────────────────────────────────┴──────────────────────┐
+│                         UserGuidesModal Component                           │
+│  ┌──────────────────────────┐  ┌─────────────────────────────────────────┐  │
+│  │ Left Chapter Sidebar     │  │ Main "How to Use the App" Viewport      │  │
+│  │ • Onboarding Progress %  │  │ • "How do I...?" Live Search Input      │  │
+│  │ • Quick Start (60 Sec)   │  │ • Numbered Step-by-Step Instructions    │  │
+│  │ • M1–M4 Feature Guides   │  │   (Where to Click -> What to Do)        │  │
+│  │ • Marketplace & YouTube  │  │ • Interactive Checkboxes & Progress     │  │
+│  │ • Shortcuts & FAQ        │  │ • One-Click "Try This Step Now" Buttons │  │
+│  └──────────────────────────┘  └─────────────────────▲───────────────────┘  │
+└──────────────────────────────────────────────────────┼──────────────────────┘
+                                                       │
+┌──────────────────────────────────────────────────────┴──────────────────────┐
+│                  User Guides Engine & Storage State                         │
+│  • Step-by-Step App Tutorials, Pro Tips, Sample Prompts & FAQ Data          │
+│  • Full-Text Search & Filter Engine across all steps, buttons & questions   │
+│  • Checklist Progress Calculator & localStorage Persistence                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Data Model & State
+- **GuideSection**: Contains `id`, `category`, `title`, `subtitle`, `estimatedMinutes`, `overview`, `steps`, `proTips`, `samplePrompts`, and `primaryDeepLink`.
+- **GuideStep**: Contains `id`, `stepNumber`, `title`, `whereToClick`, `description`, `expectedOutcome`, `shortcutHint`, `deepLinkAction`, and `deepLinkLabel`.
+- **DeepLinkTarget**: Typed union supporting direct navigation to any studio tab (`tab:meme`, `tab:leo`, `tab:cinema`, `tab:team`, `tab:market`, `tab:youtube`, `tab:enterprise`) or utility modal (`modal:magic_caption`, `modal:ai_director`, `modal:android_apk`, `modal:subscription`, `modal:original_bridge`).
+- **UserGuideProgressState**: Persisted state in `localStorage` storing `completedStepIds`, `bookmarkedGuideIds`, and `lastActiveGuideId`.
+
+### Interactive Component & State Mapping
+- **Live "How Do I...?" Search**: Filtering by keyword (e.g., `"download"`, `"audio"`, `"text"`, `"youtube"`, `"rollback"`) immediately surfaces matching how-to guides, individual steps, keyboard shortcuts, and FAQ answers.
+- **Step Checkboxes & Onboarding Progress**: Checking off any step updates the per-guide and overall completion progress bars (`tabular-nums`) and saves automatically to `localStorage`.
+- **One-Click "Try This Step Now" Handler**: Clicking any step's action button invokes `onExecuteDeepLink`, closing the guide modal and immediately opening the target tab or modal in `App`.

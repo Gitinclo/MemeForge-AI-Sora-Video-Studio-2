@@ -30,5 +30,6 @@ export { VibeCoderGuideModal } from './VibeCoderGuideModal';
 export { LinuxDitClusterHostModal } from './LinuxDitClusterHostModal';
 export { PyTorchDitBuildSpecModal } from './PyTorchDitBuildSpecModal';
 export { YouTubePublishTab } from './YouTubePublishTab';
+export { LoraFlowSpatialMlopsPanel } from './LoraFlowSpatialMlopsPanel';
 
 

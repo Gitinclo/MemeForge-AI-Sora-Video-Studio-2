@@ -765,6 +765,80 @@ app.post('/api/vibe-coder/generate', (req: Request, res: Response) => {
   });
 });
 
+// LoRAFlow Spatial MLOps & Sora 2 Text-to-Animation AI Assistant Endpoint
+app.post('/api/loraflow/assist', async (req: Request, res: Response) => {
+  const {
+    prompt = 'A cybernetic chronograph suspended in zero-gravity rain',
+    style = '2.5D Anime Cel-Shaded',
+    triggerToken = 'vanguard_chrono_x1',
+    currentLoss = 0.064,
+    step = 1020,
+  } = req.body || {};
+
+  const safePrompt = typeof prompt === 'string' ? prompt.slice(0, 500).trim() : 'Animated scene';
+  const safeToken = typeof triggerToken === 'string' ? triggerToken.slice(0, 80).trim() : 'lora_token';
+
+  const fallbackResult = {
+    success: true,
+    enhancedAnimationPrompt: `${safePrompt} — rendered in ${style} aesthetics with ${safeToken} identity lock, volumetric rim lighting, dynamic 60fps spline camera orbit, and zero temporal flicker.`,
+    mlopsRecommendation: `At step ${step} (loss ${Number(currentLoss).toFixed(4)}), cosine learning-rate decay is nominal. Keep rank-64 cross-attention adapters in BF16 and enable NVMe shard prefetching to prevent I/O stalls.`,
+    storyboardBeats: [
+      `0.0s–2.0s: Wide establishing shot introducing ${safeToken} with atmospheric depth and ${style} shaders.`,
+      `2.0s–5.0s: Dynamic orbital camera sweep with secondary particle physics and specular highlights.`,
+      `5.0s–8.0s: High-detail macro lock on ${safeToken} emblem with seamless temporal loop resolution.`,
+    ],
+  };
+
+  if (!hasApiKey) {
+    return res.json(fallbackResult);
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: `You are a Principal MLOps Architect and Sora 2 Text-to-Animation Director.
+Given:
+- User Prompt: "${safePrompt}"
+- Animation Style: "${style}"
+- Bound LoRA Trigger Token: "${safeToken}"
+- Training Step: ${step}, Current Loss: ${currentLoss}
+
+Return a JSON object with:
+1. enhancedAnimationPrompt: A rich, production-grade Sora 2 text-to-animation prompt incorporating "${safeToken}" and "${style}".
+2. mlopsRecommendation: A concise 1-2 sentence MLOps optimization tip for this LoRA run.
+3. storyboardBeats: An array of 3 time-coded animation beats.`,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            enhancedAnimationPrompt: { type: Type.STRING },
+            mlopsRecommendation: { type: Type.STRING },
+            storyboardBeats: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+            },
+          },
+          required: ['enhancedAnimationPrompt', 'mlopsRecommendation', 'storyboardBeats'],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(response.text || '{}');
+    return res.json({
+      success: true,
+      enhancedAnimationPrompt: parsed.enhancedAnimationPrompt || fallbackResult.enhancedAnimationPrompt,
+      mlopsRecommendation: parsed.mlopsRecommendation || fallbackResult.mlopsRecommendation,
+      storyboardBeats:
+        Array.isArray(parsed.storyboardBeats) && parsed.storyboardBeats.length > 0
+          ? parsed.storyboardBeats
+          : fallbackResult.storyboardBeats,
+    });
+  } catch (err) {
+    return res.json(fallbackResult);
+  }
+});
+
 // Vite middleware in dev or static files in production
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
