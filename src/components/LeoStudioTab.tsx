@@ -65,6 +65,7 @@ import { VibeCoderGuideModal } from './VibeCoderGuideModal';
 import { LinuxDitClusterHostModal } from './LinuxDitClusterHostModal';
 import { PyTorchDitBuildSpecModal } from './PyTorchDitBuildSpecModal';
 import { AiVideoPilotModal } from './AiVideoPilotModal';
+import { TextToAnimationGeneratorModal } from './TextToAnimationGeneratorModal';
 import {
   VideoEngineId,
   VIDEO_ENGINES_2026,
@@ -142,6 +143,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const [isLinuxDitHostOpen, setIsLinuxDitHostOpen] = useState(false);
   const [isPyTorchSpecOpen, setIsPyTorchSpecOpen] = useState(false);
   const [isAiVideoPilotOpen, setIsAiVideoPilotOpen] = useState(false);
+  const [isTextToAnimOpen, setIsTextToAnimOpen] = useState(false);
 
   // Seedance 1.0 (Hedra) 6-Axis Physics & Trajectory Spline State
   const [seedancePan, setSeedancePan] = useState(15); // degrees
@@ -837,6 +839,13 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
           >
             <Film className="w-3.5 h-3.5" />
             <span>AI Video Pilot (Veo 3.1 · 3-Min Episode)</span>
+          </button>
+          <button
+            onClick={() => setIsTextToAnimOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-colors shadow-sm"
+          >
+            <Play className="w-3.5 h-3.5" />
+            <span>Text-to-Animation (10-Shot Try · 45s)</span>
           </button>
         </div>
       </div>
@@ -2937,6 +2946,20 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
             ...prev,
             title: `Nocturne in the Rainy Bookstore — ${shot.shot_id.toUpperCase()}`,
             prompt: shot.prompt,
+            style: 'Anime Ethereal',
+          }));
+        }}
+      />
+
+      {/* Text-to-Animation Video Generator (10-Shot AI Script Test Studio) Modal */}
+      <TextToAnimationGeneratorModal
+        isOpen={isTextToAnimOpen}
+        onClose={() => setIsTextToAnimOpen(false)}
+        onApplyPromptToLeoStudio={(title, expandedPrompt) => {
+          setSpec((prev) => ({
+            ...prev,
+            title,
+            prompt: expandedPrompt,
             style: 'Anime Ethereal',
           }));
         }}

@@ -33,6 +33,7 @@ export { AiVideoPilotModal } from './AiVideoPilotModal';
 export { YouTubePublishTab } from './YouTubePublishTab';
 export { LoraFlowSpatialMlopsPanel } from './LoraFlowSpatialMlopsPanel';
 export { UserGuidesModal } from './UserGuidesModal';
+export { TextToAnimationGeneratorModal } from './TextToAnimationGeneratorModal';
 
 
 

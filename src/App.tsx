@@ -18,6 +18,7 @@ import {
   EnterpriseB2BTab,
   OriginalAppletBridgeModal,
   UserGuidesModal,
+  TextToAnimationGeneratorModal,
 } from './components';
 import { MEME_TEMPLATES } from './data/memeTemplates';
 import {
@@ -207,6 +208,7 @@ export default function App() {
   // Modals state
   const [isMagicCaptionOpen, setIsMagicCaptionOpen] = useState(false);
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
+  const [isTextToAnimModalOpen, setIsTextToAnimModalOpen] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -1167,6 +1169,16 @@ export default function App() {
             </button>
           </div>
 
+          {/* Text-to-Animation 10-Shot AI Script Test Button */}
+          <button
+            onClick={() => setIsTextToAnimModalOpen(true)}
+            className="shrink-0 p-2 sm:px-3 sm:py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white rounded-xl border border-emerald-500/40 text-xs font-black flex items-center gap-1.5 transition-colors shadow-sm"
+            title="Launch Text-to-Animation Video Generator (Test 10-Shot Rainy Bookstore & Alley Script @ 24fps)"
+          >
+            <Film className="w-4 h-4 text-emerald-400" />
+            <span className="hidden md:inline">10-Shot Anime Try</span>
+          </button>
+
           {/* Interactive User Guide ("How to Use the App") Button */}
           <button
             onClick={() => setIsUserGuidesOpen(true)}
@@ -1628,6 +1640,15 @@ export default function App() {
         isOpen={isUserGuidesOpen}
         onClose={() => setIsUserGuidesOpen(false)}
         onExecuteDeepLink={handleExecuteGuideDeepLink}
+      />
+
+      {/* Text-to-Animation Video Generator (10-Shot AI Script Test Studio) Modal */}
+      <TextToAnimationGeneratorModal
+        isOpen={isTextToAnimModalOpen}
+        onClose={() => setIsTextToAnimModalOpen(false)}
+        onApplyPromptToLeoStudio={() => {
+          setActiveTab('leo');
+        }}
       />
 
       {/* Footer info bar (extra bottom padding keeps content above floating component selector bar) */}

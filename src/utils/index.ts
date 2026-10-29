@@ -24,6 +24,7 @@ export * from './sora2UltraEngine';
 export * from './loraFlowMlopsEngine';
 export * from './userGuidesEngine';
 export * from './aiVideoPilotEngine';
+export * from './textToAnimationEngine';
 
 
 
