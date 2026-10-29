@@ -187,7 +187,10 @@ export const AiVideoPilotModal: React.FC<AiVideoPilotModalProps> = ({ isOpen, on
       (r) =>
         `${r.timestampUtc},${r.jobId},${r.shotId},${r.tryIndex},${r.provider},${r.modelId},${r.resolution},${r.durationSeconds},${r.succeeded},${r.estimatedCostUsd.toFixed(4)},${r.actualCostUsd.toFixed(4)},${r.cumulativeSpentUsd.toFixed(4)}`
     );
-    triggerBrowserDownload([header, ...rows].join('\n'), 'costs.csv', 'text/csv;charset=utf-8');
+    const csvBlob = new Blob([[header, ...rows].join('\n')], {
+      type: 'text/csv;charset=utf-8',
+    });
+    triggerBrowserDownload(csvBlob, 'costs.csv');
   };
 
   return (
