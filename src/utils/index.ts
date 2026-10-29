@@ -22,6 +22,10 @@ export * from './pytorchDitBuildSpecEngine';
 export * from './enterpriseCollabEngine';
 export * from './sora2UltraEngine';
 export * from './loraFlowMlopsEngine';
+export * from './userGuidesEngine';
+export * from './aiVideoPilotEngine';
+
+
 
 
 

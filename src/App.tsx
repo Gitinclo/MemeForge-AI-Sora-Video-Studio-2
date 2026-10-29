@@ -17,6 +17,7 @@ import {
   LegalDocsModal,
   EnterpriseB2BTab,
   OriginalAppletBridgeModal,
+  UserGuidesModal,
 } from './components';
 import { MEME_TEMPLATES } from './data/memeTemplates';
 import {
@@ -44,6 +45,7 @@ import {
   readStorageJson,
   writeStorageJson,
   triggerBrowserDownload,
+  GuideDeepLinkTarget,
 } from './utils';
 import {
   Wand2,
@@ -76,6 +78,7 @@ import {
   Youtube,
   MoreHorizontal,
   X,
+  BookOpen,
 } from 'lucide-react';
 
 export default function App() {
@@ -88,6 +91,7 @@ export default function App() {
   const [subscriptionModalCategory, setSubscriptionModalCategory] = useState<'individual' | 'company'>('individual');
   const [legalDocModal, setLegalDocModal] = useState<'terms' | 'privacy' | 'security' | 'notice' | 'license' | null>(null);
   const [isMobileHeaderMenuOpen, setIsMobileHeaderMenuOpen] = useState(false);
+  const [isUserGuidesOpen, setIsUserGuidesOpen] = useState(false);
 
   // User Subscription State (persisted in localStorage, default Free)
   const [subscription, setSubscription] = useState<UserSubscription>(() =>
@@ -884,7 +888,7 @@ export default function App() {
     return () => window.removeEventListener('paste', handlePaste);
   }, []);
 
-  // Unified 4-Module Studio Switcher keyboard shortcuts (Alt+1 to Alt+4)
+  // Unified 4-Module Studio Switcher keyboard shortcuts (Alt+1 to Alt+4, Alt+G for User Guide)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!e.altKey) return;
@@ -900,11 +904,59 @@ export default function App() {
       } else if (e.key === '4') {
         e.preventDefault();
         setActiveTab('team');
+      } else if (e.key.toLowerCase() === 'g') {
+        e.preventDefault();
+        setIsUserGuidesOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const handleExecuteGuideDeepLink = (target: GuideDeepLinkTarget) => {
+    switch (target) {
+      case 'tab:meme':
+        setActiveTab('meme');
+        break;
+      case 'tab:leo':
+        setActiveTab('leo');
+        break;
+      case 'tab:cinema':
+        setActiveTab('cinema');
+        break;
+      case 'tab:team':
+        setActiveTab('team');
+        break;
+      case 'tab:market':
+        setActiveTab('market');
+        break;
+      case 'tab:youtube':
+        handleOpenYouTubePublishFromMeme();
+        break;
+      case 'tab:enterprise':
+        setActiveTab('enterprise');
+        break;
+      case 'modal:magic_caption':
+        setActiveTab('meme');
+        setIsMagicCaptionOpen(true);
+        break;
+      case 'modal:ai_director':
+        setIsDirectorChatOpen(true);
+        break;
+      case 'modal:android_apk':
+        setIsAndroidModalOpen(true);
+        break;
+      case 'modal:subscription':
+        setIsSubscriptionModalOpen(true);
+        break;
+      case 'modal:original_bridge':
+        setIsOriginalBridgeOpen(true);
+        break;
+      case 'modal:legal_terms':
+        setLegalDocModal('terms');
+        break;
+    }
+  };
 
   return (
     <div className="min-h-screen w-full max-w-full bg-slate-950 text-slate-100 flex flex-col">
@@ -1115,6 +1167,16 @@ export default function App() {
             </button>
           </div>
 
+          {/* Interactive User Guide ("How to Use the App") Button */}
+          <button
+            onClick={() => setIsUserGuidesOpen(true)}
+            className="shrink-0 p-2 sm:px-3 sm:py-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 rounded-xl border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            title="Open Interactive User Guide — Learn how to use MemeForge AI Studio (Alt+G)"
+          >
+            <BookOpen className="w-4 h-4 text-amber-400" />
+            <span className="hidden md:inline">User Guide</span>
+          </button>
+
           {/* AI Co-Director / Comedy writer button */}
           <button
             onClick={() => setIsDirectorChatOpen(true)}
@@ -1157,6 +1219,17 @@ export default function App() {
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-0.5">
                 Quick Actions &amp; Tools
               </div>
+
+              <button
+                onClick={() => {
+                  setIsMobileHeaderMenuOpen(false);
+                  setIsUserGuidesOpen(true);
+                }}
+                className="w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all"
+              >
+                <BookOpen className="w-4 h-4 text-amber-400" />
+                <span>How to Use App (User Guide)</span>
+              </button>
 
               <button
                 onClick={() => {
@@ -1548,6 +1621,13 @@ export default function App() {
             setFilter(imported.filter);
           }
         }}
+      />
+
+      {/* Interactive User Guides Hub ("How to Use the App") Modal */}
+      <UserGuidesModal
+        isOpen={isUserGuidesOpen}
+        onClose={() => setIsUserGuidesOpen(false)}
+        onExecuteDeepLink={handleExecuteGuideDeepLink}
       />
 
       {/* Footer info bar (extra bottom padding keeps content above floating component selector bar) */}

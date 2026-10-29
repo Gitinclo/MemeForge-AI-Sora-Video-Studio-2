@@ -1,0 +1,43 @@
+# config/pricing.yaml
+# Source: Google Gemini API paid-tier pricing, as reported in September 2026.
+# Re-check before any budget decision. Never hardcode prices in application code.
+currency: USD
+unit: per_generated_second
+audio_included: true
+allowed_durations_s: [4, 6, 8]
+billing: successful_generations_only   # re-verify before full pilot run
+pilot_working_cap_usd: 500.00
+queue_concurrency_limit: 2
+max_retries_per_shot: 3
+
+providers:
+  veo:
+    lite:
+      model_id: veo-3.1-lite-generate-preview
+      rates:
+        720p: 0.05
+        1080p: 0.08
+      # no 4k tier for lite — budget.py rejects (lite, 4k) with PricingConfigurationError
+    fast:
+      model_id: veo-3.1-fast-generate-preview
+      rates:
+        720p: 0.10
+        1080p: 0.12
+        4k: 0.30
+    standard:
+      model_id: veo-3.1-generate-preview
+      rates:
+        720p: 0.40
+        1080p: 0.40
+        4k: 0.60
+  gemini_omni_flash:
+    model_id: gemini-omni-1.1-flash
+    rates:
+      720p: 0.10                          # estimate, verify against deprecation replacement tracker
+    max_duration_s: 10
+
+blocked_providers:
+  openai_sora:
+    status: shut_down
+    shutdown_date: "2026-09-24"
+    reason: "OpenAI Sora API reported shut down on Sept 24, 2026. Do not use under any circumstances."

@@ -29,7 +29,11 @@ export { TeamWorkspaceTab } from './TeamWorkspaceTab';
 export { VibeCoderGuideModal } from './VibeCoderGuideModal';
 export { LinuxDitClusterHostModal } from './LinuxDitClusterHostModal';
 export { PyTorchDitBuildSpecModal } from './PyTorchDitBuildSpecModal';
+export { AiVideoPilotModal } from './AiVideoPilotModal';
 export { YouTubePublishTab } from './YouTubePublishTab';
 export { LoraFlowSpatialMlopsPanel } from './LoraFlowSpatialMlopsPanel';
+export { UserGuidesModal } from './UserGuidesModal';
+
+
 
 

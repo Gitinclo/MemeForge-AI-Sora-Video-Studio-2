@@ -64,6 +64,7 @@ import { EngineHub2026Modal } from './EngineHub2026Modal';
 import { VibeCoderGuideModal } from './VibeCoderGuideModal';
 import { LinuxDitClusterHostModal } from './LinuxDitClusterHostModal';
 import { PyTorchDitBuildSpecModal } from './PyTorchDitBuildSpecModal';
+import { AiVideoPilotModal } from './AiVideoPilotModal';
 import {
   VideoEngineId,
   VIDEO_ENGINES_2026,
@@ -140,6 +141,7 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
   const [isVibeGuideOpen, setIsVibeGuideOpen] = useState(false);
   const [isLinuxDitHostOpen, setIsLinuxDitHostOpen] = useState(false);
   const [isPyTorchSpecOpen, setIsPyTorchSpecOpen] = useState(false);
+  const [isAiVideoPilotOpen, setIsAiVideoPilotOpen] = useState(false);
 
   // Seedance 1.0 (Hedra) 6-Axis Physics & Trajectory Spline State
   const [seedancePan, setSeedancePan] = useState(15); // degrees
@@ -828,6 +830,13 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
           >
             <Code className="w-3.5 h-3.5" />
             <span>PyTorch DiT Build Spec (CLAUDE.md)</span>
+          </button>
+          <button
+            onClick={() => setIsAiVideoPilotOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-colors shadow-sm"
+          >
+            <Film className="w-3.5 h-3.5" />
+            <span>AI Video Pilot (Veo 3.1 · 3-Min Episode)</span>
           </button>
         </div>
       </div>
@@ -2917,6 +2926,12 @@ export const LeoStudioTab: React.FC<LeoStudioTabProps> = ({
       <PyTorchDitBuildSpecModal
         isOpen={isPyTorchSpecOpen}
         onClose={() => setIsPyTorchSpecOpen(false)}
+      />
+
+      {/* AI Video Pilot: One Chapter to a 3-Minute Animated Episode Modal */}
+      <AiVideoPilotModal
+        isOpen={isAiVideoPilotOpen}
+        onClose={() => setIsAiVideoPilotOpen(false)}
       />
     </div>
   );
