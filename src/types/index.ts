@@ -9,3 +9,5 @@ export * from './cinemaEngine';
 export * from './meme';
 export * from './pppPricing';
 export * from './subscription';
+export * from './studioEngineContracts';
+

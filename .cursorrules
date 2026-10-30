@@ -1,0 +1,20 @@
+# Cursor & AI Coding Agent Rules — MemeForge-AI-Sora-Video-Studio (v2.2.0)
+
+## 1. Root Architecture & Runtime Boundaries
+- **Stack**: React 19 + TypeScript 5.8 + Tailwind CSS v4 (`@import "tailwindcss";`) + Vite 8 SPA + Express (`server.ts`) full-stack proxy + Python 3.11 / PyTorch 2.x (`pytorch_dit/` & `video_pilot/`).
+- **Production Runtime Constraint (CRITICAL)**: Cloud Run executes `node server.ts` directly under Node.js 22 native TypeScript strip-types mode (`"type": "module"`).
+  1. Every local relative import in `server.ts` and any file imported by `server.ts` MUST include the explicit `.ts` file extension (e.g., `import { ... } from './src/utils/aiVideoPilotEngine.ts'`).
+  2. Every TypeScript interface or type alias import MUST use `import type { ... }` so Node.js native ESM does not throw a runtime `SYNTAX_ERROR`.
+- **Single-Port Server**: Express and Vite share port `3000`. Never hardcode external localhost ports or mount Express inside `vite.config.ts`.
+
+## 2. Strict Interface & API Schema Pointers
+- **Read Types First**: Before wiring new AI video, timeline, voiceover, or undo/redo features, read `/src/types/studioEngineContracts.ts` (~95 lines) instead of scanning every component.
+- **Read Pinned API Schemas First**: Before editing AI endpoints or adding model calls, check `/docs/api-schemas.md` for exact request/response schemas and pinned model IDs (`veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview`, `veo-3.1-lite-generate-preview`, `gemini-2.5-flash-preview-tts`, `gemini-4-argon`, `gemini-3.8-flash`).
+- **Server-Side AI Proxy Rule**: Never call `@google/genai` from frontend `src/` files or expose API keys in the browser. All Gemini / Veo calls go through `/api/*` routes in `server.ts` with deterministic offline fallbacks when `GEMINI_API_KEY` is absent.
+
+## 3. Decoupled Sub-Module Map (Avoid Monolith Edits)
+- **Canvas & Real-Time Web Audio Visualizer**: `src/components/MemeCanvas.tsx` + `src/utils/memeAudioEngine.ts` (uses Web Audio API `AnalyserNode` + `Canvas2D` 24-bar gradient frequency spectrum overlay; do not use deprecated WebGL1 methods).
+- **Toolbar, Undo/Redo History & Soundboard Triggers**: `src/components/MemeToolbar.tsx` + `src/components/MemeSoundboardPanel.tsx` + `src/utils/versionHistoryEngine.ts` (immutable `VersionHistoryStack<T>` with 50-step cap).
+- **3D Text-to-Animation & Character Voiceover Studio**: `src/components/TextToAnimationGeneratorModal.tsx` + `src/utils/textToAnimationEngine.ts` (10-shot *"Nocturne in the Rainy Bookstore"* pipeline, Character Voice Library dropdown, `.mp3`/`.wav` drag-and-drop upload, and Gemini TTS synthesis).
+- **Veo 3.1 23-Shot 3-Minute AI Video Pilot**: `src/components/AiVideoPilotModal.tsx` + `src/utils/aiVideoPilotEngine.ts` + `video_pilot/` + `config/pricing.yaml` + `shots/shot_list.json`.
+- **PyTorch DiT & Sora 2 Ultra Simulators**: `src/components/PyTorchDitBuildSpecModal.tsx` + `src/utils/pytorchDitBuildSpecEngine.ts` + `src/utils/sora2UltraEngine.ts` + `pytorch_dit/`.

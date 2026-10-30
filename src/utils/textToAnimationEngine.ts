@@ -12,7 +12,12 @@
  *    vs. Google Veo 3.1 Paid-Tier Durations ([4, 6, 8]s per config/pricing.yaml).
  */
 
-import { AllowedDurationSeconds, PilotResolution, VeoModelTier, estimateJobCostUsd } from './aiVideoPilotEngine';
+import {
+  type AllowedDurationSeconds,
+  type PilotResolution,
+  type VeoModelTier,
+  estimateJobCostUsd,
+} from './aiVideoPilotEngine.ts';
 
 export interface GlobalCharacterSheet {
   tokenId: 'Character_A' | 'Character_B';

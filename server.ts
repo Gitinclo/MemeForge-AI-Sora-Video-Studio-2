@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,11 +8,11 @@ import {
   getBudgetReferenceTable,
   compileChapterToPilotEpisode,
   validatePilotShotList,
-} from './src/utils/aiVideoPilotEngine';
+} from './src/utils/aiVideoPilotEngine.ts';
 import {
   synthesizeCharacterVoiceWavDataUri,
-  GeminiPrebuiltVoiceName,
-} from './src/utils/textToAnimationEngine';
+  type GeminiPrebuiltVoiceName,
+} from './src/utils/textToAnimationEngine.ts';
 
 dotenv.config();
 

@@ -88,4 +88,24 @@ Build a text-to-video generator in PyTorch. It takes a text prompt and outputs a
 - **AI Video Pilot Package (Veo 3.1 · 23-Shot 3-Minute Episode)**: `config/pricing.yaml`, `style/style_guide.md`, `shots/shot_list.json`, `video_pilot/` (`budget.py`, `providers/veo.py`, `pipeline.py`), `src/utils/aiVideoPilotEngine.ts`, and `src/components/AiVideoPilotModal.tsx`
 - **Interactive Spec & Simulator Engine**: `src/utils/pytorchDitBuildSpecEngine.ts` + `src/utils/sora2UltraEngine.ts` (`32K` 32000×32000 · `1000 FPS` · `100-Hour` hierarchical ring-attention & episodic memory planner)
 - **Unit Test Suite (23 Suites)**: `src/utils/versionHistoryEngine.test.ts`, `src/utils/textToAnimationEngine.test.ts`, `src/utils/aiVideoPilotEngine.test.ts`, `src/utils/pytorchDitBuildSpecEngine.test.ts`, `src/utils/sora2UltraEngine.test.ts`, `src/utils/enterpriseCollabEngine.test.ts`
-- **Interactive UI Workbench**: `src/components/PyTorchDitBuildSpecModal.tsx`, `src/components/TextToAnimationModal.tsx` & `src/components/AiVideoPilotModal.tsx` (accessible from the **LEO Video Studio** header)
+- **Interactive UI Workbench**: `src/components/PyTorchDitBuildSpecModal.tsx`, `src/components/TextToAnimationGeneratorModal.tsx` & `src/components/AiVideoPilotModal.tsx` (accessible from the **LEO Video Studio** header)
+
+---
+
+## Agent-Ready Context Map & Strict Engineering Boundaries (`v2.2.0`)
+
+To prevent context-window pollution and training-cutoff hallucinations when modifying **MemeForge-AI-Sora-Video-Studio**, coding agents must follow these four structural boundaries:
+
+1. **Strict Interface Contracts (`src/types/studioEngineContracts.ts`)**:
+   - Read `src/types/studioEngineContracts.ts` first (~95 lines) to inspect typed contracts for `AiVideoGenerationPayload`, `AnimationCharacterVoiceBinding`, `AnimationShotContract`, `TimelineFrameBufferContract`, `SoundboardCueTriggerContract`, and `VersionHistoryStateContract<T>`.
+2. **Pinned Live API Schemas (`docs/api-schemas.md`)**:
+   - Reference `docs/api-schemas.md` for exact JSON request/response schemas across `/api/leo/generate-video`, `/api/leo/poll-video`, `/api/text-to-animation/generate-voice`, and `/api/video-pilot/compile-chapter`.
+   - Use only `@google/genai` (`new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })`) inside `server.ts`. Never import `@google/genai` in client code.
+3. **Cloud Run & Node.js 22 Native ESM TypeScript Rules (`server.ts`)**:
+   - Production runs `node server.ts` directly. Every relative import reachable from `server.ts` MUST end with `.ts` (e.g., `./src/utils/aiVideoPilotEngine.ts`) and every TypeScript-only symbol MUST use `import type { ... }`.
+4. **Decoupled Engine & UI Sub-Modules**:
+   - **Canvas2D + Web Audio Frequency Analyzer**: `src/components/MemeCanvas.tsx` & `src/utils/memeAudioEngine.ts` (real-time `AnalyserNode` spectrum bar + wave overlay during active audio playback).
+   - **Undo/Redo & Frame-Timestamped Soundboard**: `src/utils/versionHistoryEngine.ts`, `src/components/MemeToolbar.tsx`, and `src/components/MemeSoundboardPanel.tsx`.
+   - **10-Shot 3D Text-to-Animation & Voiceover Studio**: `src/utils/textToAnimationEngine.ts` & `src/components/TextToAnimationGeneratorModal.tsx` (*"Nocturne in the Rainy Bookstore"* character sheets, AI Voice Library dropdown, `.mp3`/`.wav` drag-and-drop upload, and Gemini 2.5 Flash TTS).
+   - **23-Shot Veo 3.1 Video Pilot & PyTorch DiT**: `src/utils/aiVideoPilotEngine.ts`, `video_pilot/`, `src/utils/pytorchDitBuildSpecEngine.ts`, and `pytorch_dit/`.
+
