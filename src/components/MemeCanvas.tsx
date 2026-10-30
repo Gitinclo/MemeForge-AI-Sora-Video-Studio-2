@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Play, Sparkles, ArrowLeftRight, Grid, Layers } from 'lucide-react';
+import { Play, Sparkles, ArrowLeftRight, Grid, Layers, Activity, BarChart3, Waves } from 'lucide-react';
 import {
   TextLayer,
   MemeSticker,
@@ -14,6 +14,12 @@ import {
   clampTransitionProgress,
   renderCanvasTransitionBackground,
 } from '../utils/memeTransitionEngine';
+import {
+  AudioVisualizerMode,
+  getLiveAudioFrequencySnapshot,
+  renderAudioVisualizerOnCanvas,
+  subscribeMemeAudioPlayback,
+} from '../utils/memeAudioEngine';
 
 interface MemeCanvasProps {
   imageSrc: string;
@@ -57,6 +63,30 @@ export const MemeCanvas: React.FC<MemeCanvasProps> = ({
   const [transitionProgress, setTransitionProgress] = useState<number>(1);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const rafIdRef = useRef<number | null>(null);
+
+  // Real-Time Web Audio API Frequency Analyzer & Visualizer State
+  const visualizerCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const visualizerRafRef = useRef<number | null>(null);
+  const [engineAudioActive, setEngineAudioActive] = useState<boolean>(false);
+  const [visualizerMode, setVisualizerMode] = useState<AudioVisualizerMode>('dual');
+  const [liveAudioTelemetry, setLiveAudioTelemetry] = useState<{
+    rmsPct: number;
+    peakPct: number;
+    dominantHz: number;
+  }>({
+    rmsPct: 0,
+    peakPct: 0,
+    dominantHz: 0,
+  });
+
+  const activeSoundPlayback = Boolean(isPlayingAudio || engineAudioActive);
+
+  useEffect(() => {
+    const unsubscribe = subscribeMemeAudioPlayback((playing) => {
+      setEngineAudioActive(playing);
+    });
+    return unsubscribe;
+  }, []);
 
   // Start a smooth requestAnimationFrame transition from 0 -> 1
   const startTransitionAnimation = useCallback(
@@ -392,6 +422,60 @@ export const MemeCanvas: React.FC<MemeCanvasProps> = ({
     }
   }, [drawMeme, canvasRef]);
 
+  // Real-Time 60 FPS Web Audio API Frequency Analyzer & Visualizer Loop on MemeCanvas
+  useEffect(() => {
+    const visCanvas = visualizerCanvasRef.current;
+    if (!activeSoundPlayback) {
+      if (visualizerRafRef.current !== null) {
+        cancelAnimationFrame(visualizerRafRef.current);
+        visualizerRafRef.current = null;
+      }
+      if (visCanvas) {
+        const ctx = visCanvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, visCanvas.width, visCanvas.height);
+        }
+      }
+      return;
+    }
+
+    let frameTick = 0;
+    const renderLoop = (now: number) => {
+      const targetCanvas = visualizerCanvasRef.current;
+      if (targetCanvas) {
+        const { width, height } = getCanvasDimensions();
+        if (targetCanvas.width !== width || targetCanvas.height !== height) {
+          targetCanvas.width = width;
+          targetCanvas.height = height;
+        }
+        const ctx = targetCanvas.getContext('2d');
+        if (ctx) {
+          const snapshot = getLiveAudioFrequencySnapshot(40, now);
+          renderAudioVisualizerOnCanvas(ctx, width, height, snapshot, visualizerMode);
+
+          frameTick += 1;
+          if (frameTick % 4 === 0) {
+            setLiveAudioTelemetry({
+              rmsPct: Math.round(snapshot.rmsLevel * 100),
+              peakPct: Math.round(snapshot.peakNormalized * 100),
+              dominantHz: snapshot.dominantFrequencyHz,
+            });
+          }
+        }
+      }
+      visualizerRafRef.current = requestAnimationFrame(renderLoop);
+    };
+
+    visualizerRafRef.current = requestAnimationFrame(renderLoop);
+
+    return () => {
+      if (visualizerRafRef.current !== null) {
+        cancelAnimationFrame(visualizerRafRef.current);
+        visualizerRafRef.current = null;
+      }
+    };
+  }, [activeSoundPlayback, visualizerMode, getCanvasDimensions]);
+
   // BUG FIX: Accurate hit testing & Window-attached pointer events for drag reliability
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -606,38 +690,79 @@ export const MemeCanvas: React.FC<MemeCanvasProps> = ({
       </div>
 
       <div className="relative w-full flex items-center justify-center">
-        <canvas
-          ref={canvasRef}
-          onPointerDown={handlePointerDown}
-          className={`max-h-[550px] w-auto max-w-full rounded-xl shadow-2xl cursor-grab active:cursor-grabbing border border-slate-700/60 object-contain touch-none transition-transform duration-200 ${
-            isPlayingAudio ? 'scale-[1.01] shadow-amber-500/30' : ''
-          }`}
-        />
+        <div className="relative inline-flex items-center justify-center max-w-full">
+          <canvas
+            ref={canvasRef}
+            onPointerDown={handlePointerDown}
+            className={`max-h-[550px] w-auto max-w-full rounded-xl shadow-2xl cursor-grab active:cursor-grabbing border border-slate-700/60 object-contain touch-none transition-transform duration-200 ${
+              activeSoundPlayback ? 'scale-[1.01] shadow-amber-500/30 border-amber-500/70' : ''
+            }`}
+          />
 
-        {/* Playing Audio Equalizer Overlay */}
-        {isPlayingAudio && (
-          <div className="absolute top-3 right-3 bg-slate-950/90 border border-amber-500/60 rounded-xl px-3 py-1.5 shadow-xl flex items-center gap-2 backdrop-blur-md animate-bounce">
-            <div className="flex items-end gap-0.5 h-3">
-              <span className="w-1 bg-amber-400 rounded-full animate-pulse h-full" />
-              <span
-                className="w-1 bg-amber-300 rounded-full animate-pulse h-2"
-                style={{ animationDelay: '150ms' }}
-              />
-              <span
-                className="w-1 bg-amber-500 rounded-full animate-pulse h-3.5"
-                style={{ animationDelay: '300ms' }}
-              />
-            </div>
-            <span className="text-[11px] font-black text-amber-300 tracking-wide flex items-center gap-1">
-              <span>Playing:</span>
-              <span className="text-white truncate max-w-[120px]">
-                {activeAudioName || 'Meme SFX'}
+          {/* Real-Time Web Audio API Frequency Spectrum & Oscilloscope Wave Canvas Overlay */}
+          <canvas
+            ref={visualizerCanvasRef}
+            aria-label="Real-Time Web Audio Frequency Analyzer Overlay"
+            className={`absolute inset-0 w-full h-full rounded-xl pointer-events-none transition-opacity duration-200 ${
+              activeSoundPlayback ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        </div>
+
+        {/* Playing Audio Real-Time Frequency Analyzer HUD & Mode Switcher Overlay */}
+        {activeSoundPlayback && (
+          <div className="absolute top-3 inset-x-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-20">
+            <div className="bg-slate-950/90 border border-amber-500/60 rounded-xl px-3 py-1.5 shadow-xl flex items-center gap-2.5 backdrop-blur-md">
+              <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
+              <div className="text-[11px] font-black text-amber-300 tracking-wide flex items-center gap-1.5">
+                <span>Playing:</span>
+                <span className="text-white truncate max-w-[140px]">
+                  {activeAudioName || 'Meme SFX'}
+                </span>
+              </div>
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 font-bold">
+                {liveAudioTelemetry.dominantHz > 0
+                  ? `${liveAudioTelemetry.dominantHz} Hz`
+                  : 'FFT 256'}
               </span>
-            </span>
+              <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-[10px] font-mono text-cyan-300 font-bold">
+                Peak {liveAudioTelemetry.peakPct}% · RMS {liveAudioTelemetry.rmsPct}%
+              </span>
+            </div>
+
+            {/* Interactive Visualizer Overlay Mode Switcher (Spectrum Bars / Wave / Dual) */}
+            <div className="pointer-events-auto bg-slate-950/90 border border-slate-700/80 rounded-xl p-1 flex items-center gap-1 shadow-xl backdrop-blur-md">
+              {(
+                [
+                  { id: 'spectrum_bars', label: 'Spectrum Bars', icon: BarChart3 },
+                  { id: 'wave_overlay', label: 'Wave Overlay', icon: Waves },
+                  { id: 'dual', label: 'Bars + Wave', icon: Activity },
+                ] as const
+              ).map((m) => {
+                const Icon = m.icon;
+                const isSelected = visualizerMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setVisualizerMode(m.id)}
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all ${
+                      isSelected
+                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
+                    title={`Switch Web Audio Visualizer to ${m.label}`}
+                  >
+                    <Icon className="w-3 h-3" />
+                    <span>{m.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        <div className="absolute bottom-3 left-3 text-[11px] font-medium text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-md pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+        <div className="absolute bottom-3 left-3 text-[11px] font-medium text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-md pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 z-20">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           Click &amp; drag text to reposition
         </div>

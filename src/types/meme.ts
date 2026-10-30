@@ -121,7 +121,9 @@ export interface VersionSnapshot {
     templateId: string;
     imageSrc?: string;
     textLayers: TextLayer[];
+    stickers?: MemeSticker[];
     filter: CanvasFilter;
+    aspectRatio?: string;
   };
 }
 
@@ -187,6 +189,18 @@ export interface MemeAudioEffect {
   tags: string[];
 }
 
+export interface SoundboardTriggerCue {
+  id: string;
+  effectId: string;
+  name: string;
+  emoji: string;
+  frameNumber: number; // 0-indexed frame number in video export
+  fps: number; // e.g., 24 | 30 | 60
+  timestampSec: number; // frameNumber / fps
+  volume: number; // 0.0 - 1.0
+  playbackRate: number; // 0.5 - 2.0
+}
+
 export interface MemeAudioConfig {
   selectedEffectId: string | null;
   volume: number; // 0.0 - 1.0
@@ -195,4 +209,8 @@ export interface MemeAudioConfig {
   delaySec: number; // 0.0 - 3.0
   customAudioUrl?: string;
   customAudioName?: string;
+  soundboardTriggers?: SoundboardTriggerCue[];
+  exportFps?: number;
+  exportDurationSec?: number;
 }
+

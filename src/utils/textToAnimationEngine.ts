@@ -625,3 +625,662 @@ Shot 10 | The Offer | Duration: 6s
  * Dialogue (Lin_Jie): "Yes. I've always thought that fate works in miraculous ways, how it brings two complete strangers together in the least expected way. Feel free to use the towel there to wipe yourself dry. Don't worry, it's unused. Would you like me to turn on the heater?"
  * Dialogue (Ji_Zhixiu): "It's fine."
  * Dialogue (Lin_Jie): "From the look of things, you seem to have encountered some trouble?"`;
+
+// ============================================================================
+// 3. CHARACTER VOICEOVER ENGINE (Lin_Jie & Ji_Zhixiu AI & Uploaded Voice Clips)
+// ============================================================================
+
+export type GeminiPrebuiltVoiceName = 'Charon' | 'Fenrir' | 'Puck' | 'Kore' | 'Zephyr';
+
+export type CharacterVoicePresetId =
+  | 'lin_charon_warm_mentor'
+  | 'lin_fenrir_mysterious_sage'
+  | 'lin_puck_conversational'
+  | 'lin_charon_ominous_calm'
+  | 'ji_kore_cold_vigilant'
+  | 'ji_zephyr_breathless_wounded'
+  | 'ji_kore_blade_interrogation'
+  | 'ji_zephyr_lowering_guard';
+
+export interface CharacterVoicePreset {
+  id: CharacterVoicePresetId;
+  characterToken: 'Character_A' | 'Character_B';
+  speakerHandle: 'Lin_Jie' | 'Ji_Zhixiu';
+  label: string;
+  geminiVoiceName: GeminiPrebuiltVoiceName;
+  stylePrompt: string;
+  fundamentalHz: number;
+  defaultPitch: number;
+  defaultRate: number;
+  timbreDescription: string;
+  sampleLine?: string;
+}
+
+export const AI_CHARACTER_VOICE_PRESETS: CharacterVoicePreset[] = [
+  {
+    id: 'lin_charon_warm_mentor',
+    characterToken: 'Character_A',
+    speakerHandle: 'Lin_Jie',
+    label: 'Charon — Warm Baritone Shopkeeper (Recommended)',
+    geminiVoiceName: 'Charon',
+    stylePrompt:
+      'Warm, gentle, serene bookstore owner speaking softly and reassuringly over heavy rain',
+    fundamentalHz: 122,
+    defaultPitch: 0.92,
+    defaultRate: 0.95,
+    timbreDescription: 'Smooth, calm baritone with gentle chest resonance and an inviting cadence.',
+    sampleLine:
+      "Welcome. It looks like my long wait hasn't been in vain. The rain has washed a beautiful customer into my humble bookstore.",
+  },
+  {
+    id: 'lin_fenrir_mysterious_sage',
+    characterToken: 'Character_A',
+    speakerHandle: 'Lin_Jie',
+    label: 'Fenrir — Deep Enigmatic Nocturne',
+    geminiVoiceName: 'Fenrir',
+    stylePrompt:
+      'Deep, measured, inadvertently mysterious tone that sounds ordinary yet omniscient to outsiders',
+    fundamentalHz: 104,
+    defaultPitch: 0.85,
+    defaultRate: 0.9,
+    timbreDescription: 'Low, resonant bass-baritone with dramatic pauses and mysterious authority.',
+    sampleLine:
+      'From the look of things, you seem to have encountered some trouble?',
+  },
+  {
+    id: 'lin_puck_conversational',
+    characterToken: 'Character_A',
+    speakerHandle: 'Lin_Jie',
+    label: 'Puck — Friendly Casual Host',
+    geminiVoiceName: 'Puck',
+    stylePrompt: 'Kind-hearted, relaxed, everyday conversational voice offering hot tea',
+    fundamentalHz: 138,
+    defaultPitch: 1.0,
+    defaultRate: 1.0,
+    timbreDescription: 'Light, approachable tenor with warm conversational inflection.',
+    sampleLine:
+      'What if someone gets caught in the rain without an umbrella and needs a place to wait it out?',
+  },
+  {
+    id: 'lin_charon_ominous_calm',
+    characterToken: 'Character_A',
+    speakerHandle: 'Lin_Jie',
+    label: 'Charon — Serene Rainy-Night Philosopher',
+    geminiVoiceName: 'Charon',
+    stylePrompt:
+      'Quiet, reflective, poetic delivery with unhurried warmth amidst a dark gothic downpour',
+    fundamentalHz: 114,
+    defaultPitch: 0.88,
+    defaultRate: 0.92,
+    timbreDescription: 'Velvety low baritone with tranquil, hypnotic pacing.',
+    sampleLine:
+      "Yes. I've always thought that fate works in miraculous ways, how it brings two complete strangers together.",
+  },
+  {
+    id: 'ji_kore_cold_vigilant',
+    characterToken: 'Character_B',
+    speakerHandle: 'Ji_Zhixiu',
+    label: 'Kore — Cold Vigilant Night Hunter (Recommended)',
+    geminiVoiceName: 'Kore',
+    stylePrompt:
+      'Cold, fiercely vigilant, razor-sharp contralto whispered through guarded tension',
+    fundamentalHz: 218,
+    defaultPitch: 1.06,
+    defaultRate: 1.02,
+    timbreDescription: 'Crisp, focused contralto with steely edge and guarded restraint.',
+    sampleLine: 'Is it a coincidence or a trap?',
+  },
+  {
+    id: 'ji_zephyr_breathless_wounded',
+    characterToken: 'Character_B',
+    speakerHandle: 'Ji_Zhixiu',
+    label: 'Zephyr — Wounded Breathless Whisper',
+    geminiVoiceName: 'Zephyr',
+    stylePrompt:
+      'Hushed, pained, breathless whisper after an alley battle in torrential rain',
+    fundamentalHz: 236,
+    defaultPitch: 1.12,
+    defaultRate: 0.96,
+    timbreDescription: 'Airy, tense whisper carrying physical exhaustion and high alertness.',
+    sampleLine: 'Time, I need time.',
+  },
+  {
+    id: 'ji_kore_blade_interrogation',
+    characterToken: 'Character_B',
+    speakerHandle: 'Ji_Zhixiu',
+    label: 'Kore — Razor-Sharp Suspicion & Trigger Poise',
+    geminiVoiceName: 'Kore',
+    stylePrompt:
+      'Low, lethal, suspicious interrogation with thumb poised on the hidden cane-blade release',
+    fundamentalHz: 206,
+    defaultPitch: 0.98,
+    defaultRate: 0.98,
+    timbreDescription: 'Piercing, low-register contralto with coiled lethal intensity.',
+    sampleLine: 'You were waiting for me?',
+  },
+  {
+    id: 'ji_zephyr_lowering_guard',
+    characterToken: 'Character_B',
+    speakerHandle: 'Ji_Zhixiu',
+    label: 'Zephyr — Guarded Stoic Restraint',
+    geminiVoiceName: 'Zephyr',
+    stylePrompt:
+      'Brief, stoic, composed response while hesitantly accepting the clean towel',
+    fundamentalHz: 224,
+    defaultPitch: 1.04,
+    defaultRate: 0.95,
+    timbreDescription: 'Subtle, guarded mid-contralto softening slightly from battle tension.',
+    sampleLine: "It's fine.",
+  },
+];
+
+export type VoiceClipSourceType = 'ai_preset' | 'gemini_tts' | 'uploaded_file';
+
+export interface ShotVoiceoverClip {
+  clipId: string;
+  shotId: string;
+  shotNumber: number;
+  lineIndex: number;
+  characterToken: 'Character_A' | 'Character_B';
+  speakerHandle: 'Lin_Jie' | 'Ji_Zhixiu';
+  dialogueText: string;
+  deliveryNote: string;
+  sourceType: VoiceClipSourceType;
+  presetId: CharacterVoicePresetId;
+  geminiVoiceName: GeminiPrebuiltVoiceName;
+  audioDataUri: string;
+  uploadedFileName?: string;
+  durationSec: number;
+  volume: number;
+  pitch: number;
+  playbackRate: number;
+}
+
+/**
+ * Generates a valid 44-byte RIFF WAV (16-bit mono PCM @ 8,000 Hz for compact data URI)
+ * shaped with syllable-segmented vocal harmonics so every character voice clip is
+ * immediately playable in `<audio>` / `new Audio()` and downloadable as `.wav`.
+ */
+export function synthesizeCharacterVoiceWavDataUri(
+  dialogueText: string,
+  characterToken: 'Character_A' | 'Character_B',
+  pitchMultiplier = 1.0,
+  targetDurationSec = 2.4
+): string {
+  const sampleRate = 8000;
+  const clampedDur = Math.max(0.8, Math.min(5.0, targetDurationSec));
+  const numSamples = Math.floor(sampleRate * clampedDur);
+  const dataBytes = numSamples * 2;
+  const buffer = new ArrayBuffer(44 + dataBytes);
+  const view = new DataView(buffer);
+
+  const writeStr = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  // Standard 44-byte RIFF WAV header
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataBytes, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true); // PCM chunk size
+  view.setUint16(20, 1, true); // AudioFormat = 1 (PCM)
+  view.setUint16(22, 1, true); // NumChannels = 1 (Mono)
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // ByteRate
+  view.setUint16(32, 2, true); // BlockAlign
+  view.setUint16(34, 16, true); // BitsPerSample
+  writeStr(36, 'data');
+  view.setUint32(40, dataBytes, true);
+
+  const baseFreq = (characterToken === 'Character_A' ? 122 : 218) * pitchMultiplier;
+  const words = dialogueText.trim().split(/\s+/).filter(Boolean);
+  const syllableCount = Math.max(3, Math.min(24, words.length * 2));
+
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / sampleRate;
+    const normT = i / numSamples;
+
+    // Syllable cadence envelope
+    const sylPhase = (normT * syllableCount) % 1;
+    const sylEnvelope = Math.sin(Math.PI * sylPhase) ** 1.4;
+
+    // Natural pitchprosody contour (gentle rise then fall)
+    const prosody =
+      1 +
+      0.06 * Math.sin(2 * Math.PI * 1.5 * normT) -
+      0.08 * normT +
+      0.012 * Math.sin(2 * Math.PI * 5.2 * t);
+
+    const f0 = baseFreq * prosody;
+    // Fundamental + 2nd & 3rd vocal formants
+    const harmonic =
+      0.62 * Math.sin(2 * Math.PI * f0 * t) +
+      0.26 * Math.sin(2 * Math.PI * (f0 * 2) * t + 0.4) +
+      0.12 * Math.sin(2 * Math.PI * (f0 * 3) * t + 1.1);
+
+    // Fade in / out edges
+    const edgeFade = Math.min(1, t / 0.04, (clampedDur - t) / 0.06);
+    const sampleFloat = Math.max(-1, Math.min(1, harmonic * sylEnvelope * edgeFade * 0.45));
+    view.setInt16(44 + i * 2, Math.round(sampleFloat * 32767), true);
+  }
+
+  // Encode ArrayBuffer to base64 (works in both Node.js tests and Browser)
+  const bytes = new Uint8Array(buffer);
+  let base64 = '';
+  if (typeof Buffer !== 'undefined') {
+    base64 = Buffer.from(bytes).toString('base64');
+  } else {
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    base64 = btoa(binary);
+  }
+
+  return `data:audio/wav;base64,${base64}`;
+}
+
+/**
+ * Builds the complete 10-shot Character Voiceover clip list mapped to `Lin_Jie` (`Character_A`)
+ * and `Ji_Zhixiu` (`Character_B`) across the 10-shot animation script.
+ * Non-dialogue action shots (Shots 03, 04, 07) receive subtle character vocal/breath cues so
+ * every shot in the 10-shot timeline has an editable, replaceable character voiceover slot.
+ */
+export function buildDefaultShotVoiceoverMappings(
+  shots: AnimationShotSpec[] = TEN_SHOT_ANIMATION_SCRIPT,
+  selectedPresets: Record<'Character_A' | 'Character_B', CharacterVoicePresetId> = {
+    Character_A: 'lin_charon_warm_mentor',
+    Character_B: 'ji_kore_cold_vigilant',
+  }
+): ShotVoiceoverClip[] {
+  const clips: ShotVoiceoverClip[] = [];
+
+  const getPreset = (token: 'Character_A' | 'Character_B'): CharacterVoicePreset => {
+    const presetId = selectedPresets[token];
+    return (
+      AI_CHARACTER_VOICE_PRESETS.find((p) => p.id === presetId) ||
+      AI_CHARACTER_VOICE_PRESETS.find((p) => p.characterToken === token)!
+    );
+  };
+
+  const actionVocalFallbacks: Record<
+    string,
+    { characterToken: 'Character_A' | 'Character_B'; deliveryNote: string; text: string }
+  > = {
+    shot_03: {
+      characterToken: 'Character_A',
+      deliveryNote: 'warm contented hum',
+      text: 'A warm cup of tea and a good book... ready for whoever seeks shelter from the storm.',
+    },
+    shot_04: {
+      characterToken: 'Character_B',
+      deliveryNote: 'sharp combat breath',
+      text: 'Out of my way.',
+    },
+    shot_07: {
+      characterToken: 'Character_B',
+      deliveryNote: 'guarded internal monologue',
+      text: 'A steaming cup of tea waiting on the counter... was he expecting me?',
+    },
+  };
+
+  for (const shot of shots) {
+    if (shot.dialogues.length > 0) {
+      shot.dialogues.forEach((d, idx) => {
+        const isJi = /Ji_Zhixiu|Character_B|hunter/i.test(d.speaker);
+        const token: 'Character_A' | 'Character_B' = isJi ? 'Character_B' : 'Character_A';
+        const speakerHandle: 'Lin_Jie' | 'Ji_Zhixiu' = isJi ? 'Ji_Zhixiu' : 'Lin_Jie';
+        const preset = getPreset(token);
+        const clipDur = Number(
+          Math.max(1.5, shot.scriptDurationSec / shot.dialogues.length).toFixed(1)
+        );
+
+        clips.push({
+          clipId: `vo_${shot.shotId}_line_${idx + 1}`,
+          shotId: shot.shotId,
+          shotNumber: shot.shotNumber,
+          lineIndex: idx + 1,
+          characterToken: token,
+          speakerHandle,
+          dialogueText: d.text,
+          deliveryNote: d.delivery || (isJi ? 'cold, vigilant' : 'warm, gentle'),
+          sourceType: 'ai_preset',
+          presetId: preset.id,
+          geminiVoiceName: preset.geminiVoiceName,
+          audioDataUri: synthesizeCharacterVoiceWavDataUri(
+            d.text,
+            token,
+            preset.defaultPitch,
+            Math.min(2.8, clipDur)
+          ),
+          durationSec: clipDur,
+          volume: 0.9,
+          pitch: preset.defaultPitch,
+          playbackRate: preset.defaultRate,
+        });
+      });
+    } else {
+      const fallback = actionVocalFallbacks[shot.shotId] || {
+        characterToken: shot.referencedCharacters[0] || 'Character_A',
+        deliveryNote: 'subtle breath / internal cue',
+        text: shot.action,
+      };
+      const token = fallback.characterToken;
+      const speakerHandle: 'Lin_Jie' | 'Ji_Zhixiu' =
+        token === 'Character_B' ? 'Ji_Zhixiu' : 'Lin_Jie';
+      const preset = getPreset(token);
+
+      clips.push({
+        clipId: `vo_${shot.shotId}_line_1`,
+        shotId: shot.shotId,
+        shotNumber: shot.shotNumber,
+        lineIndex: 1,
+        characterToken: token,
+        speakerHandle,
+        dialogueText: fallback.text,
+        deliveryNote: fallback.deliveryNote,
+        sourceType: 'ai_preset',
+        presetId: preset.id,
+        geminiVoiceName: preset.geminiVoiceName,
+        audioDataUri: synthesizeCharacterVoiceWavDataUri(
+          fallback.text,
+          token,
+          preset.defaultPitch,
+          2.0
+        ),
+        durationSec: shot.scriptDurationSec,
+        volume: 0.85,
+        pitch: preset.defaultPitch,
+        playbackRate: preset.defaultRate,
+      });
+    }
+  }
+
+  return clips;
+}
+
+/**
+ * Updates voiceover clips for a given character (`Lin_Jie` or `Ji_Zhixiu`)
+ * to use a newly selected AI Voice Persona preset from the Voice Library.
+ * By default (`overwriteUploaded = false`), preserves custom uploaded files unless
+ * explicitly overridden (`overwriteUploaded = true`).
+ */
+export function applyCharacterPresetToVoiceoverClips(
+  clips: ShotVoiceoverClip[],
+  characterToken: 'Character_A' | 'Character_B',
+  presetId: CharacterVoicePresetId,
+  overwriteUploaded = false
+): ShotVoiceoverClip[] {
+  const preset = AI_CHARACTER_VOICE_PRESETS.find((p) => p.id === presetId);
+  if (!preset) return clips;
+
+  return clips.map((clip) => {
+    if (clip.characterToken !== characterToken) {
+      return clip;
+    }
+    if (!overwriteUploaded && clip.sourceType === 'uploaded_file') {
+      return clip;
+    }
+    return {
+      ...clip,
+      sourceType: 'ai_preset',
+      presetId: preset.id,
+      geminiVoiceName: preset.geminiVoiceName,
+      uploadedFileName: undefined,
+      pitch: preset.defaultPitch,
+      playbackRate: preset.defaultRate,
+      audioDataUri: synthesizeCharacterVoiceWavDataUri(
+        clip.dialogueText,
+        characterToken,
+        preset.defaultPitch,
+        Math.min(2.8, clip.durationSec)
+      ),
+    };
+  });
+}
+
+/**
+ * Applies a pre-generated AI character voice from the Voice Library dropdown to either
+ * a specific `targetClipId` (single shot line) or all lines for a character role
+ * (`targetCharacterToken` or the preset's native characterToken), replacing any manual upload.
+ */
+export function applyVoiceLibraryPresetToClips(
+  clips: ShotVoiceoverClip[],
+  presetId: CharacterVoicePresetId,
+  options: {
+    targetClipId?: string;
+    targetCharacterToken?: 'Character_A' | 'Character_B';
+  } = {}
+): ShotVoiceoverClip[] {
+  const preset = AI_CHARACTER_VOICE_PRESETS.find((p) => p.id === presetId);
+  if (!preset) return clips;
+
+  const effectiveCharToken = options.targetCharacterToken || preset.characterToken;
+
+  return clips.map((clip) => {
+    const matchesClip = options.targetClipId && clip.clipId === options.targetClipId;
+    const matchesCharacter =
+      !options.targetClipId && clip.characterToken === effectiveCharToken;
+
+    if (!matchesClip && !matchesCharacter) {
+      return clip;
+    }
+
+    return {
+      ...clip,
+      sourceType: 'ai_preset',
+      presetId: preset.id,
+      geminiVoiceName: preset.geminiVoiceName,
+      uploadedFileName: undefined,
+      pitch: preset.defaultPitch,
+      playbackRate: preset.defaultRate,
+      audioDataUri: synthesizeCharacterVoiceWavDataUri(
+        clip.dialogueText,
+        clip.characterToken,
+        preset.defaultPitch,
+        Math.min(2.8, clip.durationSec)
+      ),
+    };
+  });
+}
+
+/**
+ * Attaches a user-uploaded custom audio clip (or Gemini TTS generated clip) either
+ * to a specific `clipId` or across all lines spoken by `characterToken`.
+ */
+export function attachCustomVoiceAudioToClips(
+  clips: ShotVoiceoverClip[],
+  options: {
+    targetClipId?: string;
+    targetCharacterToken?: 'Character_A' | 'Character_B';
+    audioDataUri: string;
+    uploadedFileName?: string;
+    sourceType: VoiceClipSourceType;
+  }
+): ShotVoiceoverClip[] {
+  return clips.map((clip) => {
+    const matchesClip = options.targetClipId && clip.clipId === options.targetClipId;
+    const matchesCharacter =
+      !options.targetClipId &&
+      options.targetCharacterToken &&
+      clip.characterToken === options.targetCharacterToken;
+
+    if (!matchesClip && !matchesCharacter) {
+      return clip;
+    }
+
+    return {
+      ...clip,
+      sourceType: options.sourceType,
+      audioDataUri: options.audioDataUri,
+      uploadedFileName: options.uploadedFileName || clip.uploadedFileName,
+    };
+  });
+}
+
+export const ALLOWED_VOICE_UPLOAD_EXTENSIONS = ['.mp3', '.wav'] as const;
+export const MAX_VOICE_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+
+export interface VoiceUploadValidationResult {
+  valid: boolean;
+  normalizedFormat: 'MP3' | 'WAV' | 'UNKNOWN';
+  error?: string;
+}
+
+/**
+ * Validates that a dropped or selected custom voice file is a valid `.mp3` or `.wav`
+ * audio file within the 25 MB limit.
+ */
+export function validateVoiceUploadFile(
+  fileName: string,
+  mimeType = '',
+  fileSizeBytes = 0
+): VoiceUploadValidationResult {
+  const cleanName = (fileName || '').trim().toLowerCase();
+  const cleanMime = (mimeType || '').trim().toLowerCase();
+
+  if (!cleanName) {
+    return {
+      valid: false,
+      normalizedFormat: 'UNKNOWN',
+      error: 'Missing file name. Please drop a valid .mp3 or .wav audio file.',
+    };
+  }
+
+  if (fileSizeBytes > MAX_VOICE_UPLOAD_SIZE_BYTES) {
+    return {
+      valid: false,
+      normalizedFormat: 'UNKNOWN',
+      error: `File "${fileName}" exceeds the 25 MB maximum upload size.`,
+    };
+  }
+
+  const isMp3 =
+    cleanName.endsWith('.mp3') || cleanMime === 'audio/mpeg' || cleanMime === 'audio/mp3';
+  const isWav =
+    cleanName.endsWith('.wav') ||
+    cleanMime === 'audio/wav' ||
+    cleanMime === 'audio/x-wav' ||
+    cleanMime === 'audio/wave';
+
+  if (isMp3) {
+    return { valid: true, normalizedFormat: 'MP3' };
+  }
+  if (isWav) {
+    return { valid: true, normalizedFormat: 'WAV' };
+  }
+
+  return {
+    valid: false,
+    normalizedFormat: 'UNKNOWN',
+    error: `Unsupported file "${fileName}". Only .mp3 and .wav voice files are supported.`,
+  };
+}
+
+export interface InferredVoiceRoleMapping {
+  characterToken: 'Character_A' | 'Character_B';
+  speakerHandle: 'Lin_Jie' | 'Ji_Zhixiu';
+  shotId?: string;
+  confidence: 'filename_match' | 'default_fallback';
+}
+
+/**
+ * Inspects a dropped `.mp3` or `.wav` filename (e.g., `ji_zhixiu_shot_05.wav` or `lin_jie_welcome.mp3`)
+ * to automatically infer the character role (`Character_A: Lin_Jie` vs `Character_B: Ji_Zhixiu`)
+ * and optional target shot ID (`shot_01`..`shot_10`).
+ */
+export function inferCharacterAndShotFromFileName(
+  fileName: string,
+  fallbackCharacter: 'Character_A' | 'Character_B' = 'Character_A'
+): InferredVoiceRoleMapping {
+  const lower = (fileName || '').toLowerCase();
+  const shotMatch = lower.match(/(?:shot[_-\s]?|s)(0?[1-9]|10)(?![0-9])/);
+  const matchedShotId = shotMatch
+    ? `shot_${String(Number(shotMatch[1])).padStart(2, '0')}`
+    : undefined;
+
+  if (/ji[_\-\s]?zhixiu|character[_\-\s]?b|hunter|zhixiu|female|kore|zephyr/i.test(lower)) {
+    return {
+      characterToken: 'Character_B',
+      speakerHandle: 'Ji_Zhixiu',
+      shotId: matchedShotId,
+      confidence: 'filename_match',
+    };
+  }
+
+  if (/lin[_\-\s]?jie|character[_\-\s]?a|shopkeeper|lin|male|charon|fenrir|puck/i.test(lower)) {
+    return {
+      characterToken: 'Character_A',
+      speakerHandle: 'Lin_Jie',
+      shotId: matchedShotId,
+      confidence: 'filename_match',
+    };
+  }
+
+  return {
+    characterToken: fallbackCharacter,
+    speakerHandle: fallbackCharacter === 'Character_B' ? 'Ji_Zhixiu' : 'Lin_Jie',
+    shotId: matchedShotId,
+    confidence: 'default_fallback',
+  };
+}
+
+export interface UploadedCharacterVoiceAsset {
+  id: string;
+  fileName: string;
+  format: 'MP3' | 'WAV';
+  fileSizeKb: number;
+  characterToken: 'Character_A' | 'Character_B';
+  speakerHandle: 'Lin_Jie' | 'Ji_Zhixiu';
+  targetScope: 'all_role_lines' | string; // 'all_role_lines' or a specific clipId / shotId
+  audioDataUri: string;
+  uploadedAtUtc: string;
+}
+
+/**
+ * Restores a specific clip or all clips for a character role back to their synthesized AI Voice Preset.
+ */
+export function resetVoiceClipToAiPreset(
+  clips: ShotVoiceoverClip[],
+  options: {
+    targetClipId?: string;
+    targetCharacterToken?: 'Character_A' | 'Character_B';
+    selectedPresets: Record<'Character_A' | 'Character_B', CharacterVoicePresetId>;
+  }
+): ShotVoiceoverClip[] {
+  return clips.map((clip) => {
+    const matchesClip = options.targetClipId && clip.clipId === options.targetClipId;
+    const matchesCharacter =
+      !options.targetClipId &&
+      options.targetCharacterToken &&
+      clip.characterToken === options.targetCharacterToken;
+
+    if (!matchesClip && !matchesCharacter) {
+      return clip;
+    }
+
+    const presetId = options.selectedPresets[clip.characterToken];
+    const preset =
+      AI_CHARACTER_VOICE_PRESETS.find((p) => p.id === presetId) ||
+      AI_CHARACTER_VOICE_PRESETS.find((p) => p.characterToken === clip.characterToken)!;
+
+    return {
+      ...clip,
+      sourceType: 'ai_preset',
+      presetId: preset.id,
+      geminiVoiceName: preset.geminiVoiceName,
+      uploadedFileName: undefined,
+      pitch: preset.defaultPitch,
+      playbackRate: preset.defaultRate,
+      audioDataUri: synthesizeCharacterVoiceWavDataUri(
+        clip.dialogueText,
+        clip.characterToken,
+        preset.defaultPitch,
+        Math.min(2.8, clip.durationSec)
+      ),
+    };
+  });
+}

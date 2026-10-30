@@ -4,6 +4,14 @@ import {
   MEME_AUDIO_EFFECTS,
   generateSyntheticPCM,
   encodeWAV,
+  computeFrequencySnapshotFromBuffers,
+  getLiveAudioFrequencySnapshot,
+  frameToTimestampSec,
+  timestampSecToFrame,
+  createSoundboardTriggerCue,
+  sortSoundboardTriggers,
+  computeVideoExportTimelineInfo,
+  mixSoundboardTriggersIntoPCM,
 } from './memeAudioEngine.ts';
 
 test('MEME_AUDIO_EFFECTS catalog includes core iconic sounds', () => {
@@ -101,3 +109,86 @@ test('encodeWAV generates valid 44-byte RIFF WAVE header and PCM data', () => {
   // Expected length = 44 + numSamples * 2 channels * 2 bytes = 44 + 4000 = 4044
   assert.equal(wavBuffer.byteLength, 44 + numSamples * 2 * 2);
 });
+
+test('computeFrequencySnapshotFromBuffers & getLiveAudioFrequencySnapshot compute Web Audio spectrum bars and wave overlay samples', () => {
+  const freqBytes = new Uint8Array(128);
+  const timeBytes = new Uint8Array(128);
+
+  // Inject peak at bin 8 (~1378 Hz @ 44.1kHz, FFT 256)
+  freqBytes[8] = 240;
+  freqBytes[9] = 180;
+  for (let i = 0; i < 128; i++) {
+    timeBytes[i] = Math.round(128 + 64 * Math.sin((i / 128) * Math.PI * 4));
+  }
+
+  const snapshot = computeFrequencySnapshotFromBuffers(freqBytes, timeBytes, 32, 44100, true);
+  assert.equal(snapshot.frequencyBars.length, 32);
+  assert.equal(snapshot.waveformSamples.length, 64);
+  assert.equal(snapshot.dominantBinIndex, 8);
+  assert.equal(snapshot.dominantFrequencyHz, Math.round((8 * 44100) / 256));
+  assert.ok(snapshot.peakNormalized > 0.9);
+  assert.ok(snapshot.rmsLevel > 0.2);
+
+  const liveSnapshot = getLiveAudioFrequencySnapshot(40, 1250);
+  assert.equal(liveSnapshot.frequencyBars.length, 40);
+  assert.equal(liveSnapshot.waveformSamples.length, 64);
+  assert.ok(liveSnapshot.rmsLevel > 0);
+});
+
+test('Soundboard frame trigger helpers map frame timestamps accurately and mix into stereo PCM', () => {
+  assert.equal(frameToTimestampSec(0, 30), 0);
+  assert.equal(frameToTimestampSec(30, 30), 1.0);
+  assert.equal(frameToTimestampSec(45, 30), 1.5);
+  assert.equal(timestampSecToFrame(1.5, 30), 45);
+
+  const cueLate = createSoundboardTriggerCue('sad_violin', 60, 30, { id: 'cue_violin' });
+  const cueEarly = createSoundboardTriggerCue('airhorn', 15, 30, { id: 'cue_airhorn' });
+  const cueMid = createSoundboardTriggerCue('laugh_track', 30, 30, { id: 'cue_laugh' });
+
+  assert.equal(cueEarly.timestampSec, 0.5);
+  assert.equal(cueMid.timestampSec, 1.0);
+  assert.equal(cueLate.timestampSec, 2.0);
+
+  const sorted = sortSoundboardTriggers([cueLate, cueEarly, cueMid]);
+  assert.deepEqual(
+    sorted.map((c) => c.id),
+    ['cue_airhorn', 'cue_laugh', 'cue_violin']
+  );
+
+  const config = {
+    selectedEffectId: null,
+    volume: 1.0,
+    playbackRate: 1.0,
+    loop: false,
+    delaySec: 0,
+    exportFps: 30,
+    exportDurationSec: 4.0,
+    soundboardTriggers: [cueLate, cueEarly, cueMid],
+  };
+
+  const timeline = computeVideoExportTimelineInfo(config);
+  assert.equal(timeline.fps, 30);
+  // sad_violin starts at 2.0s and is 4.0s long -> totalDurationSec >= 6.0s
+  assert.ok(timeline.totalDurationSec >= 6.0);
+  assert.equal(timeline.totalFrames, Math.ceil(timeline.totalDurationSec * 30));
+
+  const sampleRate = 11025;
+  const mixed = mixSoundboardTriggersIntoPCM(config, sampleRate);
+  assert.equal(mixed.left.length, mixed.right.length);
+  assert.ok(mixed.duration >= 6.0);
+
+  // Before 0.5s (frame 15), no sound has triggered yet -> silence
+  let preTriggerMax = 0;
+  for (let i = 0; i < Math.floor(0.45 * sampleRate); i++) {
+    preTriggerMax = Math.max(preTriggerMax, Math.abs(mixed.left[i]));
+  }
+  assert.equal(preTriggerMax, 0, 'audio before first trigger at Frame 15 (0.5s) should be silent');
+
+  // After 0.5s (frame 15), airhorn should have non-zero energy
+  let postTriggerMax = 0;
+  for (let i = Math.floor(0.52 * sampleRate); i < Math.floor(0.9 * sampleRate); i++) {
+    postTriggerMax = Math.max(postTriggerMax, Math.abs(mixed.left[i]));
+  }
+  assert.ok(postTriggerMax > 0.05, 'airhorn trigger at Frame 15 should produce audible samples');
+});
+

@@ -587,6 +587,20 @@ export const USER_GUIDE_SHORTCUTS: GuideShortcutItem[] = [
     deepLinkAction: 'tab:meme',
   },
   {
+    id: 'sc-ctrl-z',
+    keys: ['Ctrl / Cmd', 'Z'],
+    action: 'Undo the most recent design edit (text, sticker, filter, template, or aspect ratio)',
+    context: 'M1 MemeForge Canvas & Toolbar',
+    deepLinkAction: 'tab:meme',
+  },
+  {
+    id: 'sc-ctrl-y',
+    keys: ['Ctrl / Cmd', 'Y'],
+    action: 'Redo a previously undone design edit (also supports Cmd+Shift+Z)',
+    context: 'M1 MemeForge Canvas & Toolbar',
+    deepLinkAction: 'tab:meme',
+  },
+  {
     id: 'sc-drag',
     keys: ['Click + Drag'],
     action: 'Reposition any text layer or emoji sticker directly on the canvas',
@@ -618,7 +632,7 @@ export const USER_GUIDE_FAQS: GuideFaqItem[] = [
     id: 'faq-3',
     question: 'How do I add sound effects and download a video meme with audio?',
     answer:
-      'In M1 MemeForge AI, scroll to the Meme Audio Layer panel on the right. Pick an effect like MLG Airhorn or upload custom audio, click "Test Audio" to preview, and then click "Export Video (.webm)" below the canvas.',
+      'In M1 MemeForge AI, use the Timeline Soundboard in the right-hand toolbar to pin timestamped SFX cues (like Airhorn, Laugh Track, or Sad Violin) or scroll to the Meme Audio Layer panel. Click "Play Sound" to preview with the live frequency spectrum visualizer, then click "Export Video (.webm)".',
     category: 'video_audio',
     deepLinkAction: 'tab:meme',
     deepLinkLabel: 'Open Audio Controls',
@@ -627,7 +641,7 @@ export const USER_GUIDE_FAQS: GuideFaqItem[] = [
     id: 'faq-4',
     question: 'How do I undo a change or restore an earlier version of my meme?',
     answer:
-      'Press Alt+4 or click "M4 Enterprise Cloud" in the top bar. Under Version History, you will see snapshots saved automatically whenever you apply templates or AI captions. Click "Restore / Rollback" on any snapshot.',
+      'Use the Undo and Redo buttons at the top of the right-hand MemeToolbar (or press Ctrl+Z / Ctrl+Y) to step backward and forward through recent text, sticker, filter, and template edits. You can also press Alt+4 (M4 Enterprise Cloud) to browse and roll back named Version History snapshots.',
     category: 'meme_canvas',
     deepLinkAction: 'tab:team',
     deepLinkLabel: 'Open Version History (M4)',

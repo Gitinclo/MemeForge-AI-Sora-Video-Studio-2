@@ -3,6 +3,7 @@ import { TextLayer, MemeSticker, CanvasFilter, MemeAudioConfig } from '../types/
 import { MEME_FONTS, POPULAR_COLORS, MEME_STICKER_PRESETS } from '../data/memeTemplates';
 import { MEME_AUDIO_EFFECTS } from '../utils/memeAudioEngine';
 import { MemeAudioLayerPanel } from './MemeAudioLayerPanel';
+import { MemeSoundboardPanel } from './MemeSoundboardPanel';
 import {
   Type,
   Palette,
@@ -20,10 +21,14 @@ import {
   Ratio,
   Maximize2,
   RotateCw,
+  Undo2,
+  Redo2,
+  History,
   Eye,
   Check,
   Music,
   Film,
+  Zap,
 } from 'lucide-react';
 
 interface MemeToolbarProps {
@@ -48,6 +53,15 @@ interface MemeToolbarProps {
   onExportVideoWithAudio?: () => void;
   isExportingVideo?: boolean;
   exportProgress?: { percent: number; status: string } | null;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  currentSnapshotNote?: string;
+  currentSnapshotTag?: string;
+  undoTargetNote?: string;
+  redoTargetNote?: string;
+  historyStepPosition?: string;
 }
 
 export const MemeToolbar: React.FC<MemeToolbarProps> = ({
@@ -72,13 +86,28 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
   onExportVideoWithAudio,
   isExportingVideo = false,
   exportProgress = null,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+  currentSnapshotNote,
+  currentSnapshotTag,
+  undoTargetNote,
+  redoTargetNote,
+  historyStepPosition,
 }) => {
-  const [activeTab, setActiveTab] = useState<'text' | 'stickers' | 'audio'>('text');
+  const [activeTab, setActiveTab] = useState<'text' | 'stickers' | 'audio' | 'soundboard'>('text');
   const activeLayer =
     textLayers.find((l) => l.id === selectedLayerId) || textLayers[0] || null;
 
   const activeAudioEffect = MEME_AUDIO_EFFECTS.find(
     (e) => e.id === audioConfig?.selectedEffectId
+  );
+  const soundboardTriggersCount = audioConfig?.soundboardTriggers?.length || 0;
+  const hasAnyAttachedAudio = Boolean(
+    audioConfig?.selectedEffectId ||
+      audioConfig?.customAudioUrl ||
+      soundboardTriggersCount > 0
   );
 
   const filtersList: Array<{ id: CanvasFilter; label: string }> = [
@@ -100,44 +129,126 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-4">
+      {/* Undo / Redo & Version History Bar */}
+      {(onUndo || onRedo) && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-slate-950/90 border border-slate-800/90 rounded-2xl">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <History className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                  {currentSnapshotTag || 'v1.0.0'}
+                </span>
+                {historyStepPosition && (
+                  <span className="text-[10px] font-semibold text-slate-500">
+                    ({historyStepPosition})
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-300 font-medium truncate">
+                {currentSnapshotNote || 'Initial template state'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title={
+                canUndo
+                  ? `Undo to: ${undoTargetNote || 'Previous edit'} (Ctrl+Z)`
+                  : 'No earlier edits to undo'
+              }
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all ${
+                canUndo
+                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-amber-300 border-slate-700 shadow-sm cursor-pointer'
+                  : 'bg-slate-950 text-slate-600 border-slate-800/60 cursor-not-allowed'
+              }`}
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+              <span>Undo</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title={
+                canRedo
+                  ? `Redo to: ${redoTargetNote || 'Next edit'} (Ctrl+Y)`
+                  : 'No forward edits to redo'
+              }
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all ${
+                canRedo
+                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-amber-300 border-slate-700 shadow-sm cursor-pointer'
+                  : 'bg-slate-950 text-slate-600 border-slate-800/60 cursor-not-allowed'
+              }`}
+            >
+              <Redo2 className="w-3.5 h-3.5" />
+              <span>Redo</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toolbar Sub-Tabs */}
-      <div className="flex items-center p-1 bg-slate-950 border border-slate-800 rounded-2xl gap-1">
+      <div className="grid grid-cols-2 sm:grid-cols-4 p-1 bg-slate-950 border border-slate-800 rounded-2xl gap-1">
         <button
           onClick={() => setActiveTab('text')}
-          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+          className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'text'
               ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Type className="w-3.5 h-3.5" />
-          <span>Text &amp; Fonts</span>
+          <Type className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Text &amp; Fonts</span>
         </button>
 
         <button
           onClick={() => setActiveTab('stickers')}
-          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+          className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'stickers'
               ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Smile className="w-3.5 h-3.5" />
-          <span>Stickers &amp; FX</span>
+          <Smile className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Stickers &amp; FX</span>
         </button>
 
         <button
           onClick={() => setActiveTab('audio')}
-          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
+          className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
             activeTab === 'audio'
               ? 'bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow-md shadow-purple-600/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Music className="w-3.5 h-3.5" />
-          <span>Audio Layer</span>
+          <Music className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Audio Layer</span>
           {(audioConfig?.selectedEffectId || audioConfig?.customAudioUrl) && (
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse ml-0.5" />
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse ml-0.5 shrink-0" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('soundboard')}
+          className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
+            activeTab === 'soundboard'
+              ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white shadow-md shadow-rose-500/20'
+              : 'text-slate-400 hover:text-amber-300'
+          }`}
+          title="Quick-Fire Soundboard & Frame Timestamp Triggers"
+        >
+          <Zap className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+          <span className="truncate">Soundboard</span>
+          {soundboardTriggersCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 text-[9px] font-black shrink-0">
+              {soundboardTriggersCount}
+            </span>
           )}
         </button>
       </div>
@@ -546,31 +657,65 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
         />
       )}
 
-      {/* Attached Audio Notification Strip when on another tab */}
-      {activeTab !== 'audio' && (audioConfig?.selectedEffectId || audioConfig?.customAudioUrl) && (
+      {/* TAB 4: QUICK-FIRE SOUNDBOARD & FRAME SEQUENCER */}
+      {activeTab === 'soundboard' && (
+        <MemeSoundboardPanel
+          audioConfig={
+            audioConfig || {
+              selectedEffectId: null,
+              volume: 1,
+              playbackRate: 1,
+              loop: false,
+              delaySec: 0,
+              soundboardTriggers: [],
+              exportFps: 30,
+              exportDurationSec: 4,
+            }
+          }
+          onChangeAudioConfig={onChangeAudioConfig || (() => {})}
+          onExportVideoWithAudio={onExportVideoWithAudio || (() => {})}
+          isExportingVideo={isExportingVideo}
+          exportProgress={exportProgress}
+        />
+      )}
+
+      {/* Attached Audio / Soundboard Notification Strip when on another tab */}
+      {activeTab !== 'audio' && activeTab !== 'soundboard' && hasAnyAttachedAudio && (
         <div className="p-2.5 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-indigo-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-lg">{activeAudioEffect?.emoji || '🎵'}</span>
+            <span className="text-lg">
+              {soundboardTriggersCount > 0 ? '🎛️' : activeAudioEffect?.emoji || '🎵'}
+            </span>
             <div className="min-w-0">
               <span className="text-xs font-bold text-amber-300 truncate block">
-                Sound Attached: {audioConfig.customAudioName || activeAudioEffect?.name || 'Meme SFX'}
+                {soundboardTriggersCount > 0
+                  ? `Soundboard: ${soundboardTriggersCount} Frame Trigger${
+                      soundboardTriggersCount === 1 ? '' : 's'
+                    } Pinned`
+                  : `Sound Attached: ${
+                      audioConfig?.customAudioName || activeAudioEffect?.name || 'Meme SFX'
+                    }`}
               </span>
-              <span className="text-[10px] text-slate-400">Attached to your video exports</span>
+              <span className="text-[10px] text-slate-400">
+                Scheduled at exact frame timestamps in video export
+              </span>
             </div>
           </div>
           <button
-            onClick={() => setActiveTab('audio')}
+            onClick={() =>
+              setActiveTab(soundboardTriggersCount > 0 ? 'soundboard' : 'audio')
+            }
             className="px-2.5 py-1 text-[11px] font-bold text-amber-300 hover:text-amber-200 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg border border-amber-500/40 transition-all flex-shrink-0"
           >
-            Adjust SFX
+            {soundboardTriggersCount > 0 ? 'Edit Triggers' : 'Adjust SFX'}
           </button>
         </div>
       )}
 
       {/* 5. Export Actions */}
       <div className="pt-2 border-t border-slate-800 space-y-2">
-        {/* If audio is attached, prominent video export button */}
-        {(audioConfig?.selectedEffectId || audioConfig?.customAudioUrl) && onExportVideoWithAudio && (
+        {/* If audio or soundboard triggers are attached, prominent video export button */}
+        {hasAnyAttachedAudio && onExportVideoWithAudio && (
           <button
             onClick={onExportVideoWithAudio}
             disabled={isExportingVideo}
@@ -582,6 +727,10 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
             <span>
               {isExportingVideo
                 ? 'Recording Video with Audio...'
+                : soundboardTriggersCount > 0
+                ? `🎬 Export Video Meme with ${soundboardTriggersCount} Frame Trigger${
+                    soundboardTriggersCount === 1 ? '' : 's'
+                  } (.webm)`
                 : '🎬 Export Video Meme with Audio (.webm)'}
             </span>
           </button>
@@ -613,14 +762,14 @@ export const MemeToolbar: React.FC<MemeToolbarProps> = ({
             )}
           </button>
 
-          {!(audioConfig?.selectedEffectId || audioConfig?.customAudioUrl) && (
+          {!hasAnyAttachedAudio && (
             <button
-              onClick={() => setActiveTab('audio')}
+              onClick={() => setActiveTab('soundboard')}
               className="px-3 py-2.5 bg-slate-950 hover:bg-purple-950/60 text-purple-300 hover:text-purple-200 font-bold text-xs rounded-xl border border-purple-500/30 transition-all flex items-center gap-1.5"
-              title="Add sound effect to export as video"
+              title="Open Quick-Fire Soundboard to pin sound effects to video frames"
             >
-              <Music className="w-3.5 h-3.5 text-amber-400" />
-              <span>Add Audio</span>
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Soundboard</span>
             </button>
           )}
 

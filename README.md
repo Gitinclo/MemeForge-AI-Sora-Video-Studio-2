@@ -1,9 +1,10 @@
-# MemeForge AI & LEO Video Studio (`v2.1.0`)
+# MemeForge AI & LEO Video Studio (`v2.2.0`)
 
-> **Next-generation unified 4-module creative & cinema workstation combining MemeForge AI, the LEO AI Video Studio (featuring the Veo 3.1 Chapter-to-3-Minute Episode Pilot & Sora 2 Ultra `32K` · `1000 FPS` · `100-Hour` planner + 11-Pass AI VFX Suite), Cinema 32K NLE & 192 kHz Fairlight Audio, and Enterprise Cloud Collaboration (CRDT Conflict Resolution, Timestamped Frame Comments, Offline Sync, E2EE, RBAC, NLE XML/EDL Interchange, and Dropbox/Google Drive Sync).**
+> **Next-generation unified 4-module creative & cinema workstation combining MemeForge AI (with Undo/Redo Version History, Real-Time Web Audio Frequency Analyzer & Timeline Soundboard), the LEO AI Video Studio (featuring the 3D Text-to-Animation Generator with Character Voiceover & AI Voice Library, Veo 3.1 Chapter-to-3-Minute Episode Pilot & Sora 2 Ultra `32K` · `1000 FPS` · `100-Hour` planner + 11-Pass AI VFX Suite), Cinema 32K NLE & 192 kHz Fairlight Audio, and Enterprise Cloud Collaboration (CRDT Conflict Resolution, Timestamped Frame Comments, Offline Sync, E2EE, RBAC, NLE XML/EDL Interchange, and Dropbox/Google Drive Sync).**
 
 [![Gemini](https://img.shields.io/badge/Gemini%20API-3.1%20Veo%20%7C%203%20Flash-7c3aed?style=for-the-badge&logo=google)](https://ai.google.dev/)
 [![Original AI Studio Applet](https://img.shields.io/badge/AI%20Studio%20Origin-4d0cb3f2--610b--4819--909e--06de8300dcfb-4f46e5?style=for-the-badge&logo=google)](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
+[![3D Text-to-Animation](https://img.shields.io/badge/Text%20to%20Animation-10--Shot%20Anime%20%7C%20AI%20Voiceover-ec4899?style=for-the-badge)](./src/utils/textToAnimationEngine.ts)
 [![AI Video Pilot](https://img.shields.io/badge/AI%20Video%20Pilot-Veo%203.1%20%7C%2023%20Shots%20%7C%20180s-10b981?style=for-the-badge)](./src/utils/aiVideoPilotEngine.ts)
 [![Sora 2 Ultra 32K](https://img.shields.io/badge/Sora%202%20Ultra-32K%20%7C%201000%20FPS%20%7C%20100H-f59e0b?style=for-the-badge)](./src/utils/sora2UltraEngine.ts)
 [![Cinema VFX 32K](https://img.shields.io/badge/Cinema%20VFX-32K%20%7C%201000%20FPS-06b6d4?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)
@@ -11,18 +12,18 @@
 [![Android APK & AAB](https://img.shields.io/badge/Android-APK%20%26%20AAB%20Offline%20Build-f59e0b?style=for-the-badge&logo=android)](https://developer.android.com/)
 [![UPI & Subscriptions](https://img.shields.io/badge/India%20Billing-Rs.%20999%20%7C%20Rs.%2099%2C999-6366f1?style=for-the-badge)](https://www.npci.org.in/)
 [![PyTorch 2.x + Triton DiT Spec](https://img.shields.io/badge/PyTorch%202.x%20DiT-CLAUDE.md%20%7C%20AGENTS.md-ee4c2c?style=for-the-badge&logo=pytorch)](./CLAUDE.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%2021%20Test%20Suites-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20%7C%2023%20Test%20Suites-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
 > **Original AI Studio Applet**: [`https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true`](https://ai.studio/apps/4d0cb3f2-610b-4819-909e-06de8300dcfb?fullscreenApplet=true)
 
 ---
 
-## 🌟 Overview (`v2.1.0` Unified 4-Module Studio Architecture)
+## 🌟 Overview (`v2.2.0` Unified 4-Module Studio Architecture)
 
-**MemeForge AI & LEO Video Studio (`v2.1.0`)** organizes its top header navigation around a **Unified 4-Module Studio Switcher** (`Alt+1`–`Alt+4`) alongside instant utility access to **Marketplace**, **YouTube**, **LoRAFlow**, and **User Guides**:
+**MemeForge AI & LEO Video Studio (`v2.2.0`)** organizes its top header navigation around a **Unified 4-Module Studio Switcher** (`Alt+1`–`Alt+4`) alongside instant utility access to **Marketplace**, **YouTube**, **LoRAFlow**, and **User Guides**:
 
-1. **Module 1 · MemeForge AI (`Alt+1`)**: Multimodal Gemini Vision "Magic Caption" (5 clickable viral captions that auto-overlay onto the canvas), live drag-and-drop typography editor, animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`), 16+ trending vector templates, sticker overlays, synthesized multi-track audio layers, and automatic 30-second `localStorage` layout persistence.
-2. **Module 2 · LEO AI Video Studio — Veo 3.1 Episode Pilot & Sora 2 Ultra (`Alt+2`)**: Includes the **AI Video Pilot: One Chapter to a 3-Minute Animated Episode** workbench (`config/pricing.yaml` with Sept 2026 Veo 3.1 rates, atomic `$500` budget guard, 23-shot *"Nocturne in the Rainy Bookstore"* 180s episode manifest, interactive 2.5D Anime Canvas Animatic Player, live Chapter-to-23-Shot compiler, 10-shot bake-off, FFmpeg EBU R128 + sidechain ducking builder, and 5-Clause Book License Analyzer) alongside the **Sora 2 Ultra Text-to-Video Generator** (`32K Master 32000×32000`, `1000 FPS`, `100 Hours`), **11-Pass Neural AI Toolset Panel**, **Timeline Keyframe Animator**, **Linux DiT Cluster Host Workbench**, and **PyTorch 2.x + Triton Build Spec (`CLAUDE.md` / `AGENTS.md`)**.
+1. **Module 1 · MemeForge AI (`Alt+1`)**: Multimodal Gemini Vision "Magic Caption" (5 clickable viral captions that auto-overlay onto the canvas), live drag-and-drop typography editor, **Undo / Redo State Management System** (`versionHistoryEngine.ts`, toolbar Undo/Redo controls + `Ctrl+Z` / `Ctrl+Y` / `Cmd+Shift+Z` shortcuts with full text, sticker, filter & aspect-ratio rollback), **Real-Time Web Audio Frequency Analyzer** (`Spectrum Bars` & `Oscilloscope Wave` overlay on `MemeCanvas` during audio playback), **Timeline Soundboard** (timestamped SFX cues like `Airhorn`, `Laugh Track`, `Sad Violin`, `Vine Boom` baked into video exports), animated template & background Transition FX (`Fade`, `Slide`, `Dissolve`), 16+ trending vector templates, sticker overlays, and automatic 30-second `localStorage` layout persistence.
+2. **Module 2 · LEO AI Video Studio — 3D Text-to-Animation, Veo 3.1 Episode Pilot & Sora 2 Ultra (`Alt+2`)**: Includes the **3D Text-to-Animation Studio** (`TextToAnimationModal.tsx` & `textToAnimationEngine.ts` featuring the 10-shot dark urban fantasy anime script *"Nocturne in the Rainy Bookstore"* with `Lin_Jie` & `Ji_Zhixiu`, **Character Voiceover** mapping, **Custom Voice Upload** with drag-and-drop `.mp3`/`.wav` support, and a pre-generated **AI Character Voice Library** dropdown) alongside the **AI Video Pilot: One Chapter to a 3-Minute Animated Episode** workbench (`config/pricing.yaml` with Sept 2026 Veo 3.1 rates, atomic `$500` budget guard, 23-shot 180s episode manifest, 2.5D Anime Canvas Animatic Player, Chapter-to-23-Shot compiler, 10-shot bake-off, FFmpeg EBU R128 + sidechain ducking builder, and 5-Clause Book License Analyzer), **Sora 2 Ultra Text-to-Video Generator** (`32K Master 32000×32000`, `1000 FPS`, `100 Hours`), **11-Pass Neural AI Toolset Panel**, **Timeline Keyframe Animator**, **Linux DiT Cluster Host Workbench**, and **PyTorch 2.x + Triton Build Spec (`CLAUDE.md` / `AGENTS.md`)**.
 3. **Module 3 · Cinema 32K NLE & Fairlight Audio Engine (`Alt+3`)**: 64-bit sub-frame timebase (`23.976` to `1000 FPS`), `720p` to `32K` (`32000×32000`) resolution with 16/24/32-bit float color pipeline (`ACES 2.0`, `OCIO`, `HDR10+`, `Dolby Vision`, `HLG`, `Rec.709/2020`, `DCI-P3`, `BT.2100`), 6 real-time scopes + `.cube` LUT loader, `44.1`–`192 kHz` 64-bit Fairlight audio mixer (`7.1`, `Dolby Atmos`, `Ambisonics`, `VST3`, side-chain routing), Fusion node tab, `[Ripple, Roll, Slip, Slide, Blade]` tools, and GPU Render Graph (`Vulkan`, `Metal`, `DX12`, Multi-GPU, Render Farm, `H.264`, `HEVC`, `AV1`, `ProRes 422/4444`, `DNxHR`, `CineForm`, `OpenEXR 16/32f`, `TIFF`, `PNG`, `JPEG XL`).
 4. **Module 4 · Enterprise Cloud Vault & Collaboration (`Alt+4`)**: Real-time frame-accurate timestamped comments, version history snapshots, CRDT automated conflict resolution (`Auto-Merge`, `Keep Local`, `Keep Remote`), offline queue sync toggle, zero-knowledge E2EE (`AES-256-GCM`) with session key rotation, RBAC (`Admin`/`Editor`/`Viewer`), 1-click NLE `FCPXML` & `CMX 3600 EDL` export, and **Dropbox Business** & **Google Drive Workspace** cloud sync.
 
@@ -101,9 +102,15 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
 
 ---
 
-### 3. 🪄 AI Magic Caption, Transition FX & Meme Canvas Editor
+### 3. 🪄 AI Magic Caption, Undo/Redo History, Audio Frequency Visualizer & Timeline Soundboard
 - **Multimodal Gemini Vision**: Analyzes facial expressions, scene geometry, and cultural irony directly from images.
 - **5 Viral Caption Tones**: Sarcastic & Witty, Gen Z / Brainrot, Tech & Developer, Corporate Workplace, and Wholesome.
+- **Undo / Redo State Management System (`versionHistoryEngine.ts`, `MemeToolbar.tsx` & `App.tsx`)**:
+  - Full non-destructive `versionHistory` stack with toolbar **Undo** (`Ctrl/Cmd+Z`) and **Redo** (`Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z`) buttons, live version badge (`v1.x` + step counter), target edit tooltips, automatic redo-branch pruning on new edits, and complete restoration of text layers, stickers, image filters, and canvas aspect ratios.
+- **Real-Time Web Audio Frequency Analyzer (`MemeCanvas.tsx`)**:
+  - Connects a Web Audio API `AnalyserNode` (`fftSize = 128`) during **"Play Sound"** preview to render a live 60 FPS **Spectrum Bars** or **Oscilloscope Wave** overlay with peak-hold indicators, live `dB` RMS telemetry, and dominant Hz readout directly on the canvas.
+- **Timeline Soundboard (`MemeToolbar.tsx` & `memeAudioEngine.ts`)**:
+  - Quick-fire sound effect pad (**Airhorn**, **Laugh Track**, **Sad Violin**, **Vine Boom**, **Record Scratch**, **Bruh**, **Dramatic Hit**) that lets creators audition SFX or pin timestamped audio cues (`0.0s`–`4.0s`) onto the timeline so they automatically fire at exact frame timestamps during `.webm` video export.
 - **Template & Background Transition Effect Library (`MemeCanvas.tsx` & `memeTransitionEngine.ts`)**:
   - Animates transitions between meme templates or custom uploaded backgrounds using **Fade** (smooth opacity cross-fade), **Slide** (directional push slide), **Dissolve** (deterministic 8×8 Bayer-like block matrix reveal), or **Instant (None)** presets with adjustable duration (`200ms`–`1200ms`), cubic ease-out interpolation, and a manual **Replay** trigger.
 - **Interactive Typography**: Classic Impact, Anton, Bebas Neue, Montserrat Bold, Orbitron, and Permanent Marker.
@@ -232,6 +239,15 @@ MemeForge features dedicated Indian pricing and payment workflows tailored for i
   6. **Benchmark (`bench.py`)** reporting latency (ms), `tokens/sec`, and peak GPU memory (MB).
   7. **Multi-GPU** sequence parallelism (time/space token split) followed by tensor parallelism for large layers.
 
+### 13. 🎬 3D Text-to-Animation Video Generator, Character Voiceover & AI Voice Library (`TextToAnimationModal.tsx` & `textToAnimationEngine.ts`)
+- **Global Visual & Asset Sheet + 10-Shot Sequential Animation Script (*"Nocturne in the Rainy Bookstore"*)**:
+  - Preloaded with the 3-Scene, 10-Shot (`45s` total) dark urban fantasy anime script featuring **Character_A (`Lin_Jie`)**, **Character_B (`Ji_Zhixiu`)**, **Environment_A (`Rainy_Street_And_Alley`)**, and **Environment_B (`Bookstore_Interior`)**, plus custom script compilation into structured 3D camera, lighting, and character rigs.
+- **Interactive 2.5D / 3D Canvas Animation Renderer & WebM Video Export**:
+  - Real-time procedural animation viewport rendering atmospheric rain particles, puddle reflections, bookstore warm desk lamp chiaroscuro, transforming silver cane-blade combat, dark ember ash dissolution, and synchronized dialogue subtitles.
+- **Character Voiceover Mapping, Custom `.mp3`/`.wav` Drag-and-Drop Upload & AI Voice Library**:
+  - **AI Voice Library Dropdown**: Choose from 8 pre-generated AI character voice personas (`Warm & Gentle Shopkeeper`, `Mysterious Nocturnal Scholar`, `Calm Velvet Narrator`, `Gentle Baritone Host` for `Lin_Jie`; `Cold & Vigilant Hunter`, `Whispered Crimson Blade`, `Ice Aristocrat Contralto`, `Battle-Worn Shadow` for `Ji_Zhixiu`) synthesized via multi-oscillator Web Audio formant filtering.
+  - **Drag-and-Drop Custom Voice Upload**: Drop custom `.mp3` or `.wav` voice files onto either character card (or individual dialogue shots) with automatic MIME/extension validation (`validateVoiceUploadFile`), waveform duration inspection, and synchronized playback during both live preview and `.webm` video recording.
+
 ---
 
 ## 🛠️ Getting Started (Local Development)
@@ -270,7 +286,13 @@ Run the automated unit and integration test suite:
 ```bash
 npm test
 ```
-Runs the full **110-test suite across 17 test suites** covering:
+Runs the full **23-suite automated test runner** covering:
+- **Undo / Redo Version History Engine (`versionHistoryEngine.test.ts`)**: `canUndoHistory` / `canRedoHistory` boundary checks, deep-cloned `MemeState` + `MemeSticker[]` + `aspectRatio` snapshots, linear undo/redo stepping, and redo-branch truncation when a new edit occurs after stepping backward.
+- **3D Text-to-Animation & Character Voiceover Engine (`textToAnimationEngine.test.ts`)**: 10-shot *"Nocturne in the Rainy Bookstore"* dark urban fantasy anime script validation, custom script parser, Character Voiceover mapping (`Lin_Jie` & `Ji_Zhixiu`), pre-generated AI Voice Library lookup, and `.mp3`/`.wav` custom voice file validation.
+- **AI Video Pilot Engine (`aiVideoPilotEngine.test.ts`)**: Sept 2026 Veo 3.1 & Gemini Omni Flash config pricing, `$500` atomic budget reservation guard, 23-shot (`180s`) manifest validator, FFmpeg EBU R128 + sidechain ducking command builder, and 5-clause literary license verification.
+- **Interactive User Guides Engine (`userGuidesEngine.test.ts`)**: Step-by-step onboarding chapters, checklist progress math, keyboard shortcut catalog, and live full-text FAQ search.
+- **Sora 2 Ultra 32K / 1000 FPS / 100-Hour Engine (`sora2UltraEngine.test.ts`)**: 32K Gigapixel throughput telemetry, hierarchical ring-attention memory math, and 5-Act episodic chapter generation.
+- **Enterprise Cloud Collaboration Engine (`enterpriseCollabEngine.test.ts`)**: Frame-accurate timestamped review comments, CRDT conflict resolution (`auto-merge`, `keep-local`, `keep-remote`), AES-256-GCM E2EE key rotation, RBAC permissions, and FCPXML / CMX 3600 EDL interchange export.
 - **Shared Core Engine (`sharedCoreEngine.test.ts`)**: Numeric clamping, UTF-8 SVG data URI encoding, byte size formatting, prefixed ID generation, `localStorage` JSON adapters, and Original AI Studio Applet (`4d0cb3f2-610b-4819-909e-06de8300dcfb`) URL resolution.
 - **Vibe Coder Sora-Style App Guide Engine (`vibeCoderGuideEngine.test.ts`)**: 24 GB vs. 40–80 GB GPU VRAM evaluation, `enable_model_cpu_offload()` compatibility, Amazon S3 vs. Cloudflare R2 CDN cost calculation, and Ubuntu CUDA `Dockerfile` + FastAPI `/generate` (5m timeout) & `/health` code generation.
 - **Linux Host for Text-to-Video DiT Cluster & OS Reference Engine (`linuxDitClusterEngine.test.ts`)**: HPC & minimal Linux OS catalog validation, Popular OS & Ranked Top 10 Server OS filtering, CentOS 2021 discontinuation & Sora caveats, NVIDIA vGPU / bare-metal & AMD ROCm stack checks, Lustre/GPFS/WekaFS + GPUDirect Storage evaluation, 1GB/2MB HugePages TLB calculation, 5-pillar readiness auditing, and Linux-only bootstrap / Kubernetes SR-IOV / Slurm & Ray script generation.
@@ -281,7 +303,7 @@ Runs the full **110-test suite across 17 test suites** covering:
 - **Global Purchasing Power Parity Pricing (`pppPricingUtils.test.ts`)**: World Bank GNI 4-tier regional discount resolution, India INR anchor pricing, and Card BIN + GeoIP anti-arbitrage verification.
 - **2026 Multi-Model Engine Migration (`engineMigration2026.test.ts`)**: Sora-2 to Magic Hour / Veo 3.1 / Kling 2.5 / Runway Gen-4.5 / Luma Ray 3 payload adapters and pricing calculators.
 - **LEO 8K DiT Engine (`leo8kEngine.test.ts`)**: 3D spacetime patch tokenization, cascaded 720p→2K→4K→8K pipeline stages, and VLM dense re-captioning.
-- **Audio Synthesis & WAV Encoding (`memeAudioEngine.test.ts`)**: PCM stereo synthesis and 44-byte RIFF WAVE header encoding.
+- **Audio Synthesis, Soundboard & WAV Encoding (`memeAudioEngine.test.ts`)**: PCM stereo synthesis, Laugh Track / Soundboard SFX presets, and 44-byte RIFF WAVE header encoding.
 - **Meme Style Presets (`memeStylePresets.test.ts`)**: Typography preset application and text layer transforms.
 - **Subscription & Enterprise RBAC (`subscriptionUtils.test.ts`)**: Free vs. India Creator Pro (Rs. 999/mo) vs. Company Enterprise (Rs. 99,999/mo), 10 isolated workspaces, and 50 TB Cloud Vault limits.
 - **Video Duration & Compute Telemetry (`videoDurationUtils.test.ts`)**: 100-hour max duration clamping, timecode formatting, and frame compute metrics.
@@ -406,16 +428,17 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── MarketplaceCheckoutModal.tsx
 │   │   ├── MarketplaceTab.tsx
 │   │   ├── MemeAudioLayerPanel.tsx
-│   │   ├── MemeCanvas.tsx           # Interactive Meme Canvas with Fade, Slide & Dissolve transitions
+│   │   ├── MemeCanvas.tsx           # Interactive Meme Canvas with Fade/Slide/Dissolve & Real-Time Audio Visualizer
 │   │   ├── MemeStylePresetPicker.tsx
 │   │   ├── MemeTemplateSelector.tsx
-│   │   ├── MemeToolbar.tsx
+│   │   ├── MemeToolbar.tsx          # Layer Editor, Undo/Redo History Bar & Timeline Soundboard
 │   │   ├── ModelSandbox.tsx         # Pre-deployment LoRA consistency sandbox & invariant verifier
 │   │   ├── OriginalAppletBridgeModal.tsx # Canonical AI Studio Applet (4d0cb3f2) launcher & evolution matrix
 │   │   ├── PWAInstallButton.tsx
 │   │   ├── PyTorchDitBuildSpecModal.tsx # PyTorch 2.x + Triton DiT Software Build Spec & Simulator
 │   │   ├── SubscriptionModal.tsx    # India UPI & 4-Tier Global PPP subscription manager
 │   │   ├── TeamWorkspaceTab.tsx
+│   │   ├── TextToAnimationModal.tsx # 3D Text-to-Animation Studio, Character Voiceover & AI Voice Library
 │   │   ├── UserGuidesModal.tsx      # Interactive "How to Use the App" step-by-step guides & search
 │   │   ├── VibeCoderGuideModal.tsx  # Vibe Coder's Sora-Style App Guide, VRAM Advisor & FastAPI Builder
 │   │   ├── YouTubePublishTab.tsx    # YouTube Data API v3 Resumable Publisher & Argon SEO
@@ -441,13 +464,16 @@ All AI model and publishing operations are handled server-side via Express route
 │   │   ├── leo8kEngine.ts
 │   │   ├── leoKeyframeEngine.ts     # LEO Video Studio Timeline Keyframe interpolation engine (Position, Scale, Rotation)
 │   │   ├── linuxDitClusterEngine.ts # Linux Host DiT Cluster configurator, OS Reference (Ranks 1–10) & K8s/Slurm/Ray generator
-│   │   ├── memeAudioEngine.ts
+│   │   ├── loraFlowMlopsEngine.ts   # LoRAFlow MLOps pipeline & checkpoint deployment engine
+│   │   ├── memeAudioEngine.ts       # Web Audio SFX synthesizer, Timeline Soundboard & WAV encoder
 │   │   ├── memeTransitionEngine.ts  # Fade, Slide & Dissolve transition interpolation & Bayer tile engine
 │   │   ├── pppPricingUtils.ts
 │   │   ├── pytorchDitBuildSpecEngine.ts # PyTorch 2.x DiT Software Spec, [B,T,H,W,C] shape trace & acceptance tests
 │   │   ├── sora2UltraEngine.ts      # Sora 2 Ultra (32K · 1000 FPS · 100-Hour) metrics & 5-Act episodic chapter planner
 │   │   ├── subscriptionUtils.ts
+│   │   ├── textToAnimationEngine.ts # 10-shot anime script compiler, Character Voiceover, Custom Upload & Voice Library
 │   │   ├── userGuidesEngine.ts      # Step-by-step interactive onboarding, shortcut catalog & FAQ search
+│   │   ├── versionHistoryEngine.ts  # Undo/Redo state management & version snapshot branching engine
 │   │   ├── vibeCoderGuideEngine.ts  # Single-GPU VRAM calculator, S3/R2 estimator & Dockerfile/FastAPI generator
 │   │   ├── videoDurationUtils.ts
 │   │   ├── youtubeUploadUtils.ts

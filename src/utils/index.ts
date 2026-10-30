@@ -25,6 +25,7 @@ export * from './loraFlowMlopsEngine';
 export * from './userGuidesEngine';
 export * from './aiVideoPilotEngine';
 export * from './textToAnimationEngine';
+export * from './versionHistoryEngine';
 
 
 

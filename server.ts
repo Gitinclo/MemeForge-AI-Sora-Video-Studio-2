@@ -9,6 +9,10 @@ import {
   compileChapterToPilotEpisode,
   validatePilotShotList,
 } from './src/utils/aiVideoPilotEngine';
+import {
+  synthesizeCharacterVoiceWavDataUri,
+  GeminiPrebuiltVoiceName,
+} from './src/utils/textToAnimationEngine';
 
 dotenv.config();
 
@@ -907,6 +911,95 @@ Return a JSON object with:
   } catch (err) {
     return res.json(fallbackResult);
   }
+});
+
+// Character Voiceover TTS Synthesis Endpoint (Lin_Jie & Ji_Zhixiu 10-Shot Animation Script)
+app.post('/api/text-to-animation/generate-voice', async (req: Request, res: Response) => {
+  const {
+    dialogueText = 'Welcome to my humble bookstore.',
+    characterToken = 'Character_A',
+    voiceName = 'Charon',
+    stylePrompt = 'Warm, gentle, serene bookstore owner speaking softly over heavy rain',
+    pitch = 1.0,
+    durationSec = 2.5,
+  } = req.body || {};
+
+  const safeToken: 'Character_A' | 'Character_B' =
+    characterToken === 'Character_B' ? 'Character_B' : 'Character_A';
+  const safeText =
+    typeof dialogueText === 'string' && dialogueText.trim().length > 0
+      ? dialogueText.trim().slice(0, 600)
+      : 'Welcome.';
+  const validVoices: GeminiPrebuiltVoiceName[] = ['Charon', 'Fenrir', 'Puck', 'Kore', 'Zephyr'];
+  const safeVoice: GeminiPrebuiltVoiceName = validVoices.includes(voiceName)
+    ? voiceName
+    : safeToken === 'Character_B'
+    ? 'Kore'
+    : 'Charon';
+
+  const fallbackWavDataUri = synthesizeCharacterVoiceWavDataUri(
+    safeText,
+    safeToken,
+    Number(pitch) || 1.0,
+    Number(durationSec) || 2.5
+  );
+
+  const ai = getGenAiClient();
+  if (!ai) {
+    return res.json({
+      success: true,
+      characterToken: safeToken,
+      voiceName: safeVoice,
+      modelUsed: 'local-formant-wav-synthesizer',
+      audioDataUri: fallbackWavDataUri,
+    });
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash-lite-tts',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: safeText,
+              ...(stylePrompt ? { speechMetadata: { style: String(stylePrompt) } } : {}),
+            } as any,
+          ],
+        },
+      ],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: safeVoice },
+          },
+        },
+      },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (base64Audio && typeof base64Audio === 'string') {
+      return res.json({
+        success: true,
+        characterToken: safeToken,
+        voiceName: safeVoice,
+        modelUsed: 'gemini-3.8-flash-lite-tts',
+        audioDataUri: `data:audio/wav;base64,${base64Audio}`,
+      });
+    }
+  } catch (err) {
+    console.warn('Gemini TTS fallback to local formant WAV:', err);
+  }
+
+  return res.json({
+    success: true,
+    characterToken: safeToken,
+    voiceName: safeVoice,
+    modelUsed: 'local-formant-wav-synthesizer',
+    audioDataUri: fallbackWavDataUri,
+  });
 });
 
 // Vite middleware in dev or static files in production

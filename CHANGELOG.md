@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-10-30
+
+### Added & Improved
+- **Undo / Redo State Management System (`src/utils/versionHistoryEngine.ts`, `src/utils/versionHistoryEngine.test.ts`, `src/components/MemeToolbar.tsx`, `src/App.tsx`)**:
+  - Integrated a non-destructive Undo/Redo state stack backed by `VersionSnapshot` history (`pushVersionSnapshot`, `stepUndoHistory`, `stepRedoHistory`, `canUndoHistory`, `canRedoHistory`).
+  - Added **Undo** (`Ctrl/Cmd+Z`) and **Redo** (`Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z`) controls directly in the `MemeToolbar` with live version badges (`v1.x`), step counters, target snapshot tooltips, debounced text/drag snapshots, and full restoration of text layers, stickers, image filters, and canvas aspect ratios.
+- **Timeline Soundboard & Real-Time Web Audio Frequency Visualizer (`src/components/MemeToolbar.tsx`, `src/components/MemeCanvas.tsx`, `src/utils/memeAudioEngine.ts`)**:
+  - Added a **Timeline Soundboard** in `MemeToolbar` allowing creators to audition quick-fire SFX (**Airhorn**, **Laugh Track**, **Sad Violin**, **Vine Boom**, **Record Scratch**, **Bruh**, **Dramatic Hit**) and pin timestamped audio triggers (`0.0s`–`4.0s`) that automatically fire at exact frame timestamps during `.webm` video export.
+  - Added a real-time Web Audio API `AnalyserNode` frequency visualizer on `MemeCanvas` during **"Play Sound"** preview with toggleable **Spectrum Bars** and **Oscilloscope Wave** overlays, peak-hold markers, live `dB` RMS metering, and dominant frequency (`Hz`) readout.
+- **3D Text-to-Animation Video Generator with Character Voiceover, Custom Voice Upload & AI Voice Library (`src/components/TextToAnimationModal.tsx`, `src/utils/textToAnimationEngine.ts`, `src/utils/textToAnimationEngine.test.ts`)**:
+  - Implemented the 10-shot dark urban fantasy anime generator (*"Nocturne in the Rainy Bookstore"* featuring `Lin_Jie` and `Ji_Zhixiu` across `Rainy_Street_And_Alley` and `Bookstore_Interior`).
+  - Added **Character Voiceover** mapping, **Drag-and-Drop Custom Voice Upload** (`.mp3`/`.wav` validation and waveform duration detection), and a pre-generated **AI Character Voice Library** dropdown with 8 distinct character voice personas.
+- **Expanded Automated Test Suite (23 Test Suites)**:
+  - Added `src/utils/versionHistoryEngine.test.ts` and `src/utils/textToAnimationEngine.test.ts` to the `npm test` suite.
+
+---
+
 ## [2.1.0] - 2026-10-29
 
 ### Added & Improved

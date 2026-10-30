@@ -47,6 +47,11 @@ import {
   writeStorageJson,
   triggerBrowserDownload,
   GuideDeepLinkTarget,
+  canUndoHistory,
+  canRedoHistory,
+  pushVersionSnapshot,
+  stepUndoHistory,
+  stepRedoHistory,
 } from './utils';
 import {
   Wand2,
@@ -357,34 +362,39 @@ export default function App() {
             rotation: 0,
           },
         ],
+        stickers: [],
         filter: 'none',
+        aspectRatio: defaultTemplate.aspectRatio,
       },
     },
   ]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+  const layerEditDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Record a new snapshot in history (BUG FIX: captures currentImageSrc)
+  // Record a new snapshot in history (captures full memeState and branches cleanly when undone)
   const recordSnapshot = (
     note: string,
     updatedLayers = textLayers,
     currentFilter = filter,
-    imgSrc = currentImageSrc
+    imgSrc = currentImageSrc,
+    updatedStickers = stickers,
+    currentAspectRatio = aspectRatio
   ) => {
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const newSnap: VersionSnapshot = {
-      id: `v_${Date.now()}`,
-      tag: `v1.${versionHistory.length}.0`,
-      timestamp: time,
-      author: 'You (Creator)',
-      role: 'Meme Lord',
-      note,
-      memeState: {
-        templateId: activeTemplate?.id || 'custom',
-        imageSrc: imgSrc,
-        textLayers: JSON.parse(JSON.stringify(updatedLayers)),
-        filter: currentFilter,
-      },
-    };
-    setVersionHistory((prev) => [newSnap, ...prev]);
+    setVersionHistory((prev) => {
+      const result = pushVersionSnapshot(prev, historyIndex, {
+        note,
+        memeState: {
+          templateId: activeTemplate?.id || 'custom',
+          imageSrc: imgSrc,
+          textLayers: updatedLayers,
+          stickers: updatedStickers,
+          filter: currentFilter,
+          aspectRatio: currentAspectRatio,
+        },
+      });
+      return result.versionHistory;
+    });
+    setHistoryIndex(0);
   };
 
   // Select a template from catalog
@@ -541,18 +551,33 @@ export default function App() {
     recordSnapshot(`Applied Magic Caption: ${caption.vibe || 'AI Suggestion'}`, updatedLayers);
   };
 
+  // Schedule a debounced snapshot for rapid text/position edits
+  const scheduleDebouncedLayerSnapshot = (note: string, updatedLayers: TextLayer[]) => {
+    if (layerEditDebounceRef.current) {
+      clearTimeout(layerEditDebounceRef.current);
+    }
+    layerEditDebounceRef.current = setTimeout(() => {
+      recordSnapshot(note, updatedLayers);
+    }, 450);
+  };
+
   // Update specific text layer
   const handleUpdateLayer = (id: string, updates: Partial<TextLayer>) => {
-    setTextLayers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, ...updates } : l))
-    );
+    setTextLayers((prev) => {
+      const updated = prev.map((l) => (l.id === id ? { ...l, ...updates } : l));
+      const changedKeys = Object.keys(updates).join(', ');
+      scheduleDebouncedLayerSnapshot(`Edited text layer (${changedKeys})`, updated);
+      return updated;
+    });
   };
 
   // Update layer position (from canvas drag)
   const handleUpdateLayerPosition = (id: string, x: number, y: number) => {
-    setTextLayers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, x, y } : l))
-    );
+    setTextLayers((prev) => {
+      const updated = prev.map((l) => (l.id === id ? { ...l, x, y } : l));
+      scheduleDebouncedLayerSnapshot('Moved text layer on canvas', updated);
+      return updated;
+    });
   };
 
   // Add new custom text layer
@@ -602,21 +627,35 @@ export default function App() {
       scale: 1,
       rotation: 0,
     };
-    setStickers((prev) => [...prev, newSticker]);
+    const updatedStickers = [...stickers, newSticker];
+    setStickers(updatedStickers);
+    recordSnapshot(`Added sticker: ${label}`, textLayers, filter, currentImageSrc, updatedStickers);
   };
 
   const handleRemoveSticker = (id: string) => {
-    setStickers((prev) => prev.filter((s) => s.id !== id));
+    const updatedStickers = stickers.filter((s) => s.id !== id);
+    setStickers(updatedStickers);
+    recordSnapshot('Removed sticker', textLayers, filter, currentImageSrc, updatedStickers);
   };
 
-  // Rollback to historical snapshot (BUG FIX: properly restores custom imageSrc)
-  const handleRollback = (snap: VersionSnapshot) => {
+  // Rollback to historical snapshot (properly restores custom imageSrc, stickers, aspectRatio, and historyIndex)
+  const handleRollback = (snap: VersionSnapshot, explicitIndex?: number) => {
+    if (layerEditDebounceRef.current) {
+      clearTimeout(layerEditDebounceRef.current);
+      layerEditDebounceRef.current = null;
+    }
     if (snap.memeState.textLayers) {
-      setTextLayers(snap.memeState.textLayers);
+      setTextLayers(JSON.parse(JSON.stringify(snap.memeState.textLayers)));
       setSelectedLayerId(snap.memeState.textLayers[0]?.id || null);
+    }
+    if (snap.memeState.stickers !== undefined) {
+      setStickers(JSON.parse(JSON.stringify(snap.memeState.stickers)));
     }
     if (snap.memeState.filter) {
       setFilter(snap.memeState.filter);
+    }
+    if (snap.memeState.aspectRatio) {
+      setAspectRatio(snap.memeState.aspectRatio);
     }
     if (snap.memeState.imageSrc) {
       setCurrentImageSrc(snap.memeState.imageSrc);
@@ -627,7 +666,70 @@ export default function App() {
     } else {
       setActiveTemplate(null);
     }
+    if (typeof explicitIndex === 'number') {
+      setHistoryIndex(explicitIndex);
+    } else {
+      const idx = versionHistory.findIndex((v) => v.id === snap.id);
+      if (idx !== -1) {
+        setHistoryIndex(idx);
+      }
+    }
   };
+
+  const canUndo = canUndoHistory(versionHistory, historyIndex);
+  const canRedo = canRedoHistory(versionHistory, historyIndex);
+
+  const handleUndo = () => {
+    const res = stepUndoHistory(versionHistory, historyIndex);
+    if (res.targetSnapshot) {
+      handleRollback(res.targetSnapshot, res.historyIndex);
+    }
+  };
+
+  const handleRedo = () => {
+    const res = stepRedoHistory(versionHistory, historyIndex);
+    if (res.targetSnapshot) {
+      handleRollback(res.targetSnapshot, res.historyIndex);
+    }
+  };
+
+  // Keyboard shortcuts for Undo (Ctrl/Cmd+Z) and Redo (Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (activeTab !== 'meme') return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        if (canUndoHistory(versionHistory, historyIndex)) {
+          e.preventDefault();
+          const res = stepUndoHistory(versionHistory, historyIndex);
+          if (res.targetSnapshot) {
+            handleRollback(res.targetSnapshot, res.historyIndex);
+          }
+        }
+      } else if (
+        ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') ||
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'z')
+      ) {
+        if (canRedoHistory(versionHistory, historyIndex)) {
+          e.preventDefault();
+          const res = stepRedoHistory(versionHistory, historyIndex);
+          if (res.targetSnapshot) {
+            handleRollback(res.targetSnapshot, res.historyIndex);
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeTab, versionHistory, historyIndex]);
 
   // Open Checkout Modal for Crypto / UPI template unlock
   const handleOpenCheckout = (template: MemeTemplate) => {
@@ -822,7 +924,11 @@ export default function App() {
       return;
     }
 
-    if (!audioConfig.selectedEffectId && !audioConfig.customAudioUrl) {
+    if (
+      !audioConfig.selectedEffectId &&
+      !audioConfig.customAudioUrl &&
+      (!audioConfig.soundboardTriggers || audioConfig.soundboardTriggers.length === 0)
+    ) {
       return;
     }
 
@@ -1308,7 +1414,11 @@ export default function App() {
                   onUpdateLayerPosition={handleUpdateLayerPosition}
                   canvasRefOut={canvasRef}
                   isPlayingAudio={isPlayingAudio}
-                  activeAudioName={audioConfig.customAudioName || activeAudioEffect?.name}
+                  activeAudioName={
+                    audioConfig.soundboardTriggers && audioConfig.soundboardTriggers.length > 0
+                      ? `Soundboard (${audioConfig.soundboardTriggers.length} Frame Triggers)`
+                      : audioConfig.customAudioName || activeAudioEffect?.name
+                  }
                 />
 
                 {/* Quick Action Bar under Canvas */}
@@ -1330,12 +1440,25 @@ export default function App() {
                       Add Text
                     </button>
 
-                    {/* Audio Layer Quick Test Controls */}
-                    {(audioConfig.selectedEffectId || audioConfig.customAudioUrl) && (
+                    {/* Audio Layer / Soundboard Quick Test Controls */}
+                    {(audioConfig.selectedEffectId ||
+                      audioConfig.customAudioUrl ||
+                      (audioConfig.soundboardTriggers &&
+                        audioConfig.soundboardTriggers.length > 0)) && (
                       <div className="flex items-center gap-1.5 p-1 px-2 bg-slate-950 border border-amber-500/30 rounded-xl">
-                        <span className="text-sm">{activeAudioEffect?.emoji || '🎵'}</span>
-                        <span className="text-xs font-bold text-amber-300 hidden md:inline truncate max-w-[100px]">
-                          {audioConfig.customAudioName || activeAudioEffect?.name || 'Meme SFX'}
+                        <span className="text-sm">
+                          {audioConfig.soundboardTriggers &&
+                          audioConfig.soundboardTriggers.length > 0
+                            ? '🎛️'
+                            : activeAudioEffect?.emoji || '🎵'}
+                        </span>
+                        <span className="text-xs font-bold text-amber-300 hidden md:inline truncate max-w-[120px]">
+                          {audioConfig.soundboardTriggers &&
+                          audioConfig.soundboardTriggers.length > 0
+                            ? `${audioConfig.soundboardTriggers.length} Frame SFX`
+                            : audioConfig.customAudioName ||
+                              activeAudioEffect?.name ||
+                              'Meme SFX'}
                         </span>
                         <button
                           onClick={handlePlayMemeAudio}
@@ -1344,7 +1467,7 @@ export default function App() {
                               ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                               : 'bg-slate-800 hover:bg-slate-700 text-amber-300'
                           }`}
-                          title="Play Meme with attached audio"
+                          title="Play Meme with attached audio or Soundboard sequence"
                         >
                           {isPlayingAudio ? (
                             <>
@@ -1381,13 +1504,16 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 min-w-0">
-                    {/* Quick Video Export Button when Audio is Attached */}
-                    {(audioConfig.selectedEffectId || audioConfig.customAudioUrl) && (
+                    {/* Quick Video Export Button when Audio or Soundboard Triggers are Attached */}
+                    {(audioConfig.selectedEffectId ||
+                      audioConfig.customAudioUrl ||
+                      (audioConfig.soundboardTriggers &&
+                        audioConfig.soundboardTriggers.length > 0)) && (
                       <button
                         onClick={handleExportVideoWithAudio}
                         disabled={isExportingVideo}
                         className="px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs rounded-xl shadow-md shadow-purple-600/20 transition-all flex items-center gap-1.5"
-                        title="Export Video Meme with Audio (.webm)"
+                        title="Export Video Meme with Audio & Frame Triggers (.webm)"
                       >
                         <Film className="w-3.5 h-3.5 text-amber-300" />
                         <span className="hidden sm:inline">
@@ -1448,12 +1574,19 @@ export default function App() {
                   filter={filter}
                   onFilterChange={(f) => {
                     setFilter(f);
-                    recordSnapshot(`Applied filter: ${f}`);
+                    recordSnapshot(`Applied filter: ${f}`, textLayers, f);
                   }}
                   aspectRatio={aspectRatio}
                   onAspectRatioChange={(r) => {
                     setAspectRatio(r);
-                    recordSnapshot(`Changed aspect ratio to ${r}`);
+                    recordSnapshot(
+                      `Changed aspect ratio to ${r}`,
+                      textLayers,
+                      filter,
+                      currentImageSrc,
+                      stickers,
+                      r
+                    );
                   }}
                   onDownload={handleDownload}
                   onCopyToClipboard={handleCopyToClipboard}
@@ -1463,6 +1596,15 @@ export default function App() {
                   onExportVideoWithAudio={handleExportVideoWithAudio}
                   isExportingVideo={isExportingVideo}
                   exportProgress={exportProgress}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  currentSnapshotNote={versionHistory[historyIndex]?.note}
+                  currentSnapshotTag={versionHistory[historyIndex]?.tag}
+                  undoTargetNote={versionHistory[historyIndex + 1]?.note}
+                  redoTargetNote={versionHistory[historyIndex - 1]?.note}
+                  historyStepPosition={`${versionHistory.length - historyIndex}/${versionHistory.length}`}
                 />
               </div>
             </div>
