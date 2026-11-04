@@ -27,8 +27,9 @@ Please use one of the following private disclosure channels:
      `https://github.com/Gitinclo/MemeForge-AI-Sora-Video-Studio/security/advisories/new`
    - Click **"Report a vulnerability"** to open a private security advisory draft directly with the maintainer (`@Gitinclo`).
 
-2. **Direct Private Email to the Maintainer**:
-   - **Maintainer Security Contacts**: `lijogeorge1133@gmail.com` / `creatergame31@gmail.com`
+2. **Direct Private Email to the Administration / GM / Admin / Moderator Desk**:
+   - **Primary Administration / GM / Admin / Moderator & Security Contact**: `creatergame31@gmail.com` (Secondary Maintainer Contact: `lijogeorge1133@gmail.com`)
+   - **Roles & Authority**: Full System Administration, General Manager (GM), Super Admin RBAC, Content & Queue Moderator, and Security Incident Response
    - **Subject Line**: `[SECURITY VULNERABILITY] MemeForge Studio - <Brief Summary>`
 
 ### What to Include in Your Report

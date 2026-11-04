@@ -102,10 +102,30 @@ To prevent context-window pollution and training-cutoff hallucinations when modi
    - Reference `docs/api-schemas.md` for exact JSON request/response schemas across `/api/leo/generate-video`, `/api/leo/poll-video`, `/api/text-to-animation/generate-voice`, and `/api/video-pilot/compile-chapter`.
    - Use only `@google/genai` (`new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })`) inside `server.ts`. Never import `@google/genai` in client code.
 3. **Cloud Run & Node.js 22 Native ESM TypeScript Rules (`server.ts`)**:
-   - Production runs `node server.ts` directly. Every relative import reachable from `server.ts` MUST end with `.ts` (e.g., `./src/utils/aiVideoPilotEngine.ts`) and every TypeScript-only symbol MUST use `import type { ... }`.
+   - Production runs `node server.ts` directly (`engines.node >= 22.12.0`). Every relative import reachable from `server.ts` MUST end with `.ts` (e.g., `./src/utils/aiVideoPilotEngine.ts`) and every TypeScript-only symbol MUST use `import type { ... }`.
 4. **Decoupled Engine & UI Sub-Modules**:
    - **Canvas2D + Web Audio Frequency Analyzer**: `src/components/MemeCanvas.tsx` & `src/utils/memeAudioEngine.ts` (real-time `AnalyserNode` spectrum bar + wave overlay during active audio playback).
    - **Undo/Redo & Frame-Timestamped Soundboard**: `src/utils/versionHistoryEngine.ts`, `src/components/MemeToolbar.tsx`, and `src/components/MemeSoundboardPanel.tsx`.
    - **10-Shot 3D Text-to-Animation & Voiceover Studio**: `src/utils/textToAnimationEngine.ts` & `src/components/TextToAnimationGeneratorModal.tsx` (*"Nocturne in the Rainy Bookstore"* character sheets, AI Voice Library dropdown, `.mp3`/`.wav` drag-and-drop upload, and Gemini 2.5 Flash TTS).
    - **23-Shot Veo 3.1 Video Pilot & PyTorch DiT**: `src/utils/aiVideoPilotEngine.ts`, `video_pilot/`, `src/utils/pytorchDitBuildSpecEngine.ts`, and `pytorch_dit/`.
+5. **Cross-Language Routing Matrix (TypeScript `src/utils/` vs. Python `pytorch_dit/` & `video_pilot/`)**:
+   - **Do NOT assume `server.ts` spawns Python child processes in Cloud Run.** The web runtime (`server.ts` + Vite SPA) is 100% Node.js 22 + TypeScript.
+   - **When to edit TypeScript (`src/utils/aiVideoPilotEngine.ts`, `src/utils/pytorchDitBuildSpecEngine.ts`)**: Edit these files when changing interactive UI simulators, browser-side tensor shape verifiers, VRAM estimators, pre-flight cost calculators, or Express REST endpoints (`/api/video-pilot/*`). Verify with `npm test` (glob-driven `tsx --test "src/**/*.test.ts" "tests/**/*.test.ts"`).
+   - **When to edit Python (`pytorch_dit/*.py`, `video_pilot/*.py`, `pyproject.toml`)**: Edit these files when changing actual PyTorch 2.x CUDA/Triton kernels, Causal 3D VAE convolutions, FlashAttention/SDPA blocks, FP8 E4M3 quantization, or offline CLI batch rendering. Verify with `python3 -m unittest pytorch_dit/tests/thresholds.py` or `pytest` and benchmark via `python3 -m pytorch_dit.bench`.
+   - **Shared Data SSoT (`config/pricing.yaml`, `shots/shot_list.json`, `style/style_guide.md`)**: Both the TypeScript engines and Python CLI packages read/mirror these canonical specs. If you change Veo 3.1 pricing rates or the 23-shot episode manifest, update both the config files and the corresponding TypeScript/Python tests.
+
+6. **Tailwind CSS v4 Native Vite Pipeline (No Legacy PostCSS Configs)**:
+   - Styling uses `@tailwindcss/vite` (`^4.3.3`) with `@import "tailwindcss";` in `src/index.css`. Never create a Tailwind v3 `tailwind.config.js`, `postcss.config.js`, or re-add `autoprefixer`.
+7. **Mandatory 'tsx' Glob Test Execution & Silent Failure Prevention**:
+   - **The Trap**: Listing test files manually in `package.json` (`"test": "tsx --test file1.test.ts file2.test.ts..."`) silently omits any newly created engine test suite (e.g. `src/utils/newEngine.test.ts`), allowing broken code to pass CI.
+   - **The Strict Mandate**: All TypeScript unit and engine testing MUST run via quoted glob discovery:
+     ```bash
+     npm test # invokes: tsx --test "src/**/*.test.ts" "tests/**/*.test.ts"
+     ```
+   - **Execution Boundary**:
+     - **TypeScript Engines (`src/utils/*.test.ts`)**: Run with `tsx --test` in Node.js 22.
+     - **Python Kernels (`pytorch_dit/tests/` & `video_pilot/`)**: Run with `python3 -m unittest` or `pytest`.
+   - Never replace the glob pattern with explicit file names in `package.json`.
+
+
 

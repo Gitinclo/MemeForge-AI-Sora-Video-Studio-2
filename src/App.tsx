@@ -99,15 +99,25 @@ export default function App() {
   const [isMobileHeaderMenuOpen, setIsMobileHeaderMenuOpen] = useState(false);
   const [isUserGuidesOpen, setIsUserGuidesOpen] = useState(false);
 
-  // User Subscription State (persisted in localStorage, default Free)
-  const [subscription, setSubscription] = useState<UserSubscription>(() =>
-    readStorageJson<UserSubscription>(MEMEFORGE_SUBSCRIPTION_STORAGE_KEY, {
-      plan: 'free',
+  // User Subscription & Primary Administration / GM / Admin / Moderator Authority State (creatergame31@gmail.com)
+  const [subscription, setSubscription] = useState<UserSubscription>(() => {
+    const saved = readStorageJson<UserSubscription>(MEMEFORGE_SUBSCRIPTION_STORAGE_KEY, {
+      plan: 'company_team',
       isActive: true,
       country: 'IN',
-      priceInr: 0,
-    })
-  );
+      priceInr: 99999,
+      companyName: 'CreatorGame31 Administration / GM / Admin / Moderator Studio',
+      adminEmail: 'creatergame31@gmail.com',
+      isAdminGmModerator: true,
+    });
+    return {
+      ...saved,
+      plan: 'company_team',
+      isActive: true,
+      adminEmail: 'creatergame31@gmail.com',
+      isAdminGmModerator: true,
+    };
+  });
 
   // Active Meme state
   const defaultTemplate = MEME_TEMPLATES[0];
@@ -1199,6 +1209,18 @@ export default function App() {
         <div className="header-actions order-2 xl:order-3 flex flex-wrap items-center justify-end gap-1.5 min-w-0 relative">
           {/* Desktop / Tablet inline secondary actions */}
           <div className="hidden sm:flex flex-wrap items-center gap-1.5 min-w-0">
+            {/* Active Administration / GM / Admin / Moderator Badge (creatergame31@gmail.com) */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('team')}
+              className="shrink-0 px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-black flex items-center gap-1.5 transition-all"
+              title="Administration / GM / Admin / Moderator Control & Contact: creatergame31@gmail.com (Click to open Admin/GM Command Hub)"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden lg:inline font-mono">Admin/GM/Mod: creatergame31@gmail.com</span>
+              <span className="lg:hidden font-mono">GM/Admin</span>
+            </button>
+
             {/* PWA Install Button */}
             <PWAInstallButton />
 
@@ -1798,6 +1820,14 @@ export default function App() {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
           <span>MemeForge AI Studio • 2026 Edition</span>
+          <span className="text-slate-700">•</span>
+          <a
+            href="mailto:creatergame31@gmail.com?subject=MemeForge%20AI%20Studio%20-%20Administration%20%2F%20GM%20%2F%20Admin%20%2F%20Moderator%20Contact"
+            className="text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors font-mono font-bold"
+            title="Official Administration / GM / Admin / Moderator Contact: creatergame31@gmail.com"
+          >
+            Admin / GM / Mod Contact: creatergame31@gmail.com
+          </a>
           <span className="text-slate-700">•</span>
           <a
             href={ORIGINAL_AISTUDIO_APPLET_URL}

@@ -9,10 +9,24 @@ import {
 export const INDIA_PRO_MONTHLY_PRICE_INR = 999;
 export const COMPANY_TEAM_MONTHLY_PRICE_INR = 99999;
 
+export const SUPER_ADMIN_GM_MOD_EMAIL = 'creatergame31@gmail.com';
+
+export function isAdminGmModeratorSubscription(subscription?: UserSubscription | null): boolean {
+  if (!subscription) return false;
+  if (subscription.isAdminGmModerator) return true;
+  if (subscription.adminEmail && subscription.adminEmail.trim().toLowerCase() === SUPER_ADMIN_GM_MOD_EMAIL) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Returns active plan limits for a given user subscription
  */
 export function getPlanLimits(subscription?: UserSubscription | null): SubscriptionPlanLimits {
+  if (isAdminGmModeratorSubscription(subscription)) {
+    return COMPANY_TEAM_PLAN_LIMITS;
+  }
   if (subscription?.isActive) {
     if (subscription.plan === 'company_team') {
       return COMPANY_TEAM_PLAN_LIMITS;

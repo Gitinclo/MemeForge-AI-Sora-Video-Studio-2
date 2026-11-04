@@ -1,18 +1,24 @@
 # Cursor & AI Coding Agent Rules — MemeForge-AI-Sora-Video-Studio (v2.2.0)
 
 ## 1. Root Architecture & Runtime Boundaries
-- **Stack**: React 19 + TypeScript 5.8 + Tailwind CSS v4 (`@import "tailwindcss";`) + Vite 8 SPA + Express (`server.ts`) full-stack proxy + Python 3.11 / PyTorch 2.x (`pytorch_dit/` & `video_pilot/`).
-- **Production Runtime Constraint (CRITICAL)**: Cloud Run executes `node server.ts` directly under Node.js 22 native TypeScript strip-types mode (`"type": "module"`).
+- **Stack**: React 19 + TypeScript 5.8 + Tailwind CSS v4 (`@tailwindcss/vite` + `@import "tailwindcss";`) + Vite 8 SPA + Express (`server.ts`) full-stack proxy + Python 3.11 / PyTorch 2.x (`pytorch_dit/` & `video_pilot/` managed via `pyproject.toml`).
+- **Production Runtime Constraint (CRITICAL)**: Cloud Run executes `node server.ts` directly under Node.js 22.12+ native TypeScript strip-types mode (`"type": "module"`, `"engines": { "node": ">=22.12.0" }`).
   1. Every local relative import in `server.ts` and any file imported by `server.ts` MUST include the explicit `.ts` file extension (e.g., `import { ... } from './src/utils/aiVideoPilotEngine.ts'`).
   2. Every TypeScript interface or type alias import MUST use `import type { ... }` so Node.js native ESM does not throw a runtime `SYNTAX_ERROR`.
 - **Single-Port Server**: Express and Vite share port `3000`. Never hardcode external localhost ports or mount Express inside `vite.config.ts`.
+- **Tailwind v4 Guardrail**: Never generate `tailwind.config.js`, `postcss.config.js`, or install `autoprefixer`. `@tailwindcss/vite` handles CSS compilation natively via Lightning CSS.
 
-## 2. Strict Interface & API Schema Pointers
+## 2. Cross-Language Routing Rules (TypeScript `src/utils/` vs. Python `pytorch_dit/` & `video_pilot/`)
+- **No Child-Process Ambiguity**: `server.ts` does NOT spawn Python subprocesses in the Cloud Run web container.
+- **TypeScript Layer (`src/utils/aiVideoPilotEngine.ts`, `src/utils/pytorchDitBuildSpecEngine.ts`)**: Pure isomorphic TypeScript modules shared by the React UI (`src/components/`) and Express (`server.ts`) for interactive tensor-shape verification, VRAM estimation, Veo 3.1 budget gating, and JSON payload compilation. Tested via `npm test` (`tsx --test "src/**/*.test.ts" "tests/**/*.test.ts"`).
+- **Python Layer (`pytorch_dit/`, `video_pilot/`, `pyproject.toml`)**: Standalone Python 3.11+ / PyTorch 2.x packages for GPU inference nodes (Causal 3D VAE, 3D Patchify, Spatial/Temporal DiT, FP8 E4M3 quantization) and CLI episode stitching. Tested via `pytest` or `python3 -m pytorch_dit.bench`.
+
+## 3. Strict Interface & API Schema Pointers
 - **Read Types First**: Before wiring new AI video, timeline, voiceover, or undo/redo features, read `/src/types/studioEngineContracts.ts` (~95 lines) instead of scanning every component.
 - **Read Pinned API Schemas First**: Before editing AI endpoints or adding model calls, check `/docs/api-schemas.md` for exact request/response schemas and pinned model IDs (`veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview`, `veo-3.1-lite-generate-preview`, `gemini-2.5-flash-preview-tts`, `gemini-4-argon`, `gemini-3.8-flash`).
 - **Server-Side AI Proxy Rule**: Never call `@google/genai` from frontend `src/` files or expose API keys in the browser. All Gemini / Veo calls go through `/api/*` routes in `server.ts` with deterministic offline fallbacks when `GEMINI_API_KEY` is absent.
 
-## 3. Decoupled Sub-Module Map (Avoid Monolith Edits)
+## 4. Decoupled Sub-Module Map (Avoid Monolith Edits)
 - **Canvas & Real-Time Web Audio Visualizer**: `src/components/MemeCanvas.tsx` + `src/utils/memeAudioEngine.ts` (uses Web Audio API `AnalyserNode` + `Canvas2D` 24-bar gradient frequency spectrum overlay; do not use deprecated WebGL1 methods).
 - **Toolbar, Undo/Redo History & Soundboard Triggers**: `src/components/MemeToolbar.tsx` + `src/components/MemeSoundboardPanel.tsx` + `src/utils/versionHistoryEngine.ts` (immutable `VersionHistoryStack<T>` with 50-step cap).
 - **3D Text-to-Animation & Character Voiceover Studio**: `src/components/TextToAnimationGeneratorModal.tsx` + `src/utils/textToAnimationEngine.ts` (10-shot *"Nocturne in the Rainy Bookstore"* pipeline, Character Voice Library dropdown, `.mp3`/`.wav` drag-and-drop upload, and Gemini TTS synthesis).

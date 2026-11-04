@@ -155,6 +155,13 @@ export const LegalDocsModal: React.FC<LegalDocsModalProps> = ({
                   The Application and AI models are provided &quot;AS IS&quot; without warranties of any kind. We reserve the right to suspend or terminate access for violations of these Terms. Under no circumstances shall MemeForge maintainers be liable for incidental, special, or consequential damages. Maximum aggregate liability is strictly limited to amounts paid by you in the preceding 12 months.
                 </p>
               </section>
+
+              <section className="space-y-1.5">
+                <h4 className="text-sm font-bold text-white">6. Administration, GM, Admin &amp; Moderator Authority &amp; Contact</h4>
+                <p>
+                  Official studio administration, General Manager (GM) cluster oversight, Admin RBAC seat governance, and content moderation are governed by the primary authority account <code>creatergame31@gmail.com</code>. Direct Administration / GM / Admin / Moderator inquiries: <a href="mailto:creatergame31@gmail.com" className="text-amber-300 underline">creatergame31@gmail.com</a>.
+                </p>
+              </section>
             </div>
           ) : activeTab === 'privacy' ? (
             <div className="space-y-4">
@@ -184,9 +191,9 @@ export const LegalDocsModal: React.FC<LegalDocsModalProps> = ({
               </section>
 
               <section className="space-y-1.5">
-                <h4 className="text-sm font-bold text-white">4. Your Rights &amp; Contact Us (GDPR, CCPA &amp; DPDPA)</h4>
+                <h4 className="text-sm font-bold text-white">4. Your Rights &amp; Administration / GM / Admin / Moderator Contact (GDPR, CCPA &amp; DPDPA)</h4>
                 <p>
-                  You have the right to access, rectify, or erase your personal information. Client project data can be purged instantly by clearing browser site storage. For privacy or billing inquiries, contact us at <code>lijogeorge1133@gmail.com</code> or <code>creatergame31@gmail.com</code>.
+                  You have the right to access, rectify, or erase your personal information. Client project data can be purged instantly by clearing browser site storage. For Administration, GM, Admin, Moderator, privacy, or billing inquiries, contact the primary authority account at <code>creatergame31@gmail.com</code> (or secondary contact <code>lijogeorge1133@gmail.com</code>).
                 </p>
               </section>
             </div>
@@ -270,7 +277,7 @@ does not imply endorsement, sponsorship, or official affiliation by the author.
                     <strong>GitHub Private Security Advisory (Preferred):</strong> Report directly via <code>github.com/Gitinclo/MemeForge-AI-Sora-Video-Studio/security/advisories/new</code>
                   </li>
                   <li>
-                    <strong>Direct Maintainer Security Email:</strong> Send a private report to <code>lijogeorge1133@gmail.com</code> or <code>creatergame31@gmail.com</code> with subject <code>[SECURITY VULNERABILITY] MemeForge Studio</code>.
+                    <strong>Primary Administration / GM / Admin / Moderator Security Email:</strong> Send a private report to <code>creatergame31@gmail.com</code> (or <code>lijogeorge1133@gmail.com</code>) with subject <code>[SECURITY VULNERABILITY] MemeForge Studio</code>.
                   </li>
                 </ul>
               </section>

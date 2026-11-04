@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=70.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "memeforge-ai-video-engines"
+version = "2.2.0"
+description = "PyTorch 2.x Causal 3D VAE + Diffusion Transformer (pytorch_dit) and Veo 3.1 23-Shot AI Video Pilot (video_pilot)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "torch>=2.4.0,<3.0.0",
+  "triton>=3.0.0; sys_platform == 'linux'",
+  "numpy>=1.26.4",
+  "pyyaml>=6.0.2",
+  "google-genai>=1.0.0",
+]
+
+[project.optional-dependencies]
+text = [
+  "transformers>=4.44.0",
+  "sentencepiece>=0.2.0",
+]
+dev = [
+  "pytest>=8.3.0",
+  "ruff>=0.6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pytorch_dit*", "video_pilot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["pytorch_dit/tests"]
+python_files = ["thresholds.py", "test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "I", "UP"]

@@ -168,6 +168,8 @@ export interface UserSubscription {
   teamSeats?: number;
   cardLast4?: string;
   cardBin?: string;
+  adminEmail?: string;
+  isAdminGmModerator?: boolean;
 }
 
 export type ProductionJobStatus = 'rendering' | 'compositing' | 'in_review' | 'queued' | 'completed' | 'paused';
@@ -197,7 +199,19 @@ export interface CollaboratorPresence {
   id: string;
   name: string;
   email: string;
-  role: 'Owner' | 'Director' | 'VFX Artist' | 'Editor' | 'Sound Designer' | 'Reviewer' | 'Producer';
+  role:
+    | 'Administration / GM / Admin / Moderator'
+    | 'Administration'
+    | 'GM'
+    | 'Admin'
+    | 'Moderator'
+    | 'Owner'
+    | 'Director'
+    | 'VFX Artist'
+    | 'Editor'
+    | 'Sound Designer'
+    | 'Reviewer'
+    | 'Producer';
   avatarColor: string;
   status: 'active' | 'in_review' | 'rendering' | 'idle' | 'offline';
   currentActivity: string;

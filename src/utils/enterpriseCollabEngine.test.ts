@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  PRIMARY_SUPER_ADMIN_EMAIL,
+  PRIMARY_SUPER_ADMIN_ACCOUNT,
+  isSuperAdminGmModeratorAccount,
+  getAccountAuthorityProfile,
+  executeAdminGmModAction,
   INITIAL_TIMESTAMPED_COMMENTS,
   INITIAL_MERGE_CONFLICTS,
   INITIAL_CLOUD_CONNECTORS,
@@ -28,3 +33,29 @@ test('exportNleTimelineXml and exportCmx3600Edl: generate valid FCPXML and CMX 3
   assert.ok(edl.includes('FCM: NON-DROP FRAME'));
   assert.ok(edl.includes('ARRI_32K_OMNIMAX_PLATE_CAM_A_1000FPS.EXR'));
 });
+
+test('creatergame31@gmail.com has full Administration, GM, Admin, Moderator control and official contact authority', () => {
+  assert.equal(PRIMARY_SUPER_ADMIN_EMAIL, 'creatergame31@gmail.com');
+  assert.equal(isSuperAdminGmModeratorAccount('creatergame31@gmail.com'), true);
+  assert.equal(isSuperAdminGmModeratorAccount('  CREATERGAME31@GMAIL.COM '), true);
+  assert.equal(isSuperAdminGmModeratorAccount('guest@example.com'), false);
+
+  const profile = getAccountAuthorityProfile('creatergame31@gmail.com');
+  assert.equal(profile.email, 'creatergame31@gmail.com');
+  assert.deepEqual(profile.roles, ['Administration', 'GM', 'Admin', 'Moderator', 'Owner']);
+  assert.equal(profile.permissions.fullSystemAdministration, true);
+  assert.equal(profile.permissions.gmClusterOverride, true);
+  assert.equal(profile.permissions.adminRbacControl, true);
+  assert.equal(profile.permissions.moderatorContentAndQueueControl, true);
+  assert.equal(profile.permissions.unlimitedEnterpriseQuota, true);
+  assert.equal(profile.contact.primaryAdminEmail, 'creatergame31@gmail.com');
+  assert.equal(profile.contact.gmEscalationEmail, 'creatergame31@gmail.com');
+  assert.equal(profile.contact.moderatorContactEmail, 'creatergame31@gmail.com');
+  assert.ok(profile.contact.directMailtoHref.startsWith('mailto:creatergame31@gmail.com'));
+
+  const audit = executeAdminGmModAction('gm_cluster_override', '8-Node GPU Cluster', 'creatergame31@gmail.com');
+  assert.equal(audit.actorEmail, 'creatergame31@gmail.com');
+  assert.deepEqual(audit.actorRoles, ['Administration', 'GM', 'Admin', 'Moderator']);
+  assert.ok(audit.summary.includes('8-Node GPU Cluster'));
+});
+

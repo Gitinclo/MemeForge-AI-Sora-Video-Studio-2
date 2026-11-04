@@ -3,7 +3,17 @@ import { triggerBrowserDownload } from './sharedCoreEngine';
 export interface TimestampedComment {
   id: string;
   author: string;
-  role: 'Admin' | 'Editor' | 'Viewer' | 'Director' | 'VFX Artist';
+  authorEmail?: string;
+  role:
+    | 'Administration / GM / Admin / Moderator'
+    | 'Administration'
+    | 'GM'
+    | 'Admin'
+    | 'Moderator'
+    | 'Editor'
+    | 'Viewer'
+    | 'Director'
+    | 'VFX Artist';
   avatarColor: string;
   timecode: string;
   frameNumber: number;
@@ -46,9 +56,150 @@ export interface E2eeSecurityConfig {
   hardwareHsmBacked: boolean;
 }
 
-export type RbacStandardRole = 'Admin' | 'Editor' | 'Viewer';
+export type RbacStandardRole =
+  | 'Administration / GM / Admin / Moderator'
+  | 'Administration'
+  | 'GM'
+  | 'Admin'
+  | 'Moderator'
+  | 'Editor'
+  | 'Viewer';
+
+export const PRIMARY_SUPER_ADMIN_EMAIL = 'creatergame31@gmail.com';
+
+export interface AdminGmModeratorAccountProfile {
+  email: string;
+  displayName: string;
+  handle: string;
+  primaryTitle: 'Administration / GM / Admin / Moderator';
+  roles: ('Administration' | 'GM' | 'Admin' | 'Moderator' | 'Owner')[];
+  permissions: {
+    fullSystemAdministration: boolean;
+    gmClusterOverride: boolean;
+    adminRbacControl: boolean;
+    moderatorContentAndQueueControl: boolean;
+    unlimitedEnterpriseQuota: boolean;
+    billingAndVaultMasterKey: boolean;
+  };
+  contact: {
+    primaryAdminEmail: string;
+    gmEscalationEmail: string;
+    moderatorContactEmail: string;
+    securityAndAbuseEmail: string;
+    directMailtoHref: string;
+    slaResponseWindow: string;
+  };
+}
+
+export const PRIMARY_SUPER_ADMIN_ACCOUNT: AdminGmModeratorAccountProfile = {
+  email: PRIMARY_SUPER_ADMIN_EMAIL,
+  displayName: 'CreatorGame31 (Administration / GM / Admin / Moderator)',
+  handle: 'creatergame31@gmail.com',
+  primaryTitle: 'Administration / GM / Admin / Moderator',
+  roles: ['Administration', 'GM', 'Admin', 'Moderator', 'Owner'],
+  permissions: {
+    fullSystemAdministration: true,
+    gmClusterOverride: true,
+    adminRbacControl: true,
+    moderatorContentAndQueueControl: true,
+    unlimitedEnterpriseQuota: true,
+    billingAndVaultMasterKey: true,
+  },
+  contact: {
+    primaryAdminEmail: PRIMARY_SUPER_ADMIN_EMAIL,
+    gmEscalationEmail: PRIMARY_SUPER_ADMIN_EMAIL,
+    moderatorContactEmail: PRIMARY_SUPER_ADMIN_EMAIL,
+    securityAndAbuseEmail: PRIMARY_SUPER_ADMIN_EMAIL,
+    directMailtoHref:
+      'mailto:creatergame31@gmail.com?subject=MemeForge%20AI%20Studio%20-%20Administration%20%2F%20GM%20%2F%20Admin%20%2F%20Moderator%20Desk',
+    slaResponseWindow: '< 15 mins (24/7 Direct Administration / GM / Admin / Moderator Desk)',
+  },
+};
+
+export function isSuperAdminGmModeratorAccount(email?: string | null): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === PRIMARY_SUPER_ADMIN_EMAIL;
+}
+
+export function getAccountAuthorityProfile(email?: string | null): AdminGmModeratorAccountProfile {
+  if (!email || isSuperAdminGmModeratorAccount(email)) {
+    return PRIMARY_SUPER_ADMIN_ACCOUNT;
+  }
+  return {
+    email: email.trim().toLowerCase(),
+    displayName: email.trim(),
+    handle: email.trim(),
+    primaryTitle: 'Administration / GM / Admin / Moderator',
+    roles: ['Admin'],
+    permissions: {
+      fullSystemAdministration: false,
+      gmClusterOverride: false,
+      adminRbacControl: false,
+      moderatorContentAndQueueControl: false,
+      unlimitedEnterpriseQuota: false,
+      billingAndVaultMasterKey: false,
+    },
+    contact: PRIMARY_SUPER_ADMIN_ACCOUNT.contact,
+  };
+}
+
+export interface AdminGmModAuditRecord {
+  id: string;
+  actorEmail: string;
+  actorRoles: string[];
+  actionType:
+    | 'gm_cluster_override'
+    | 'moderator_content_gate'
+    | 'admin_rbac_grant'
+    | 'administration_system_lock'
+    | 'contact_escalation_ping';
+  target: string;
+  summary: string;
+  timestampIso: string;
+}
+
+export function executeAdminGmModAction(
+  actionType: AdminGmModAuditRecord['actionType'],
+  target: string,
+  actorEmail: string = PRIMARY_SUPER_ADMIN_EMAIL
+): AdminGmModAuditRecord {
+  const isSuper = isSuperAdminGmModeratorAccount(actorEmail);
+  const roles = isSuper
+    ? ['Administration', 'GM', 'Admin', 'Moderator']
+    : ['Moderator'];
+
+  const actionLabels: Record<AdminGmModAuditRecord['actionType'], string> = {
+    gm_cluster_override: 'GM Cluster Override: Allocated all 8 H100/RTX GPU nodes & prioritized queue',
+    moderator_content_gate: 'Moderator Content & Queue Gate: Verified & approved studio assets/comments',
+    admin_rbac_grant: 'Admin RBAC Control: Updated workspace member role & seat privileges',
+    administration_system_lock: 'Administration Master Control: Enforced zero-knowledge vault & security policy',
+    contact_escalation_ping: `Direct Administration/GM/Admin/Moderator Contact verified (${PRIMARY_SUPER_ADMIN_EMAIL})`,
+  };
+
+  return {
+    id: `adm-gm-mod-${Date.now()}`,
+    actorEmail: isSuper ? PRIMARY_SUPER_ADMIN_EMAIL : actorEmail,
+    actorRoles: roles,
+    actionType,
+    target,
+    summary: `${actionLabels[actionType]} → ${target}`,
+    timestampIso: new Date().toISOString(),
+  };
+}
 
 export const INITIAL_TIMESTAMPED_COMMENTS: TimestampedComment[] = [
+  {
+    id: 'cmt-0',
+    author: 'creatergame31@gmail.com',
+    authorEmail: 'creatergame31@gmail.com',
+    role: 'Administration / GM / Admin / Moderator',
+    avatarColor: 'bg-amber-500',
+    timecode: '00:00:01:00',
+    frameNumber: 60,
+    text: 'Administration / GM / Admin / Moderator Master Directive: 8-Node GPU Cluster, 50 TB Vault, and Moderation Guardrails locked & verified. Direct contact: creatergame31@gmail.com.',
+    createdAt: 'Just now',
+    resolved: false,
+  },
   {
     id: 'cmt-1',
     author: 'Elena Rostova',
@@ -90,7 +241,7 @@ export const INITIAL_MERGE_CONFLICTS: TimelineMergeConflict[] = [
     trackName: 'V1 · 32K 1000 FPS RAW Master',
     clipName: 'ARRI 32K Omnimax Plate (Cam A)',
     timecodeRange: '00:00:04:12 – 00:00:06:00',
-    localAuthor: 'Alex Rivera (Admin)',
+    localAuthor: 'creatergame31@gmail.com (Admin / GM / Mod)',
     remoteAuthor: 'Kenji Sato (Editor)',
     localChange: 'Ripple trim +12 frames (720,000,000,000 ticks)',
     remoteChange: 'Applied OCIO ACES 2.0 .cube LUT node',
@@ -103,7 +254,7 @@ export const INITIAL_MERGE_CONFLICTS: TimelineMergeConflict[] = [
     clipName: 'Studio Boom Stem 192 kHz',
     timecodeRange: '00:00:01:00 – 00:00:05:18',
     localAuthor: 'Samir Patel (Editor)',
-    remoteAuthor: 'Elena Rostova (Admin)',
+    remoteAuthor: 'creatergame31@gmail.com (Admin / GM / Mod)',
     localChange: 'VST3 FabFilter Pro-Q 3 +2.5 dB @ 3.2 kHz',
     remoteChange: 'Keyframe ducking -4.0 dB on Bus B1',
     status: 'pending',

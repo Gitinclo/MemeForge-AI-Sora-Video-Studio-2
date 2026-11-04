@@ -78,6 +78,9 @@ import {
   CloudStorageConnector,
   E2eeSecurityConfig,
   RbacStandardRole,
+  PRIMARY_SUPER_ADMIN_EMAIL,
+  PRIMARY_SUPER_ADMIN_ACCOUNT,
+  executeAdminGmModAction,
   INITIAL_TIMESTAMPED_COMMENTS,
   INITIAL_MERGE_CONFLICTS,
   INITIAL_CLOUD_CONNECTORS,
@@ -112,14 +115,35 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
   const [pendingOfflineDeltas, setPendingOfflineDeltas] = useState<number>(3);
   const [e2eeConfig, setE2eeConfig] = useState<E2eeSecurityConfig>(INITIAL_E2EE_CONFIG);
   const [cloudConnectors, setCloudConnectors] = useState<CloudStorageConnector[]>(INITIAL_CLOUD_CONNECTORS);
-  const [selectedRbacTier, setSelectedRbacTier] = useState<RbacStandardRole>('Admin');
+  const [selectedRbacTier, setSelectedRbacTier] = useState<RbacStandardRole>('Administration / GM / Admin / Moderator');
+  const [copiedAdminEmail, setCopiedAdminEmail] = useState<boolean>(false);
+  const [gmClusterOverrideActive, setGmClusterOverrideActive] = useState<boolean>(true);
+  const [moderatorGateStrict, setModeratorGateStrict] = useState<boolean>(true);
+  const [adminVaultLockActive, setAdminVaultLockActive] = useState<boolean>(true);
+
+  const handleCopyAdminContact = () => {
+    try {
+      navigator.clipboard?.writeText(PRIMARY_SUPER_ADMIN_EMAIL);
+    } catch {
+      // Fallback handled silently
+    }
+    setCopiedAdminEmail(true);
+    setProjectDashboardSuccessMessage(
+      `✓ Official Administration / GM / Admin / Moderator Contact copied: ${PRIMARY_SUPER_ADMIN_EMAIL}`
+    );
+    setTimeout(() => {
+      setCopiedAdminEmail(false);
+      setProjectDashboardSuccessMessage('');
+    }, 3500);
+  };
 
   const handleAddTimestampedComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCommentText.trim()) return;
     const item: TimestampedComment = {
       id: `cmt-${Date.now()}`,
-      author: 'Alex Rivera',
+      author: PRIMARY_SUPER_ADMIN_EMAIL,
+      authorEmail: PRIMARY_SUPER_ADMIN_EMAIL,
       role: selectedRbacTier,
       avatarColor: 'bg-amber-500',
       timecode: newCommentTimecode || '00:00:00:00',
@@ -279,6 +303,20 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
   // Collaborator Live Presence & Activity state
   const [collaborators, setCollaborators] = useState<CollaboratorPresence[]>([
     {
+      id: 'collab-0',
+      name: 'CreatorGame31 (Admin / GM / Mod)',
+      email: PRIMARY_SUPER_ADMIN_EMAIL,
+      role: 'Administration / GM / Admin / Moderator',
+      avatarColor: 'bg-amber-500',
+      status: 'active',
+      currentActivity: 'Supreme Administration, GM Cluster Control, Admin RBAC & Moderation Desk (Contact: creatergame31@gmail.com)',
+      activeWorkspaceId: 'ws-prod-1',
+      activeWorkspaceName: 'All 10 Workspaces (Global GM Override)',
+      currentClipOrProject: 'Global Cluster & Moderation Authority',
+      lastActive: 'Active now (24/7 Desk)',
+      assignedNode: 'All 8 GPU Nodes (GM Master Control)',
+    },
+    {
       id: 'collab-1',
       name: 'Alex Rivera',
       email: 'alex@memeforge.studio',
@@ -366,6 +404,19 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
 
   // Team Activity Logs & Audit Trail state
   const [activityLogs, setActivityLogs] = useState<TeamActivityLog[]>([
+    {
+      id: 'act-0',
+      workspaceId: 'ws-prod-1',
+      userId: 'collab-0',
+      userName: PRIMARY_SUPER_ADMIN_EMAIL,
+      userRole: 'Administration / GM / Admin / Moderator',
+      userAvatarColor: 'bg-amber-500',
+      action: 'Verified Administration, GM, Admin & Moderator Control + Official Contact',
+      target: `${PRIMARY_SUPER_ADMIN_EMAIL} (Full Cluster, Vault, Moderation & RBAC Authority)`,
+      category: 'rbac',
+      timestamp: 'Just now',
+      statusTag: 'GM / Admin / Mod Locked',
+    },
     {
       id: 'act-1',
       workspaceId: 'ws-prod-1',
@@ -495,7 +546,17 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'Director' | 'VFX Artist' | 'Editor' | 'Sound Designer' | 'Reviewer'>('Editor');
+  const [inviteRole, setInviteRole] = useState<
+    | 'Administration / GM / Admin / Moderator'
+    | 'GM'
+    | 'Admin'
+    | 'Moderator'
+    | 'Director'
+    | 'VFX Artist'
+    | 'Editor'
+    | 'Sound Designer'
+    | 'Reviewer'
+  >('Moderator');
   const [inviteSuccessMessage, setInviteSuccessMessage] = useState('');
 
   // Enterprise Multi-Workspace state
@@ -642,6 +703,17 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
 
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     {
+      id: 'm0',
+      name: 'CreatorGame31 (Primary Administration / GM / Admin / Moderator)',
+      email: PRIMARY_SUPER_ADMIN_EMAIL,
+      role: 'Administration / GM / Admin / Moderator',
+      avatarColor: 'bg-amber-500',
+      isOnline: true,
+      activity: 'Full System Administration, GM Cluster Override, Admin RBAC & Moderation Control • Contact: creatergame31@gmail.com',
+      contactEmail: PRIMARY_SUPER_ADMIN_EMAIL,
+      badges: ['Administration', 'GM', 'Admin', 'Moderator', 'Primary Contact'],
+    },
+    {
       id: 'm1',
       name: 'Alex Rivera',
       email: 'alex@memeforge.studio',
@@ -678,6 +750,61 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
       activity: 'Last active 35m ago',
     },
   ]);
+
+  const handleUpdateMemberRole = (memberId: string, nextRole: TeamMember['role']) => {
+    setTeamMembers((prev) =>
+      prev.map((m) => (m.id === memberId ? { ...m, role: nextRole } : m))
+    );
+    const target = teamMembers.find((m) => m.id === memberId);
+    const audit = executeAdminGmModAction(
+      'admin_rbac_grant',
+      `${target?.email || memberId} → ${nextRole}`,
+      PRIMARY_SUPER_ADMIN_EMAIL
+    );
+    setActivityLogs((prev) => [
+      {
+        id: audit.id,
+        workspaceId: activeWorkspaceId,
+        userId: 'collab-0',
+        userName: PRIMARY_SUPER_ADMIN_EMAIL,
+        userRole: 'Administration / GM / Admin / Moderator',
+        userAvatarColor: 'bg-amber-500',
+        action: 'Admin / GM RBAC Role Updated',
+        target: `${target?.name} (${target?.email}) assigned role: ${nextRole}`,
+        category: 'rbac',
+        timestamp: 'Just now',
+        statusTag: nextRole,
+      },
+      ...prev,
+    ]);
+    setInviteSuccessMessage(`✓ ${PRIMARY_SUPER_ADMIN_EMAIL} updated ${target?.name}'s role to ${nextRole}`);
+    setTimeout(() => setInviteSuccessMessage(''), 4000);
+  };
+
+  const handleDispatchAdminGmDirective = (
+    actionType: 'gm_cluster_override' | 'moderator_content_gate' | 'administration_system_lock',
+    targetDesc: string
+  ) => {
+    const audit = executeAdminGmModAction(actionType, targetDesc, PRIMARY_SUPER_ADMIN_EMAIL);
+    setActivityLogs((prev) => [
+      {
+        id: audit.id,
+        workspaceId: activeWorkspaceId,
+        userId: 'collab-0',
+        userName: PRIMARY_SUPER_ADMIN_EMAIL,
+        userRole: 'Administration / GM / Admin / Moderator',
+        userAvatarColor: 'bg-amber-500',
+        action: 'Executed Admin / GM / Mod Directive',
+        target: audit.summary,
+        category: 'rbac',
+        timestamp: 'Just now',
+        statusTag: 'GM / Admin / Mod',
+      },
+      ...prev,
+    ]);
+    setProjectDashboardSuccessMessage(`⚡ [${PRIMARY_SUPER_ADMIN_EMAIL}] ${audit.summary}`);
+    setTimeout(() => setProjectDashboardSuccessMessage(''), 4000);
+  };
 
   // Handle Team Member Invitation
   const handleAddMember = (e: React.FormEvent) => {
@@ -931,6 +1058,136 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* PRIMARY ADMINISTRATION / GM / ADMIN / MODERATOR CONTROL & CONTACT CONSOLE (creatergame31@gmail.com) */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-950/60 via-slate-900 to-indigo-950/80 border border-amber-500/50 shadow-2xl space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-sm sm:text-base font-black text-white">
+                  Administration • GM • Admin • Moderator Command &amp; Contact Desk
+                </span>
+                {PRIMARY_SUPER_ADMIN_ACCOUNT.roles.map((r) => (
+                  <span
+                    key={r}
+                    className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider"
+                  >
+                    {r}
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-slate-300">
+                Active Master Authority Account:{' '}
+                <strong className="text-amber-300 font-mono">{PRIMARY_SUPER_ADMIN_EMAIL}</strong> • Full System Administration, GM Cluster Override, Admin RBAC Seat Control, Content Moderation &amp; Official Studio Contact ({PRIMARY_SUPER_ADMIN_ACCOUNT.contact.slaResponseWindow})
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <a
+              href={PRIMARY_SUPER_ADMIN_ACCOUNT.contact.directMailtoHref}
+              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-lg shadow-amber-500/20 transition-all"
+              title="Send direct email to Administration / GM / Admin / Moderator (creatergame31@gmail.com)"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Contact Admin / GM / Mod ({PRIMARY_SUPER_ADMIN_EMAIL})</span>
+            </a>
+            <button
+              type="button"
+              onClick={handleCopyAdminContact}
+              className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-amber-500/40 text-amber-200 text-xs font-mono font-bold flex items-center gap-1.5 transition-colors"
+              title="Copy official Administration / GM / Admin / Moderator contact email"
+            >
+              <Copy className="w-3.5 h-3.5 text-amber-400" />
+              <span>{copiedAdminEmail ? 'Copied creatergame31@gmail.com!' : 'Copy Contact Email'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Interactive Administration / GM / Admin / Moderator Quick Controls */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
+          <button
+            type="button"
+            onClick={() => {
+              const next = !gmClusterOverrideActive;
+              setGmClusterOverrideActive(next);
+              handleDispatchAdminGmDirective(
+                'gm_cluster_override',
+                next ? 'GM 8-Node GPU Cluster Priority Override ENABLED' : 'GM Cluster Override set to Standard'
+              );
+            }}
+            className="p-2.5 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border border-amber-500/30 flex items-center justify-between gap-2 text-left transition-colors"
+          >
+            <div>
+              <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">GM Control</div>
+              <div className="font-bold text-white">8-Node GPU Cluster Override</div>
+            </div>
+            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-bold">
+              {gmClusterOverrideActive ? 'ACTIVE' : 'STANDBY'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const next = !moderatorGateStrict;
+              setModeratorGateStrict(next);
+              handleDispatchAdminGmDirective(
+                'moderator_content_gate',
+                next ? 'Strict Moderator Content & Queue Gate ENABLED' : 'Moderator Content Gate set to Advisory'
+              );
+            }}
+            className="p-2.5 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border border-cyan-500/30 flex items-center justify-between gap-2 text-left transition-colors"
+          >
+            <div>
+              <div className="text-[10px] font-mono uppercase text-cyan-400 font-bold">Moderator Control</div>
+              <div className="font-bold text-white">Content &amp; Queue Moderation</div>
+            </div>
+            <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-bold">
+              {moderatorGateStrict ? 'ENFORCED' : 'OPEN'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const next = !adminVaultLockActive;
+              setAdminVaultLockActive(next);
+              handleDispatchAdminGmDirective(
+                'administration_system_lock',
+                next ? 'Administration 50 TB Zero-Knowledge Vault Guard LOCKED' : 'Administration Vault Guard Unlocked'
+              );
+            }}
+            className="p-2.5 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border border-purple-500/30 flex items-center justify-between gap-2 text-left transition-colors"
+          >
+            <div>
+              <div className="text-[10px] font-mono uppercase text-purple-400 font-bold">Administration Control</div>
+              <div className="font-bold text-white">50 TB Vault &amp; Security Policy</div>
+            </div>
+            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
+              {adminVaultLockActive ? 'LOCKED' : 'OPEN'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('members')}
+            className="p-2.5 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border border-emerald-500/30 flex items-center justify-between gap-2 text-left transition-colors"
+          >
+            <div>
+              <div className="text-[10px] font-mono uppercase text-emerald-400 font-bold">Admin RBAC &amp; Contact</div>
+              <div className="font-bold text-white font-mono truncate">{PRIMARY_SUPER_ADMIN_EMAIL}</div>
+            </div>
+            <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">
+              MANAGE RBAC
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* Enterprise Plan Banner (Rs. 99,999/mo) or Upsell */}
       {isCompanyEnterprise ? (
         <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-purple-950/80 border border-cyan-500/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -2245,38 +2502,91 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
           )}
 
           <div className="space-y-3">
-            {teamMembers.map((member) => (
-              <div
-                key={member.id}
-                className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-2xl ${member.avatarColor} text-slate-950 font-black text-sm flex items-center justify-center shadow-md`}
-                  >
-                    {member.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">{member.name}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
-                        {member.role}
-                      </span>
+            {teamMembers.map((member) => {
+              const isPrimarySuperAdmin = member.email.toLowerCase() === PRIMARY_SUPER_ADMIN_EMAIL;
+              return (
+                <div
+                  key={member.id}
+                  className={`p-4 rounded-2xl border flex flex-col lg:flex-row lg:items-center justify-between gap-3 ${
+                    isPrimarySuperAdmin
+                      ? 'bg-gradient-to-r from-amber-950/40 via-slate-950 to-indigo-950/40 border-amber-500/60 shadow-lg'
+                      : 'bg-slate-950 border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-start sm:items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-2xl ${member.avatarColor} text-slate-950 font-black text-sm flex items-center justify-center shadow-md shrink-0`}
+                    >
+                      {member.name.slice(0, 2).toUpperCase()}
                     </div>
-                    <div className="text-[11px] text-slate-400">{member.email}</div>
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-white">{member.name}</span>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                            isPrimarySuperAdmin
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                              : 'bg-slate-800 text-slate-300'
+                          }`}
+                        >
+                          {member.role}
+                        </span>
+                        {member.badges?.map((badge) => (
+                          <span
+                            key={badge}
+                            className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono uppercase font-bold"
+                          >
+                            {badge}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300 font-mono">
+                        <span>{member.email}</span>
+                        {isPrimarySuperAdmin && (
+                          <>
+                            <span>•</span>
+                            <a
+                              href={PRIMARY_SUPER_ADMIN_ACCOUNT.contact.directMailtoHref}
+                              className="text-amber-300 hover:text-amber-200 underline underline-offset-2 font-bold"
+                            >
+                              Direct Admin / GM / Mod Contact ({PRIMARY_SUPER_ADMIN_EMAIL})
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    <span className="flex items-center gap-1.5 text-slate-400">
+                      <span
+                        className={`w-2 h-2 rounded-full ${member.isOnline ? 'bg-emerald-400' : 'bg-slate-600'}`}
+                      />
+                      <span>{member.activity}</span>
+                    </span>
+
+                    <select
+                      aria-label={`Change role for ${member.email}`}
+                      value={member.role}
+                      onChange={(e) => handleUpdateMemberRole(member.id, e.target.value as TeamMember['role'])}
+                      className="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono font-bold text-amber-300 focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="Administration / GM / Admin / Moderator">Administration / GM / Admin / Moderator</option>
+                      <option value="Administration">Administration</option>
+                      <option value="GM">GM (General Manager)</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Moderator">Moderator</option>
+                      <option value="Owner">Owner</option>
+                      <option value="Director">Director</option>
+                      <option value="VFX Artist">VFX Artist</option>
+                      <option value="Editor">Editor</option>
+                      <option value="Sound Designer">Sound Designer</option>
+                      <option value="Reviewer">Reviewer</option>
+                    </select>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1.5 text-slate-400">
-                    <span
-                      className={`w-2 h-2 rounded-full ${member.isOnline ? 'bg-emerald-400' : 'bg-slate-600'}`}
-                    />
-                    <span>{member.activity}</span>
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -2666,7 +2976,19 @@ export const TeamWorkspaceTab: React.FC<TeamWorkspaceTabProps> = ({
                     Studio Role &amp; Access Level:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {(['Director', 'VFX Artist', 'Editor', 'Sound Designer', 'Reviewer'] as const).map((role) => (
+                    {(
+                      [
+                        'Administration / GM / Admin / Moderator',
+                        'GM',
+                        'Admin',
+                        'Moderator',
+                        'Director',
+                        'VFX Artist',
+                        'Editor',
+                        'Sound Designer',
+                        'Reviewer',
+                      ] as const
+                    ).map((role) => (
                       <button
                         key={role}
                         type="button"
