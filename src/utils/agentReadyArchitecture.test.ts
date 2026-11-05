@@ -82,5 +82,33 @@ describe('Agent-Ready Architecture & Guardrail Verification Suite (v2.2.0)', () 
     assert.match(agentsMd, /tsx --test "src\/\*\*\/\*\.test\.ts" "tests\/\*\*\/\*\.test\.ts"/);
     assert.match(agentsMd, /silently omits any newly created engine test suite/);
   });
+
+  it('6. verifies all 10 Legal, Compliance, Tracking, Support, Governance, Architecture, and .github Template files exist and reference primary authority creatergame31@gmail.com', () => {
+    const requiredDocs = [
+      'LICENSE.md',
+      'CODE_OF_CONDUCT.md',
+      'PRIVACY.md',
+      'CHANGELOG.md',
+      'ROADMAP.md',
+      'SUPPORT.md',
+      'GOVERNANCE.md',
+      'ARCHITECTURE.md',
+      '.github/PULL_REQUEST_TEMPLATE.md',
+      '.github/ISSUE_TEMPLATE.md',
+    ];
+
+    for (const relFile of requiredDocs) {
+      const fullPath = path.join(rootDir, relFile);
+      assert.equal(fs.existsSync(fullPath), true, `${relFile} must exist on disk`);
+      const text = fs.readFileSync(fullPath, 'utf8');
+      assert.ok(text.trim().length > 200, `${relFile} must contain substantive documentation`);
+      assert.match(
+        text,
+        /creatergame31@gmail\.com/,
+        `${relFile} must include primary Administration / GM / Admin / Moderator contact creatergame31@gmail.com`
+      );
+    }
+  });
 });
+
 

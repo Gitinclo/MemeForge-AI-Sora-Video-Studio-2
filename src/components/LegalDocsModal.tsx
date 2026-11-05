@@ -299,14 +299,14 @@ does not imply endorsement, sponsorship, or official affiliation by the author.
           ) : (
             <div className="space-y-4">
               <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-200">
-                <strong>Apache License, Version 2.0 (January 2004):</strong> Full root <code>/LICENSE</code> file governing use, reproduction, and distribution.
+                <strong>Apache License, Version 2.0 (<code>/LICENSE</code> &amp; <code>/LICENSE.md</code>):</strong> Full open-source license and complete repository governance, roadmap, support &amp; architecture documentation index.
               </div>
               <pre className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-[11px] leading-relaxed font-mono text-slate-200 whitespace-pre-wrap overflow-x-auto">
 {`Apache License
 Version 2.0, January 2004
 http://www.apache.org/licenses/
 
-Copyright 2026 MemeForge AI Studio Contributors (Gitinclo)
+Copyright 2026 MemeForge AI Studio Contributors (Administration / GM / Admin / Moderator: creatergame31@gmail.com)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -320,6 +320,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.`}
               </pre>
+
+              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5">
+                <h4 className="text-sm font-bold text-white">
+                  Repository Legal, Governance, Tracking &amp; Automation Directory (v2.3.0)
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                    <div className="font-mono font-bold text-emerald-400">LICENSE.md &amp; CODE_OF_CONDUCT.md</div>
+                    <div className="text-slate-400 mt-0.5">Apache 2.0 legal terms &amp; Contributor Covenant v2.1 community standards.</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                    <div className="font-mono font-bold text-cyan-400">PRIVACY.md &amp; SECURITY.md</div>
+                    <div className="text-slate-400 mt-0.5">GDPR/CCPA/DPDPA privacy policy, NIST Post-Quantum Vault &amp; private disclosure SLA.</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                    <div className="font-mono font-bold text-amber-400">CHANGELOG.md &amp; ROADMAP.md</div>
+                    <div className="text-slate-400 mt-0.5">Chronological v1.0.0–v2.3.0 history &amp; 2027–2060/01/01 engineering milestones.</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                    <div className="font-mono font-bold text-purple-400">SUPPORT.md, GOVERNANCE.md &amp; ARCHITECTURE.md</div>
+                    <div className="text-slate-400 mt-0.5">CLI diagnostics, RBAC authority (creatergame31@gmail.com) &amp; full-stack topology.</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 sm:col-span-2">
+                    <div className="font-mono font-bold text-indigo-400">.github/PULL_REQUEST_TEMPLATE.md &amp; .github/ISSUE_TEMPLATE.md</div>
+                    <div className="text-slate-400 mt-0.5">Automated PR verification checklists (npm test glob runner, tsc --noEmit, .ts ESM imports) and structured bug/feature/RFC forms.</div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

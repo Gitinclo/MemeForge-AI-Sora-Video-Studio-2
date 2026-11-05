@@ -24,3 +24,6 @@
 - **3D Text-to-Animation & Character Voiceover Studio**: `src/components/TextToAnimationGeneratorModal.tsx` + `src/utils/textToAnimationEngine.ts` (10-shot *"Nocturne in the Rainy Bookstore"* pipeline, Character Voice Library dropdown, `.mp3`/`.wav` drag-and-drop upload, and Gemini TTS synthesis).
 - **Veo 3.1 23-Shot 3-Minute AI Video Pilot**: `src/components/AiVideoPilotModal.tsx` + `src/utils/aiVideoPilotEngine.ts` + `video_pilot/` + `config/pricing.yaml` + `shots/shot_list.json`.
 - **PyTorch DiT & Sora 2 Ultra Simulators**: `src/components/PyTorchDitBuildSpecModal.tsx` + `src/utils/pytorchDitBuildSpecEngine.ts` + `src/utils/sora2UltraEngine.ts` + `pytorch_dit/`.
+- **2060/01/01 Architecture & Full-Stack Future-Proofing Workbench (`v2.3.0`)**: `src/components/FutureProof2060Modal.tsx` + `src/utils/futureProof2060Engine.ts` + `src/utils/futureProof2060Engine.test.ts` (128-bit Y2038/Y2060 `BigInt` timebase, NIST FIPS 203/204 `ML-KEM-1024`/`ML-DSA-87` Post-Quantum Vault, 64K/128K Photonic-Quantum DiT Simulator, and root Administration / GM / Admin / Moderator authority `creatergame31@gmail.com`).
+- **Governance, Architecture & Templates**: See `ARCHITECTURE.md`, `GOVERNANCE.md`, `ROADMAP.md`, `SUPPORT.md`, `LICENSE.md`, `CODE_OF_CONDUCT.md`, `PRIVACY.md`, `CHANGELOG.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and `.github/ISSUE_TEMPLATE.md`.
+

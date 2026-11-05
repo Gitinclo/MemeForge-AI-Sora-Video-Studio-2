@@ -126,6 +126,12 @@ To prevent context-window pollution and training-cutoff hallucinations when modi
      - **TypeScript Engines (`src/utils/*.test.ts`)**: Run with `tsx --test` in Node.js 22.
      - **Python Kernels (`pytorch_dit/tests/` & `video_pilot/`)**: Run with `python3 -m unittest` or `pytest`.
    - Never replace the glob pattern with explicit file names in `package.json`.
+8. **2060/01/01 Architecture & Full-Stack Future-Proofing (`v2.3.0`)**:
+   - **Engine & Tests**: `src/utils/futureProof2060Engine.ts` + `src/utils/futureProof2060Engine.test.ts` and `src/components/FutureProof2060Modal.tsx`.
+   - **128-Bit Y2038/Y2060 Timebase**: `EPOCH_2060_ISO = '2060-01-01T00:00:00.000Z'` (`2,840,140,800n` Unix seconds) at `120,000,000,000n` ticks/sec (`BigInt` sub-frame arithmetic, zero 32-bit Y2038 overflow, up to `16,000 FPS` and `1,000h`).
+   - **NIST Post-Quantum Cryptography (PQC)**: `ML-KEM-1024` (FIPS 203) + `ML-DSA-87` (FIPS 204) + `SLH-DSA` (FIPS 205) C2PA v3.0 provenance manifests.
+   - **Primary Administration / GM / Admin / Moderator Control & Contact**: `creatergame31@gmail.com` (`src/utils/enterpriseCollabEngine.ts`, `src/utils/subscriptionUtils.ts`, `src/utils/futureProof2060Engine.ts`).
+
 
 
 

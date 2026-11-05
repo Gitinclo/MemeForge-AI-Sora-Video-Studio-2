@@ -26,6 +26,8 @@ export * from './userGuidesEngine';
 export * from './aiVideoPilotEngine';
 export * from './textToAnimationEngine';
 export * from './versionHistoryEngine';
+export * from './futureProof2060Engine';
+
 
 
 

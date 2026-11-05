@@ -1,87 +1,60 @@
-# Dev Server Startup Fix & AI Video Pilot Backend Routes
+# MemeForge AI Studio — 2060/01/01 Architecture & Full-Stack Future-Proofing Implementation Plan (`v2.3.0`)
 
-Resolves the development server startup crash when `GEMINI_API_KEY` is unset in the environment by switching to lazy, fault-tolerant Gemini SDK initialization on port 3000, while adding `/api/health` readiness diagnostics and server-side AI Video Pilot endpoints.
-
-## User Review & Critical Decisions
-
-> [!IMPORTANT]
-> Both architectural choices were confirmed during Phase 1 clarification and are incorporated into this plan.
-
-- **Confirmed Decision 1 (Lazy SDK Initialization)**: Lazy-initialize the `@google/genai` client only when a valid `GEMINI_API_KEY` is present so the Express + Vite middleware server always starts cleanly on `0.0.0.0:3000` with graceful deterministic fallbacks when the key is unset.
-- **Confirmed Decision 2 (Health & AI Video Pilot Endpoints)**: Expose a `/api/health` server readiness endpoint alongside `/api/video-pilot/compile-chapter` and `/api/video-pilot/pricing` routes backing the AI Video Pilot workbench.
+## Executive Summary
+This implementation plan upgrades **MemeForge AI Studio** across the entire stack—TypeScript browser/server engines, Express API layer, interactive studio workbenches, and Python/PyTorch DiT specifications—to achieve **2060/01/01 Full-Stack Future-Proofing Compliance** under the primary **Administration / GM / Admin / Moderator** authority of `creatergame31@gmail.com`.
 
 ---
 
-## 1. Overview & Core Concept
+## 1. Six Pillars of the 2060/01/01 Architecture Upgrade
 
-- **What It Does**: Eliminates the top-level `new GoogleGenAI({ apiKey: '' })` constructor exception that prevented `tsx server.ts` from binding to port `3000` when `GEMINI_API_KEY` is missing or empty, and connects the AI Video Pilot workbench to live server-side chapter-to-shot compilation and readiness endpoints.
-- **Target Audience / Persona**: Creators, technical directors, and developers running MemeForge AI & LEO Video Studio in local or cloud sandbox environments with or without an active Gemini API key configured.
-- **Key Value**: Guaranteed zero-crash server startup on port `3000`, transparent API readiness reporting, and server-assisted 23-shot episode compilation using `gemini-3.8-flash` (with deterministic fallback when running without an API key).
+### Pillar 01: 128-Bit Y2038 & Y2060 Temporal Epoch Engine (`2060-01-01T00:00:00.000Z`)
+- **Problem**: Legacy 32-bit signed Unix timestamps overflow on `2038-01-19T03:14:07Z` (`2,147,483,647` seconds), and IEEE-754 64-bit floats lose sub-frame tick precision on multi-decade timelines or ultra-high frame rates (`1,000 FPS` to `16,000 FPS`).
+- **2060/01/01 Architecture**:
+  - Canonical target epoch: **`2060-01-01T00:00:00.000Z`** (`2,840,140,800n` Unix seconds — `692,657,153n` seconds past the 32-bit Y2038 barrier).
+  - Native `BigInt` 128-bit integer timebase at **`120,000,000,000n` ticks/second** (sub-nanosecond / picosecond deterministic frame-lock) with zero floating-point drift across `100-hour` to `1,000-hour` timelines and frame rates up to **`16,000 FPS`**.
+  - Monotonic TAI/UTC leap-second immunization for long-horizon distributed rendering and archival playback.
+
+### Pillar 02: NIST Post-Quantum Cryptography (PQC) & Zero-Knowledge Vault
+- **Problem**: Classical RSA-2048 and ECDSA P-256 signatures face Shor's algorithm cryptanalysis well before 2060 ("harvest now, decrypt later" risk for enterprise studio masters).
+- **2060/01/01 Architecture**:
+  - **Key Encapsulation**: **NIST FIPS 203 `ML-KEM-1024` (CRYSTALS-Kyber)** hybrid key exchange paired with `X25519` and `AES-256-GCM` authenticated payload encryption.
+  - **Digital Signatures**: **NIST FIPS 204 `ML-DSA-87` (CRYSTALS-Dilithium)** + **FIPS 205 `SLH-DSA-SHA2-256s` (SPHINCS+)** for immutable C2PA v3.0 content provenance, LoRA adapter weight signing, and RBAC command verification.
+  - **Primary Root Authority**: Bound to `creatergame31@gmail.com` (**Administration / GM / Admin / Moderator Control & Official Contact**).
+
+### Pillar 03: Exascale Photonic-Quantum DiT Compute Fabric
+- **Problem**: Copper interconnects and dense quadratic attention bottleneck multi-node Diffusion Transformers when scaling from `32K` (`32000×32000`) to `64K` (`61440×32400`) and `128K` (`122880×64800`) volumetric light-fields.
+- **2060/01/01 Architecture**:
+  - Co-Packaged Silicon Photonics (`1.6 Pbps` optical wave-division multiplexing per pod) with **Hierarchical Spatio-Temporal Ring-Attention** (`O(N)` per-node activation memory, zero full `N×N` materialization).
+  - Mixed-precision **FP4 (E2M1) / FP8 (E4M3)** micro-scaled weights with **BF16** anchor preservation on input patch embeddings, `adaLN-Zero` timestep conditioning, final linear projections, and Causal 3D VAE decoding.
+
+### Pillar 04: 64K / 128K Volumetric Light-Field & 16,000 FPS NLE Pipeline
+- **Problem**: Future spatial displays and holographic domes require multi-view light-field streams beyond flat 2D raster frames.
+- **2060/01/01 Architecture**:
+  - Backward-compatible extension of the **Sora 2 Ultra 32K · 1000 FPS · 100-Hour** engine to support **64K (`61440×32400`)** and **128K (`122880×64800`)** 6DoF Neural Gaussian / Light-Field streams at up to **16,000 FPS** with **384 kHz / 64-bit float** spatial ambisonic audio.
+
+### Pillar 05: Zero-Drift Isomorphic Runtime & Self-Healing Agentic Boundaries
+- **Problem**: Monolithic files, implicit dependencies, and unpinned API schemas cause context pollution and silent test failures over multi-year maintenance cycles.
+- **2060/01/01 Architecture**:
+  - Strict 1:1 decoupled engine-to-test architecture (`src/utils/*Engine.ts` + `src/utils/*Engine.test.ts`) verified via quoted glob runner (`tsx --test "src/**/*.test.ts" "tests/**/*.test.ts"`).
+  - Node.js `>=22.12.0` native ESM runtime (`tsx server.ts`) with explicit `.ts` relative import extensions and `import type` separation.
+  - Pinned live API schemas in `docs/api-schemas.md` and compact contracts in `src/types/studioEngineContracts.ts`.
+
+### Pillar 06: Universal Forward-Compatible API & Multi-Cloud Orbital Edge Delivery
+- **Problem**: Model endpoints and CDN protocols evolve rapidly across terrestrial and LEO satellite edge networks.
+- **2060/01/01 Architecture**:
+  - Versioned capability negotiation across `/api/leo/*`, `/api/video-pilot/*`, `/api/text-to-animation/*`, and `/api/future-proof-2060/*` with deterministic offline/fallback synthesizers so the studio remains 100% functional even in air-gapped or zero-connectivity environments.
 
 ---
 
-## 2. User Experience & Visual Design
+## 2. File-by-File Implementation Matrix
 
-- **Key User Flows**:
-  1. **Zero-Config Startup**: When the application starts, the Express + Vite server immediately binds to `0.0.0.0:3000` regardless of whether `GEMINI_API_KEY` is set.
-  2. **AI Video Pilot Chapter Compilation**: Inside the **AI Video Pilot (Veo 3.1 · 3-Min Episode)** modal, clicking **Compile Chapter into 23 Shots (180s)** dispatches the chapter text to `/api/video-pilot/compile-chapter` (falling back seamlessly to the local compiler if offline) and updates the 23-shot storyboard player and cost table.
-- **Visual Identity & Theme**:
-  - *Aesthetic Direction*: High-contrast studio console with single-elevation surfaces and clean typographic hierarchy.
-  - *Color Palette & Mood*: Deep slate studio surfaces (`#0F172A`, `#020617`), semantic emerald (`#16A34A`) for verified budget/gate states, warm amber (`#D97706`) for Veo 3.1 pilot controls, and crimson (`#DC2626`) for hard budget-cap or license blockers.
-  - *Typography & Hierarchy*: Clean sans-serif headings paired with strict tabular monospace numerals (`font-mono tabular-nums`) across all cost, duration, and shot-timer readouts.
-  - *Component Styling & Layout*: Single-level bordered panels (`border-slate-800`), compact data rows with right-aligned financial figures, and unboxed inline metadata separators (`·`).
-- **Interactive Feedback & Motion**: Instantaneous tab switching, smooth 24fps HTML5 canvas storyboard playback, and clear inline status feedback when compiling chapters or exporting `costs.csv`.
-
----
-
-## 3. Key Product Decisions & Trade-Offs
-
-- **Decision 1: Lazy On-Demand `GoogleGenAI` Client Factory**
-  - *Chosen Approach*: Replace the eager top-level `const ai = new GoogleGenAI({ apiKey })` call with a `getGenAiClient()` helper that returns `null` when `GEMINI_API_KEY` is absent or a placeholder, and instantiates `GoogleGenAI` inside a `try/catch` block only when a valid key is present.
-  - *Why*: Top-level instantiation crashes Node.js before `startServer()` can mount Vite middlewares or bind port `3000`.
-  - *Alternatives Considered*: Passing a dummy placeholder string to the constructor at startup was rejected because future SDK validations or accidental network calls with a fake key produce noisy runtime errors.
-- **Decision 2: Server-Backed Chapter-to-Shot Compilation with Deterministic Fallback**
-  - *Chosen Approach*: Add `POST /api/video-pilot/compile-chapter` using `gemini-3.8-flash` structured JSON output when an API key is configured, paired with the deterministic 23-shot compiler (`180s` total duration) when running in zero-key mode.
-  - *Why*: Ensures the 23-shot animated episode workflow works both with live Gemini structured generation and in offline/private testing environments.
-
----
-
-## 4. Technical Architecture & Data Strategy *(Technical Reference)*
-
-- **Architecture & Component Diagram**:
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                     Client SPA (Vite + React 19)                         │
-│                                                                          │
-│  ┌────────────────────────────┐      ┌────────────────────────────────┐  │
-│  │      LeoStudioTab          │─────▶│       AiVideoPilotModal        │  │
-│  │ (32K / 8K / Post-Sora Hub) │      │  - 23-Shot Animatic Canvas     │  │
-│  └────────────────────────────┘      │  - $500 Atomic Budget Guard    │  │
-│                                      │  - 5-Clause License Analyzer   │  │
-│                                      └───────────────┬────────────────┘  │
-└──────────────────────────────────────────────────────┼───────────────────┘
-                                                       │ HTTP JSON (/api/*)
-                                                       ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│                Express + Vite Middleware Server (Port 3000)              │
-│                                                                          │
-│  ┌────────────────────────────┐      ┌────────────────────────────────┐  │
-│  │   getGenAiClient() Guard   │      │  /api/health                   │  │
-│  │ (Lazy Init / Null-Safe)    │      │  /api/video-pilot/pricing      │  │
-│  └─────────────┬──────────────┘      │  /api/video-pilot/compile      │  │
-│                │                     └───────────────┬────────────────┘  │
-│                ▼                                     ▼                   │
-│  ┌────────────────────────────┐      ┌────────────────────────────────┐  │
-│  │  @google/genai SDK         │      │  Deterministic Fallback Engine │  │
-│  │  (gemini-3.8-flash JSON)   │      │  (23 Shots · 180s · Veo Rates) │  │
-│  └────────────────────────────┘      └────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
-- **Data Model & State**:
-  - `ServerHealthStatus`: `{ status: 'ok', port: number, geminiConfigured: boolean, timestamp: string }`.
-  - `PilotShotSpec`: `{ shot_id, duration_s: 4 | 6 | 8, resolution: '720p' | '1080p', model_tier: 'lite' | 'fast' | 'standard', characters, location, action, dialogue, camera, prompt, seed, reference_image_ids, transition_from_prev }`.
-- **Interactive Component & State Mapping**:
-  - **Server Startup (`startServer`)**: Mounts `/api/health`, `/api/video-pilot/pricing`, `/api/video-pilot/compile-chapter`, and existing studio routes before attaching `vite.middlewares` and binding `0.0.0.0:3000`.
-  - **Chapter Compilation Handler (`handleCompileChapter`)**: Sends chapter prose to `POST /api/video-pilot/compile-chapter`, validates the returned 23 shots against the schema, resets `activeShotIndex` to `0`, and starts the 2.5D canvas animatic loop.
+| Layer | File Path | Upgrade Responsibility |
+| :--- | :--- | :--- |
+| **Contracts** | `src/types/studioEngineContracts.ts` | Add `FutureProof2060PillarContract`, `Epoch2060TemporalComplianceReport`, `PostQuantumHandshakeManifest`, `PhotonicQuantumClusterMetrics`, and `FullStack2060ReadinessAuditReport` |
+| **Core Engine** | `src/utils/futureProof2060Engine.ts` | Pure TypeScript 2060/01/01 Future-Proofing Engine: 128-bit `BigInt` Y2038/Y2060 epoch verifier, NIST `ML-KEM-1024`/`ML-DSA-87` handshake generator, Photonic-Quantum 32K/64K/128K cluster calculator, and 100/100 full-stack audit runner |
+| **Unit Tests** | `src/utils/futureProof2060Engine.test.ts` | Comprehensive unit test suite verifying Y2038/Y2060 `BigInt` arithmetic, PQC manifest generation for `creatergame31@gmail.com`, cluster telemetry math, and audit invariants |
+| **2026–2060 Bridge** | `src/utils/engineMigration2026.ts` & `src/components/EngineHub2026Modal.tsx` | Connect the 2026 Engine Upgrade Hub directly to the 2060/01/01 Long-Horizon Architecture Roadmap |
+| **Interactive Workbench** | `src/components/FutureProof2060Modal.tsx` | Interactive **2060/01/01 Architecture & Full-Stack Future-Proofing Workbench** with live Y2060 Timebase Verifier, PQC Key Rotation Simulator, Photonic-Quantum Compute Planner, and Blueprint Exporter |
+| **Studio Integration** | `src/App.tsx` & `src/components/LeoStudioTab.tsx` | Top-level header launch button (`2060/01/01 Plan`) and LEO Video Studio toolbar integration |
+| **Backend API** | `server.ts` & `docs/api-schemas.md` | Express routes `GET /api/future-proof-2060/blueprint` and `POST /api/future-proof-2060/audit` + pinned schema documentation |
+| **Documentation** | `README.md` & `AGENTS.md` | Full documentation of the `v2.3.0` 2060/01/01 Architecture & Full-Stack Future-Proofing suite |

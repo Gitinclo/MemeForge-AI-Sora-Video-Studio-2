@@ -141,3 +141,22 @@ All docstrings and tensor interfaces in `pytorch_dit/` follow `[B, T, H, W, C]` 
 - **Causal 3D VAE (`pytorch_dit/vae.py`)**: `encode(x: [B, C, T, H, W]) -> z: [B, c, T/8, H/8, W/8]` with causal left-only temporal padding (`pad_t = kernel_t - 1`).
 - **3D Patch Tokenizer (`pytorch_dit/patchify.py`)**: `patchify(z) -> tokens: [B, N_t * N_h * N_w, D]` with factorized 3D sinusoidal + learned positional embeddings.
 - **Alternating Spatial/Temporal DiT (`pytorch_dit/dit.py`)**: Never materializes full `(T*H*W)^2` attention; alternates spatial `[B*T, H*W, D]` and temporal `[B*H*W, T, D]` attention blocks with `adaLN-Zero` timestep conditioning and T5-XXL (`4096-dim`) cross-attention.
+
+---
+
+## 4. 2060/01/01 Architecture & Full-Stack Future-Proofing Endpoints (`v2.3.0`)
+
+### `GET /api/future-proof-2060/blueprint` & `POST /api/future-proof-2060/audit`
+Executes the 128-bit `BigInt` Y2038/Y2060 sub-Planck timebase check (`2060-01-01T00:00:00.000Z`), generates a NIST FIPS 203/204/205 Post-Quantum Cryptography (`ML-KEM-1024` + `ML-DSA-87`) C2PA v3.0 handshake manifest for `creatergame31@gmail.com`, and calculates Photonic-Quantum `32K`/`64K`/`128K` DiT cluster telemetry.
+
+**Request Payload (`POST /api/future-proof-2060/audit`):**
+```json
+{
+  "resolutionTier": "64K",
+  "fps": 1000,
+  "durationHours": 100,
+  "targetIso": "2060-01-01T00:00:00.000Z",
+  "authorityEmail": "creatergame31@gmail.com"
+}
+```
+

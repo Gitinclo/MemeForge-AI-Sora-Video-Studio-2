@@ -108,3 +108,80 @@ export interface VersionHistoryStateContract<T = StudioDesignSnapshotContract> {
   canUndo: boolean;
   canRedo: boolean;
 }
+
+/** 5. 2060/01/01 Architecture & Full-Stack Future-Proofing Contracts */
+export type FutureProof2060ResolutionTier = '32K' | '64K' | '128K';
+
+export interface FutureProof2060PillarContract {
+  id: string;
+  order: string;
+  title: string;
+  category:
+    | 'temporal-128bit'
+    | 'post-quantum-crypto'
+    | 'photonic-quantum-dit'
+    | 'volumetric-lightfield'
+    | 'isomorphic-runtime'
+    | 'orbital-edge-api';
+  targetEpoch: '2060-01-01T00:00:00.000Z';
+  standardSpec: string;
+  summary: string;
+  invariants: string[];
+  readinessScore: number;
+}
+
+export interface Epoch2060TemporalComplianceReport {
+  targetIso: string;
+  unixSecondsStr: string;
+  secondsPastY2038OverflowStr: string;
+  is32BitOverflowImmune: boolean;
+  ticksPerSecondStr: string;
+  targetEpochTotalTicksStr: string;
+  maxSupportedFps: number;
+  maxSupportedHours: number;
+  subFramePrecisionPicoseconds: number;
+  compliant: boolean;
+}
+
+export interface PostQuantumHandshakeManifest {
+  manifestId: string;
+  issuedAtIso: string;
+  validUntilIso: '2060-01-01T00:00:00.000Z';
+  kemAlgorithm: 'ML-KEM-1024 (FIPS 203 / Kyber-1024) + X25519 Hybrid';
+  signatureAlgorithm: 'ML-DSA-87 (FIPS 204 / Dilithium5) + SLH-DSA-SHA2-256s (FIPS 205)';
+  symmetricCipher: 'AES-256-GCM-SIV (Quantum-Resistant 256-Bit Security)';
+  c2paSpecVersion: 'C2PA v3.0 Post-Quantum Provenance';
+  authorityEmail: string;
+  authorityRoles: string[];
+  publicKeyFingerprintHex: string;
+  signaturePreviewHex: string;
+}
+
+export interface PhotonicQuantumClusterMetrics {
+  resolutionTier: FutureProof2060ResolutionTier;
+  widthPx: number;
+  heightPx: number;
+  fps: number;
+  durationHours: number;
+  totalFramesStr: string;
+  rawLatentTokensPerFrame: number;
+  opticalInterconnectBandwidthPbps: number;
+  activePhotonicNodes: number;
+  fp4QuantizedVramPerNodeGb: number;
+  ringAttentionComplexity: 'O(N) Spatio-Temporal Ring-Attention (Zero N^2 Materialization)';
+  estimatedRealtimeFactor: number;
+}
+
+export interface FullStack2060ReadinessAuditReport {
+  auditVersion: '2060.01.01-v2.3.0';
+  targetDateIso: '2060-01-01T00:00:00.000Z';
+  overallReadinessScore: number;
+  status: '2060-READY' | 'DEGRADED';
+  authorityAccount: string;
+  authorityContact: string;
+  pillars: FutureProof2060PillarContract[];
+  temporalCompliance: Epoch2060TemporalComplianceReport;
+  pqcManifest: PostQuantumHandshakeManifest;
+  defaultClusterMetrics: PhotonicQuantumClusterMetrics;
+}
+

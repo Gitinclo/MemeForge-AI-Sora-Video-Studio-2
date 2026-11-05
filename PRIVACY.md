@@ -96,10 +96,12 @@ We may update this Privacy Policy from time to time to reflect changes in our le
 
 ---
 
-## 8. Contact Us
+## 8. Contact Us & Primary Data Protection Authority
 
-If you have questions, feedback, or requests regarding this Privacy Policy or our data protection practices, please contact our Data Protection & Maintainer Team at:
+If you have questions, feedback, or requests regarding this Privacy Policy, NIST FIPS 203/204 Post-Quantum Cryptography (`ML-KEM-1024` / `ML-DSA-87`) C2PA v3.0 provenance manifests, or our data protection practices, please contact our Primary Administration / GM / Admin / Moderator & Data Protection Team at:
 
-* **Email:** `lijogeorge1133@gmail.com` / `creatergame31@gmail.com`
+* **Primary Administration / GM / Admin / Moderator Contact:** `creatergame31@gmail.com`
+* **Co-Maintainer Contact:** `lijogeorge1133@gmail.com`
 * **Project Maintainer:** MemeForge AI Studio Engineering Team (`@Gitinclo`)
 * **Repository:** `https://github.com/Gitinclo/MemeForge-AI-Sora-Video-Studio`
+

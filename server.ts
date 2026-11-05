@@ -13,6 +13,15 @@ import {
   synthesizeCharacterVoiceWavDataUri,
   type GeminiPrebuiltVoiceName,
 } from './src/utils/textToAnimationEngine.ts';
+import {
+  runFullStack2060ReadinessAudit,
+  formatFutureProof2060BlueprintMarkdown,
+  verifyEpoch2060TemporalCompliance,
+  generatePostQuantumHandshakeManifest,
+  EPOCH_2060_ISO,
+  FUTURE_PROOF_2060_AUTHORITY_EMAIL,
+} from './src/utils/futureProof2060Engine.ts';
+import type { FutureProof2060ResolutionTier } from './src/types/studioEngineContracts.ts';
 
 dotenv.config();
 
@@ -999,6 +1008,52 @@ app.post('/api/text-to-animation/generate-voice', async (req: Request, res: Resp
     voiceName: safeVoice,
     modelUsed: 'local-formant-wav-synthesizer',
     audioDataUri: fallbackWavDataUri,
+  });
+});
+
+// 2060/01/01 Architecture & Full-Stack Future-Proofing Blueprint & Audit Endpoints
+app.get('/api/future-proof-2060/blueprint', (_req: Request, res: Response) => {
+  const report = runFullStack2060ReadinessAudit('64K', 1000, 100);
+  const markdown = formatFutureProof2060BlueprintMarkdown(report);
+  return res.json({
+    success: true,
+    targetEpoch: EPOCH_2060_ISO,
+    authorityEmail: FUTURE_PROOF_2060_AUTHORITY_EMAIL,
+    report,
+    markdown,
+  });
+});
+
+app.post('/api/future-proof-2060/audit', (req: Request, res: Response) => {
+  const {
+    resolutionTier = '64K',
+    fps = 1000,
+    durationHours = 100,
+    targetIso = EPOCH_2060_ISO,
+    authorityEmail = FUTURE_PROOF_2060_AUTHORITY_EMAIL,
+  } = req.body || {};
+
+  const safeTier: FutureProof2060ResolutionTier =
+    resolutionTier === '32K' || resolutionTier === '128K' ? resolutionTier : '64K';
+  const report = runFullStack2060ReadinessAudit(
+    safeTier,
+    Number(fps) || 1000,
+    Number(durationHours) || 100
+  );
+  const customTemporal = verifyEpoch2060TemporalCompliance(
+    typeof targetIso === 'string' ? targetIso : EPOCH_2060_ISO
+  );
+  const customPqc = generatePostQuantumHandshakeManifest(
+    typeof authorityEmail === 'string' ? authorityEmail : FUTURE_PROOF_2060_AUTHORITY_EMAIL
+  );
+
+  return res.json({
+    success: true,
+    report: {
+      ...report,
+      temporalCompliance: customTemporal,
+      pqcManifest: customPqc,
+    },
   });
 });
 

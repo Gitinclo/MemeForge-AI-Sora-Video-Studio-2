@@ -34,6 +34,8 @@ export { YouTubePublishTab } from './YouTubePublishTab';
 export { LoraFlowSpatialMlopsPanel } from './LoraFlowSpatialMlopsPanel';
 export { UserGuidesModal } from './UserGuidesModal';
 export { TextToAnimationGeneratorModal } from './TextToAnimationGeneratorModal';
+export { FutureProof2060Modal } from './FutureProof2060Modal';
+
 
 
 
